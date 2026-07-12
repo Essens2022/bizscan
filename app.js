@@ -1,4 +1,34 @@
 
+const SUPABASE_URL = "https://fafedftoyztptdiubjmx.supabase.co";
+const SUPABASE_KEY = "import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://fafedftoyztptdiubjmx.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)";
+
+let supabaseClient;
+
+async function connectSupabase() {
+  const { createClient } = await import(
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+  );
+
+  supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const { data, error } = await supabaseClient
+    .from("system_info")
+    .select("app_version, database_version")
+    .limit(1);
+
+  if (error) {
+    console.error("Supabase connection error:", error);
+    return;
+  }
+
+  console.log("Supabase connected:", data);
+}
+
+connectSupabase();
+
 const products = {"pizzeria": {"slug": "pizzeria", "title": "Aprire una Pizzeria nel 2026", "category": "Ristorazione", "emoji": "🍕", "color": "orange", "summary": "Costi profitto rischi ed errori da conoscere prima di partire", "risk": 78, "riskLabel": "Rischio alto", "riskColor": "red", "opportunity": 4.1, "investment": "Alto", "investmentValue": 180000, "profit": "Medio", "payback": "3 - 7 anni", "difficulty": "Alta", "trend": "In crescita moderata"}, "mcdonalds": {"slug": "mcdonalds", "title": "Aprire un McDonald’s nel 2026", "category": "Franchising", "emoji": "🍔", "color": "blue", "summary": "Investimento costi ricavi selezione e rischi del franchising", "risk": 64, "riskLabel": "Rischio medio alto", "riskColor": "orange", "opportunity": 4.4, "investment": "Molto alto", "investmentValue": 1200000, "profit": "Alto", "payback": "5 - 7 anni", "difficulty": "Molto alta", "trend": "Stabile"}, "autolavaggio": {"slug": "autolavaggio", "title": "Aprire un Autolavaggio nel 2026", "category": "Servizi", "emoji": "🚗", "color": "green", "summary": "Costi attrezzature margini posizione e rischi operativi", "risk": 46, "riskLabel": "Rischio medio", "riskColor": "yellow", "opportunity": 4.3, "investment": "Medio", "investmentValue": 150000, "profit": "Medio alto", "payback": "3 - 5 anni", "difficulty": "Media", "trend": "In crescita"}, "bar": {"slug": "bar", "title": "Aprire un Bar nel 2026", "category": "Ristorazione", "emoji": "☕", "color": "pink", "summary": "Investimento costi giornalieri margini e punti critici", "risk": 71, "riskLabel": "Rischio alto", "riskColor": "red", "opportunity": 3.8, "investment": "Medio", "investmentValue": 90000, "profit": "Medio", "payback": "3 - 6 anni", "difficulty": "Media alta", "trend": "Competitivo"}}
 
 function getUnlocked(){try{return JSON.parse(localStorage.getItem("bizscanUnlocked")||"[]")}catch{return[]}}
