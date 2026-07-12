@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aprire un Bar nel 2026</title><link rel="stylesheet" href="styles.css"></head><body data-product="bar"><div class="app">
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/bizscan-logo.png" alt="BizScan">
+    <span>Biz<b>Scan</b></span>
+  </a>
+  <div class="top-actions">
+    <button class="icon-btn" onclick="location.href='library.html'">▤</button>
+    <button class="icon-btn" onclick="openPlan('menu')">☰</button>
+  </div>
+</header>
+
+<section class="detail-hero">
+  <div class="detail-cover pink">
+    <span style="font-size:42px">☕</span>
+    <div><div class="kicker" style="color:white">ANALISI COMPLETA 2026</div><h1>Aprire un Bar nel 2026</h1></div>
+  </div>
+  <div class="detail-info">
+    <div class="risk-row">
+      <div class="risk-meter"><span class="risk-dot red"></span><span class="risk-text">Rischio alto</span></div>
+      <span class="score">★ 3.8 su 5</span>
+    </div>
+    <div class="risk-scale"><span class="on red"></span><span class="on red"></span><span class="on red"></span><span class="on red"></span></div>
+    <p>Investimento costi giornalieri margini e punti critici</p>
+    <div class="score-panel">
+      <div class="score-card"><small>Rischio</small><strong>71 su 100</strong></div>
+      <div class="score-card"><small>Investimento</small><strong>Medio</strong></div>
+      <div class="score-card"><small>Profitto</small><strong>Medio</strong></div>
+      <div class="score-card"><small>Rientro</small><strong>3 - 6 anni</strong></div>
+    </div>
+    <div class="quick-actions">
+      <button class="btn dark" onclick="toggleFav('bar')">♡ Salva</button>
+      <button class="btn blue" onclick="toggleCompare('bar')">⇄ Confronta</button>
+    </div>
+    <div class="preview">
+      <h3>Cosa trovi</h3>
+      <ul><li>Investimento iniziale</li><li>Costi mensili</li><li>Profitto possibile</li><li>Rischi principali</li><li>Errori comuni</li><li>Tempo di rientro</li></ul>
+    </div>
+    <div class="notice" id="unlockStatus">Modalità demo attiva</div>
+    <div class="actions">
+      <button id="buyAction" class="btn primary full" onclick="openBuy('bar')">Sblocca analisi 1,99 €</button>
+      <div id="lockedActions" class="actions locked">
+        <a class="btn blue full" href="pdfs/bar.pdf" target="_blank">Apri documento</a>
+        <a class="btn dark full" href="pdfs/bar.pdf" download>Scarica documento</a>
+        <a class="btn purple full" href="library.html">Vai alla libreria</a>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+<nav class="bottom-nav">
+  <a href="index.html"><span>⌂</span><span>Home</span></a>
+  <a href="search.html"><span>⌕</span><span>Cerca</span></a>
+  <a href="pricing.html"><span>★</span><span>Prezzi</span></a>
+  <a href="library.html"><span>▤</span><span>Libreria</span></a>
+  <a href="account.html"><span>♙</span><span>Profilo</span></a>
+</nav>
+<div class="compare-bar" id="compareBar">
+  <div><strong id="compareCount">0 su 2 scelte</strong><small>Confronta due attività</small></div>
+  <button id="compareBtn" disabled onclick="openCompare()">Confronta</button>
+</div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
+</div>
+<script src="app.js"></script></body></html>

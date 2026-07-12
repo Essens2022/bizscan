@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prezzi BizScan</title><link rel="stylesheet" href="styles.css"></head><body><div class="app">
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/bizscan-logo.png" alt="BizScan">
+    <span>Biz<b>Scan</b></span>
+  </a>
+  <div class="top-actions">
+    <button class="icon-btn" onclick="location.href='library.html'">▤</button>
+    <button class="icon-btn" onclick="openPlan('menu')">☰</button>
+  </div>
+</header>
+
+<section class="hero"><div class="kicker">PREZZI SEMPLICI</div><h1>Scegli il piano <span>più utile</span></h1><p>Puoi provare ogni flusso in modalità demo</p></section>
+<section class="section"><div class="grid">
+<article class="card" style="display:block"><div class="card-body"><h3>1 analisi</h3><div class="price">1,99 €</div><p>Una analisi a scelta</p><button class="btn primary full" onclick="openPlan('single')">Scegli</button></div></article>
+<article class="card" style="display:block"><div class="card-body"><h3>5 analisi</h3><div class="price">4,99 €</div><p>Cinque analisi a scelta</p><button class="btn blue full" onclick="openPlan('bundle')">Attiva demo</button></div></article>
+<article class="card" style="display:block"><div class="card-body"><h3>BizScan Plus</h3><div class="price">9,99 € al mese</div><p>Tutte le analisi incluse</p><button class="btn purple full" onclick="openPlan('plus')">Attiva demo</button></div></article>
+</div></section>
+</div>
+<nav class="bottom-nav">
+  <a href="index.html"><span>⌂</span><span>Home</span></a>
+  <a href="search.html"><span>⌕</span><span>Cerca</span></a>
+  <a href="pricing.html"><span>★</span><span>Prezzi</span></a>
+  <a href="library.html"><span>▤</span><span>Libreria</span></a>
+  <a href="account.html"><span>♙</span><span>Profilo</span></a>
+</nav>
+<div class="compare-bar" id="compareBar">
+  <div><strong id="compareCount">0 su 2 scelte</strong><small>Confronta due attività</small></div>
+  <button id="compareBtn" disabled onclick="openCompare()">Confronta</button>
+</div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
+</div>
+<script src="app.js"></script></body></html>
