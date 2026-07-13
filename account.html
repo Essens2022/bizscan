@@ -87,9 +87,14 @@ async function loginSupabase() {
   }
 
   message.textContent = "Accesso effettuato"
-  updateAuthView()
-}
+await updateAuthView()
 
+if (email === "ionbondari@icloud.com") {
+    location.href = "admin.html"
+    return
+}
+}
+  
 async function logoutSupabase() {
   await waitForSupabase()
   await supabaseClient.auth.signOut()
