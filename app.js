@@ -11,17 +11,13 @@ async function connectSupabase() {
 
   supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const { data, error } = await supabaseClient
-    .from("system_info")
-    .select("app_version, database_version")
-    .limit(1);
-
+  const { data, error } = await supabaseClient.auth.getSession();
   if (error) {
-    console.error("Supabase connection error:", error);
-    return;
-  }
+  console.error("Supabase connection error:", error);
+  return;asa
+}
 
-  console.log("Supabase connected:", data);
+console.log("Supabase connected:", data);
 }
 
 connectSupabase();
