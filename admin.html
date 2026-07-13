@@ -512,7 +512,16 @@ async function checkAdminAccess() {
     location.href = "account.html"
     return
   }
+const {
+  data: { user }
+} = await supabaseClient.auth.getUser()
 
+if (!user || user.email !== "ionbondari@icloud.com") {
+  await supabaseClient.auth.signOut()
+  location.href = "account.html"
+  return
+}
+  
   document.getElementById("login").style.display = "none"
   renderAll()
 }
