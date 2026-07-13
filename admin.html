@@ -501,9 +501,26 @@ const defaultPlans=[
   {id:"plus",name:"Plus",price:"14,99 €/mese",count:999,description:"Accesso completo",badge:"ACCESSO COMPLETO"}
 ]
 
-function login(){if(document.getElementById("pin").value==="2026"){sessionStorage.setItem("bizscanAdmin","1");document.getElementById("login").style.display="none"}else alert("PIN non corretto")}
-if(sessionStorage.getItem("bizscanAdmin")==="1")document.getElementById("login").style.display="none"
+async function checkAdminAccess() {
+  while (!supabaseClient) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
 
+  const { data } = await supabaseClient.auth.getSession()
+
+  if (!data.session) {
+    location.href = "account.html"
+    return
+  }
+
+  document.getElementById("login").style.display = "none"
+  document.getElementById("app").style.display = "block"
+  renderAll()
+}
+
+checkAdminAccess()
+
+  
 function get(key,def){try{const x=JSON.parse(localStorage.getItem(key)||"null");return x||def}catch{return def}}
 function set(key,val){localStorage.setItem(key,JSON.stringify(val))}
 function analyses(){return get(K_ANALYSES,[])}
