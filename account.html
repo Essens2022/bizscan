@@ -28,6 +28,13 @@
       <button class="btn primary full" onclick="loginSupabase()">
         Accedi
       </button>
+      
+      <button
+  class="btn dark full"
+  style="margin-top:10px"
+  onclick="signupSupabase()">
+  Registrati
+</button>
 
       <button id="logoutBtn" class="btn dark full"
               style="display:none;margin-top:10px"
@@ -94,6 +101,38 @@ if (email === "ionbondari@icloud.com") {
     return
 }
 }
+
+async function signupSupabase() {
+  await waitForSupabase()
+
+  const email = document.getElementById("authEmail").value.trim()
+  const password = document.getElementById("authPassword").value
+  const message = document.getElementById("authMessage")
+
+  if (!email || !password) {
+    message.textContent = "Inserisci email e password"
+    return
+  }
+
+  if (password.length < 6) {
+    message.textContent = "La password deve contenere almeno 6 caratteri"
+    return
+  }
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  })
+
+  if (error) {
+    message.textContent = error.message
+    return
+  }
+
+  message.textContent =
+    "Registrazione completata! Controlla la tua email per confermare l'account."
+}
+  
   
 async function logoutSupabase() {
   await waitForSupabase()
