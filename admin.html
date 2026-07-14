@@ -530,7 +530,16 @@ checkAdminAccess()
 
   
 function get(key,def){try{const x=JSON.parse(localStorage.getItem(key)||"null");return x||def}catch{return def}}
-function set(key,val){localStorage.setItem(key,JSON.stringify(val))}
+async function set(key, val) {
+  localStorage.setItem(key, JSON.stringify(val))
+
+  if (key === K_ANALYSES) {
+    await supabaseClient
+      .from("analyses")
+      .upsert(val)
+  }
+}
+  
 function analyses(){return get(K_ANALYSES,[])}
 function categories(){return get(K_CATEGORIES,defaultCategories)}
 function plans(){return get(K_PLANS,defaultPlans)}
