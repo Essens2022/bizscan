@@ -12,7 +12,9 @@ function riskMeta(score){const s=Number(score)||0;if(s<50)return{label:"Rischio 
 function visualFor(row,i=0){const seed=String(row.category_id||row.category?.slug||row.id||i);let hash=0;for(let n=0;n<seed.length;n++)hash=((hash<<5)-hash+seed.charCodeAt(n))|0;return["vp","vm","va","vb"][Math.abs(hash)%4]}
 function mapAnalysis(row,i=0){
   const r=riskMeta(row.risk_score),cat=row.category||row.categories||{};
-  return {...row,category:cat.name||"",categorySlug:cat.slug||"",categoryEmoji:cat.emoji||"",risk:Number(row.risk_score)||0,score:Number(row.bizscan_score)||0,riskLabel:r.label,riskColor:r.color,visual:visualFor(row,i),investment:row.investment_display||"",profit:row.profit_display||row.profit_level||"",payback:row.payback_display||"",summary:row.short_description||"",price:Number(row.price??1.99),emoji:row.emoji||cat.emoji||"📊",verdictLabel:{conviene:"Conviene",dipende:"Dipende",non_conviene:"Non conviene"}[row.verdict]||"Analisi BizScan"};
+  const attachments=Array.isArray(row.attachments)?row.attachments:[];
+  const cover=attachments.find(a=>a&&a.type==="cover"&&a.file_url);
+  return {...row,attachments,coverUrl:cover?.file_url||"",category:cat.name||"",categorySlug:cat.slug||"",categoryEmoji:cat.emoji||"",risk:Number(row.risk_score)||0,score:Number(row.bizscan_score)||0,riskLabel:r.label,riskColor:r.color,visual:visualFor(row,i),investment:row.investment_display||"",profit:row.profit_display||row.profit_level||"",payback:row.payback_display||"",summary:row.short_description||"",price:Number(row.price??1.99),emoji:row.emoji||cat.emoji||"📊",verdictLabel:{conviene:"Conviene",dipende:"Dipende",non_conviene:"Non conviene"}[row.verdict]||"Analisi BizScan"};
 }
 async function fetchPublishedAnalyses(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_analyses");if(error)throw error;return(data||[]).map(mapAnalysis)}
 async function fetchAnalysisBySlug(slug){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_get_analysis_by_slug",{p_slug:slug});if(error)throw error;return data?mapAnalysis(data):null}
