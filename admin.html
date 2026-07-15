@@ -482,6 +482,17 @@ textarea{min-height:92px;resize:vertical}
 <script src="app.js"></script>
 <script>
 let coverData="",pdfMeta=null
+const emojiGroups={
+  "Tutti":["🍕","🍔","☕","🚗","🏨","✂️","🍦","🥐","🍝","🏪","🛒","💻","📱","🏠","🔧","🧼","💇","🍺","🐶","📊","💶","🚚","🏋️","🧁","🧑‍🍳","🍷","🥩","🍣","🥗","🛏️","🏢","🏭","🚘","⛽","🛠️","📦","🚲","🛵","🚌","✈️","🚤","🌴","🏖️","🎓","📚","🧑‍⚕️","💊","🦷","👓","👗","👟","💍","🎁","🎮","🎥","📸","🎨","🌿","🌸","🐾","🧸","🧹","🔑","💡","⚡","☀️","❄️"],
+  "Cibo":["🍕","🍔","☕","🍦","🥐","🍝","🍷","🥩","🍣","🥗","🧁","🧑‍🍳","🍺"],
+  "Servizi":["✂️","🚗","🔧","🧼","💇","🧹","🔑","🛠️","📦"],
+  "Business":["🏪","🏢","🏭","📊","💶","💻","📱","💡","⚡"],
+  "Viaggi":["🏨","✈️","🚤","🌴","🏖️","🚲","🛵","🚌","⛽"],
+  "Salute":["🧑‍⚕️","💊","🦷","👓","🏋️","🌿"],
+  "Retail":["🛒","👗","👟","💍","🎁","🧸","🐾","🌸"],
+  "Media":["🎮","🎥","📸","🎨","📚","🎓"]
+}
+let emojiGroup="Tutti"
 // ============================================================
 // SUPABASE DATA LAYER (analyses)
 // Replaces the old localStorage + broken raw upsert() approach.
@@ -751,22 +762,86 @@ async function saveAnalysis(){
   if(!val("title"))return alert("Inserisci il titolo")
   const editId=val("editId")||null
   const payload=buildAnalysisPayload(editId)
+  const duplicate=analyses().find(a=>a.slug===payload.slug && a.id!==editId)
+  if(duplicate){
+    alert(`Esiste già un’analisi con il link “${payload.slug}”. Apri la scheda “Analisi” e modifica quella esistente, oppure cambia lo slug.`)
+    return
+  }
+
   const saveBtn=document.querySelector('#newPanel .btn.primary')
   if(saveBtn){saveBtn.disabled=true;saveBtn.textContent="Salvataggio…"}
+
+  let savedId=null
+  let attachmentWarnings=[]
+
   try{
-    const {data:savedId,error}=await supabaseClient.rpc("admin_save_analysis",{p:payload})
+    const {data,error}=await supabaseClient.rpc("admin_save_analysis",{p:payload})
     if(error)throw error
+    savedId=Array.isArray(data)?data[0]:data
+    if(!savedId)throw new Error("Supabase non ha restituito l’ID dell’analisi")
+
+    // From this point the analysis already exists. Keep the form in edit mode
+    // even if a cover or PDF upload fails, so a retry cannot create a duplicate slug.
+    document.getElementById("editId").value=savedId
+
     const coverFile=document.getElementById("cover").files[0]
     const pdfFile=document.getElementById("pdf").files[0]
-    await replaceAttachment(savedId,"cover",coverFile)
-    await replaceAttachment(savedId,"pdf",pdfFile)
+
+    if(coverFile){
+      try{await replaceAttachment(savedId,"cover",coverFile)}
+      catch(error){
+        console.error("BizScan admin: cover upload failed",error)
+        attachmentWarnings.push("copertina: "+error.message)
+      }
+    }
+
+    if(pdfFile){
+      try{await replaceAttachment(savedId,"pdf",pdfFile)}
+      catch(error){
+        console.error("BizScan admin: PDF upload failed",error)
+        attachmentWarnings.push("PDF: "+error.message)
+      }
+    }
+
+    await loadAnalyses()
+    renderAll()
+
+    if(attachmentWarnings.length){
+      const saved=analyses().find(a=>a.id===savedId)
+      if(saved)editAnalysis(savedId)
+      alert("Analisi salvata correttamente. Alcuni file non sono stati caricati:\n\n"+attachmentWarnings.join("\n")+"\n\nPuoi riprovare senza creare una nuova analisi.")
+      return
+    }
+
+    resetForm()
+    renderEmojiPicker()
+    renderPositionPicker()
+    profitModeChanged()
+    showTab("analyses",document.querySelectorAll(".tab")[1])
+    alert("Analisi salvata correttamente")
   }catch(error){
-    console.error("BizScan admin: save failed",error)
+    console.error("BizScan admin: analysis save failed",error)
+
+    // Refresh the list in case the database saved the row before a network error
+    // reached the browser. This prevents a second attempt from creating a duplicate.
+    try{
+      await loadAnalyses()
+      renderAll()
+      const existing=analyses().find(a=>a.slug===payload.slug)
+      if(existing){
+        document.getElementById("editId").value=existing.id
+        editAnalysis(existing.id)
+        alert("L’analisi risulta già salvata in Supabase. È stata aperta in modalità modifica; controlla i dati e riprova solo per gli eventuali file mancanti.")
+        return
+      }
+    }catch(refreshError){
+      console.warn("BizScan admin: refresh after save error failed",refreshError)
+    }
+
     alert("Salvataggio non riuscito: "+error.message)
-    return
-  }finally{if(saveBtn){saveBtn.disabled=false;saveBtn.textContent="Salva analisi"}}
-  await loadAnalyses()
-  renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeChanged();showTab("analyses",document.querySelectorAll(".tab")[1])
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent="Salva analisi"}
+  }
 }
 function editAnalysis(id){
   const x=analyses().find(a=>a.id===id);if(!x)return
