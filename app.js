@@ -1,171 +1,33 @@
-
-const SUPABASE_URL = "https://fafedftoyztptdiubjmx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Xv8QeF_A5ShMEqhxqB1jgQ_mLZGx5KJ";
-
-let supabaseClient;
-
-async function connectSupabase() {
-  const { createClient } = await import(
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-  );
-
-  supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error) {
-  console.error("Supabase connection error:", error);
-  return;asa
-}
-
-console.log("Supabase connected:", data);
-}
-
-connectSupabase();
-
-const products = {"pizzeria": {"slug": "pizzeria", "title": "Aprire una Pizzeria nel 2026", "category": "Ristorazione", "emoji": "🍕", "color": "orange", "summary": "Costi profitto rischi ed errori da conoscere prima di partire", "risk": 78, "riskLabel": "Rischio alto", "riskColor": "red", "opportunity": 4.1, "investment": "Alto", "investmentValue": 180000, "profit": "Medio", "payback": "3 - 7 anni", "difficulty": "Alta", "trend": "In crescita moderata"}, "mcdonalds": {"slug": "mcdonalds", "title": "Aprire un McDonald’s nel 2026", "category": "Franchising", "emoji": "🍔", "color": "blue", "summary": "Investimento costi ricavi selezione e rischi del franchising", "risk": 64, "riskLabel": "Rischio medio alto", "riskColor": "orange", "opportunity": 4.4, "investment": "Molto alto", "investmentValue": 1200000, "profit": "Alto", "payback": "5 - 7 anni", "difficulty": "Molto alta", "trend": "Stabile"}, "autolavaggio": {"slug": "autolavaggio", "title": "Aprire un Autolavaggio nel 2026", "category": "Servizi", "emoji": "🚗", "color": "green", "summary": "Costi attrezzature margini posizione e rischi operativi", "risk": 46, "riskLabel": "Rischio medio", "riskColor": "yellow", "opportunity": 4.3, "investment": "Medio", "investmentValue": 150000, "profit": "Medio alto", "payback": "3 - 5 anni", "difficulty": "Media", "trend": "In crescita"}, "bar": {"slug": "bar", "title": "Aprire un Bar nel 2026", "category": "Ristorazione", "emoji": "☕", "color": "pink", "summary": "Investimento costi giornalieri margini e punti critici", "risk": 71, "riskLabel": "Rischio alto", "riskColor": "red", "opportunity": 3.8, "investment": "Medio", "investmentValue": 90000, "profit": "Medio", "payback": "3 - 6 anni", "difficulty": "Media alta", "trend": "Competitivo"}}
-
-function getUnlocked(){try{return JSON.parse(localStorage.getItem("bizscanUnlocked")||"[]")}catch{return[]}}
-function saveUnlocked(v){localStorage.setItem("bizscanUnlocked",JSON.stringify([...new Set(v)]))}
-function getFavs(){try{return JSON.parse(localStorage.getItem("bizscanFavs")||"[]")}catch{return[]}}
-function saveFavs(v){localStorage.setItem("bizscanFavs",JSON.stringify([...new Set(v)]))}
-function getCompare(){try{return JSON.parse(localStorage.getItem("bizscanCompare")||"[]")}catch{return[]}}
-function saveCompare(v){localStorage.setItem("bizscanCompare",JSON.stringify(v.slice(0,2)))}
-
-function toggleFav(slug){
-  let f=getFavs()
-  f=f.includes(slug)?f.filter(x=>x!==slug):[...f,slug]
-  saveFavs(f)
-  renderCards()
-}
-
-function toggleCompare(slug){
-  let c=getCompare()
-  if(c.includes(slug))c=c.filter(x=>x!==slug)
-  else if(c.length<2)c=[...c,slug]
-  saveCompare(c)
-  updateCompareBar()
-  renderCards()
-}
-
-function updateCompareBar(){
-  const bar=document.getElementById("compareBar")
-  if(!bar)return
-  const c=getCompare()
-  bar.classList.toggle("show",c.length>0)
-  document.getElementById("compareCount").textContent=`${c.length} su 2 scelte`
-  document.getElementById("compareBtn").disabled=c.length!==2
-}
-
-function openCompare(){
-  const c=getCompare()
-  if(c.length!==2)return
-  const a=products[c[0]],b=products[c[1]]
-  document.getElementById("modalContent").innerHTML=`
-    <h2>Confronto rapido</h2>
-    <div class="compare-grid">
-      <div class="compare-cell"><small>Attività</small><strong>${a.title}</strong></div>
-      <div class="compare-cell"><small>Attività</small><strong>${b.title}</strong></div>
-      <div class="compare-cell"><small>Rischio</small><strong>${a.risk} su 100</strong></div>
-      <div class="compare-cell"><small>Rischio</small><strong>${b.risk} su 100</strong></div>
-      <div class="compare-cell"><small>Opportunità</small><strong>${a.opportunity} su 5</strong></div>
-      <div class="compare-cell"><small>Opportunità</small><strong>${b.opportunity} su 5</strong></div>
-      <div class="compare-cell"><small>Investimento</small><strong>${a.investment}</strong></div>
-      <div class="compare-cell"><small>Investimento</small><strong>${b.investment}</strong></div>
-      <div class="compare-cell"><small>Rientro</small><strong>${a.payback}</strong></div>
-      <div class="compare-cell"><small>Rientro</small><strong>${b.payback}</strong></div>
-    </div>
-    <button class="btn blue full" style="margin-top:12px" onclick="closeModal()">Chiudi confronto</button>
-  `
-  document.getElementById("modal").classList.add("show")
-}
-
-function renderCards(){
-  const host=document.getElementById("cardsHost")
-  if(!host)return
-  const q=(document.getElementById("liveSearch")?.value||"").toLowerCase()
-  const risk=document.getElementById("riskFilter")?.value||"all"
-  const sort=document.getElementById("sortFilter")?.value||"recommended"
-  const favs=getFavs(),compare=getCompare()
-  let arr=Object.values(products).filter(p=>{
-    const text=`${p.title} ${p.category} ${p.summary}`.toLowerCase()
-    const qok=!q||text.includes(q)
-    const rok=risk==="all"||(risk==="low"&&p.risk<50)||(risk==="medium"&&p.risk>=50&&p.risk<70)||(risk==="high"&&p.risk>=70)
-    return qok&&rok
-  })
-  if(sort==="risk")arr.sort((a,b)=>a.risk-b.risk)
-  if(sort==="opportunity")arr.sort((a,b)=>b.opportunity-a.opportunity)
-  if(sort==="investment")arr.sort((a,b)=>a.investmentValue-b.investmentValue)
-  host.innerHTML=arr.map(p=>`
-    <article class="card">
-      <a class="cover ${p.color}" href="${p.slug}.html"><span style="font-size:34px">${p.emoji}</span><strong>${p.category}</strong></a>
-      <div class="card-body">
-        <h3><a href="${p.slug}.html">${p.title}</a></h3>
-        <p>${p.summary}</p>
-        <div class="risk-row">
-          <div class="risk-meter"><span class="risk-dot ${p.riskColor}"></span><span class="risk-text">${p.riskLabel}</span></div>
-          <span class="score">★ ${p.opportunity}</span>
-        </div>
-        <div class="badges"><span class="badge">${p.investment}</span><span class="badge">${p.payback}</span><span class="badge">${p.trend}</span></div>
-        <div class="card-actions">
-          <span class="price">1,99 €</span>
-          <div class="small-actions">
-            <button class="mini ${favs.includes(p.slug)?"active":""}" onclick="toggleFav('${p.slug}')">♡</button>
-            <button class="mini ${compare.includes(p.slug)?"active":""}" onclick="toggleCompare('${p.slug}')">⇄</button>
-            <a class="btn primary" href="${p.slug}.html">Apri</a>
-          </div>
-        </div>
-      </div>
-    </article>
-  `).join("")||`<div class="notice">Nessun risultato con questi filtri</div>`
-  updateCompareBar()
-}
-
-function unlockProduct(slug){const v=getUnlocked();v.push(slug);saveUnlocked(v);closeModal();updateProductPage(slug)}
-function unlockAll(){saveUnlocked(Object.keys(products));closeModal();location.href="library.html"}
-function updateProductPage(slug){
-  const unlocked=getUnlocked().includes(slug)
-  const locked=document.getElementById("lockedActions"),buy=document.getElementById("buyAction")
-  if(locked)locked.classList.toggle("locked",!unlocked)
-  if(buy)buy.style.display=unlocked?"none":"inline-flex"
-  const status=document.getElementById("unlockStatus")
-  if(status)status.textContent=unlocked?"Analisi già sbloccata":"Modalità demo attiva"
-}
-function openBuy(slug){
-  const p=products[slug]
-  document.getElementById("modalContent").innerHTML=`<h2>${p.title}</h2><p>Questa è una simulazione completa senza pagamento reale</p><div class="notice">Dopo Stripe qui apparirà il checkout reale</div><button class="btn primary full" onclick="unlockProduct('${slug}')">Sblocca demo 1,99 €</button>`
-  document.getElementById("modal").classList.add("show")
-}
-function openPlan(type){
-  const html={
-    single:`<h2>1 analisi</h2><p>Scegli una delle analisi disponibili</p><a class="btn primary full" href="search.html">Scegli analisi</a>`,
-    bundle:`<h2>Pacchetto 5</h2><p>Nella demo vengono sbloccate tutte le analisi disponibili</p><button class="btn blue full" onclick="unlockAll()">Attiva pacchetto demo 4,99 €</button>`,
-    plus:`<h2>BizScan Plus</h2><p>Nella demo vengono sbloccate tutte le analisi e la libreria completa</p><button class="btn purple full" onclick="unlockAll()">Attiva Plus demo 9,99 € al mese</button>`,
-    menu:`<h2>Menu BizScan</h2><div class="actions"><a class="btn dark full" href="index.html">Home</a><a class="btn dark full" href="search.html">Tutte le analisi</a><a class="btn dark full" href="pricing.html">Prezzi</a><a class="btn dark full" href="library.html">Libreria</a></div>`
-  }[type]
-  document.getElementById("modalContent").innerHTML=html
-  document.getElementById("modal").classList.add("show")
-}
-function closeModal(){document.getElementById("modal").classList.remove("show")}
-function searchBusiness(){
-  const q=(document.getElementById("searchInput")?.value||"").toLowerCase().trim()
-  if(q.includes("pizza"))location.href="pizzeria.html"
-  else if(q.includes("mcd"))location.href="mcdonalds.html"
-  else if(q.includes("lavaggio")||q.includes("auto"))location.href="autolavaggio.html"
-  else if(q.includes("bar"))location.href="bar.html"
-  else location.href="search.html?q="+encodeURIComponent(q)
-}
-function renderLibrary(){
-  const host=document.getElementById("libraryList")
-  if(!host)return
-  const unlocked=getUnlocked()
-  if(!unlocked.length){host.innerHTML=`<div class="notice">Nessuna analisi sbloccata</div><a class="btn primary full" href="search.html">Scopri le analisi</a>`;return}
-  host.innerHTML=unlocked.map(slug=>{const p=products[slug];return `<div class="library-item"><div class="library-icon">${p.emoji}</div><div class="library-info"><h3>${p.title}</h3><small>${p.riskLabel} · ★ ${p.opportunity}</small></div><a class="btn dark" href="pdfs/${slug}.pdf" target="_blank">Apri</a><a class="btn primary" href="pdfs/${slug}.pdf" download>Scarica</a></div>`}).join("")
-}
-document.addEventListener("DOMContentLoaded",()=>{
-  const slug=document.body.dataset.product
-  if(slug)updateProductPage(slug)
-  renderLibrary()
-  renderCards()
-  const q=new URLSearchParams(location.search).get("q")
-  if(q&&document.getElementById("liveSearch")){document.getElementById("liveSearch").value=q;renderCards()}
-})
+let supabaseClient;let products={};let favoriteSlugs=[];
+const localCompareKey="bizscanCompare";const localFavKey="bizscanFavsGuest";
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function getCompare(){try{return JSON.parse(localStorage.getItem(localCompareKey)||"[]")}catch{return[]}}
+function saveCompare(v){localStorage.setItem(localCompareKey,JSON.stringify([...new Set(v)].slice(0,2)))}
+function guestFavs(){try{return JSON.parse(localStorage.getItem(localFavKey)||"[]")}catch{return[]}}
+function saveGuestFavs(v){localStorage.setItem(localFavKey,JSON.stringify([...new Set(v)]))}
+async function connectSupabase(){supabaseClient=await BizScanData.getSupabaseClient();return supabaseClient}
+async function loadProducts(){const list=await BizScanData.fetchPublishedAnalyses();products=Object.fromEntries(list.map(p=>[p.slug,p]));window.products=products;return list}
+async function loadFavorites(){const u=await BizScanData.currentUser();favoriteSlugs=u?await BizScanData.fetchFavorites():guestFavs();return favoriteSlugs}
+async function toggleFav(slug){const p=products[slug];if(!p)return;const enabled=!favoriteSlugs.includes(slug);const u=await BizScanData.currentUser();try{if(u)await BizScanData.setFavorite(p.id,enabled);else{favoriteSlugs=enabled?[...favoriteSlugs,slug]:favoriteSlugs.filter(x=>x!==slug);saveGuestFavs(favoriteSlugs)}await loadFavorites();renderCards();renderFavorites();updateIndexButtons()}catch(e){console.error(e);if(e.message==="AUTH_REQUIRED")location.href="account.html"}}
+window.toggleFavorite=toggleFav;window.toggleFav=toggleFav;
+function toggleCompare(slug){let c=getCompare();c=c.includes(slug)?c.filter(x=>x!==slug):c.length<2?[...c,slug]:c;saveCompare(c);updateCompareBar();renderCards();renderIndexCompare();updateIndexButtons()}
+window.toggleCompare=toggleCompare;
+function updateCompareBar(){const bar=document.getElementById("compareBar");if(!bar)return;const c=getCompare();bar.classList.toggle("show",c.length>0);document.getElementById("compareCount").textContent=`${c.length} su 2 scelte`;document.getElementById("compareBtn").disabled=c.length!==2}
+function productRow(p){const fav=favoriteSlugs.includes(p.slug),sel=getCompare().includes(p.slug);return `<article class="compare-choice ${sel?"selected":""}"><div class="thumb ${p.visual}">${esc(p.emoji)}</div><div><h3 style="margin:0 0 6px">${esc(p.title)}</h3><div class="riskline"><span>${esc(p.riskLabel)}</span><b>${p.score} punti</b></div><div class="choice-actions"><button type="button" class="${sel?"active":""}" onclick="toggleCompare('${p.slug}')">⇄ ${sel?"Scelto":"Confronta"}</button><button type="button" class="${fav?"active":""}" onclick="toggleFav('${p.slug}')">♡ ${fav?"Salvato":"Preferito"}</button><a class="small-btn" href="analysis.html?slug=${encodeURIComponent(p.slug)}">Apri</a></div></div></article>`}
+function renderCards(){const host=document.getElementById("cardsHost");if(!host)return;const q=(document.getElementById("liveSearch")?.value||"").toLowerCase(),risk=document.getElementById("riskFilter")?.value||"all",sort=document.getElementById("sortFilter")?.value||"recommended";let arr=Object.values(products).filter(p=>{const t=`${p.title} ${p.category} ${p.summary}`.toLowerCase();return(!q||t.includes(q))&&(risk==="all"||(risk==="low"&&p.risk<50)||(risk==="medium"&&p.risk>=50&&p.risk<70)||(risk==="high"&&p.risk>=70))});if(sort==="risk")arr.sort((a,b)=>a.risk-b.risk);if(sort==="opportunity")arr.sort((a,b)=>b.score-a.score);if(sort==="investment")arr.sort((a,b)=>(a.investment_min||0)-(b.investment_min||0));host.innerHTML=arr.map(p=>`<article class="card"><a class="cover ${p.visual}" href="analysis.html?slug=${encodeURIComponent(p.slug)}"><span style="font-size:34px">${esc(p.emoji)}</span><strong>${esc(p.category)}</strong></a><div class="card-body"><h3><a href="analysis.html?slug=${encodeURIComponent(p.slug)}">${esc(p.title)}</a></h3><p>${esc(p.summary)}</p><div class="risk-row"><div class="risk-meter"><span class="risk-dot ${p.riskColor}"></span><span class="risk-text">${esc(p.riskLabel)}</span></div><span class="score">★ ${p.score}</span></div><div class="badges"><span class="badge">${esc(p.investment)}</span><span class="badge">${esc(p.payback)}</span><span class="badge">${esc(p.profit)}</span></div><div class="card-actions"><span class="price">${p.price.toFixed(2).replace('.',',')} €</span><div class="small-actions"><button class="mini ${favoriteSlugs.includes(p.slug)?"active":""}" onclick="toggleFav('${p.slug}')">♡</button><button class="mini ${getCompare().includes(p.slug)?"active":""}" onclick="toggleCompare('${p.slug}')">⇄</button><a class="btn primary" href="analysis.html?slug=${encodeURIComponent(p.slug)}">Apri</a></div></div></div></article>`).join("")||`<div class="notice">Nessun risultato con questi filtri</div>`;updateCompareBar()}
+window.renderCards=renderCards;
+function renderLibrary(){const host=document.getElementById("libraryList");if(!host)return;host.innerHTML='<div class="notice">Caricamento libreria…</div>';BizScanData.accessSummary().then(async s=>{if(!s.authenticated){host.innerHTML='<div class="notice">Accedi per vedere la tua libreria</div><a class="btn primary full" href="account.html">Accedi</a>';return}const permanent=s.unlocked.filter(x=>!x.expires_at||new Date(x.expires_at)>new Date());const plus=s.subscription_active?Object.values(products):[];const map=new Map();permanent.forEach(x=>{if(x.analyses)map.set(x.analyses.slug,{...products[x.analyses.slug],source:x.source||"permanent"})});plus.forEach(p=>map.set(p.slug,{...p,source:map.has(p.slug)?map.get(p.slug).source:"subscription"}));const arr=[...map.values()].filter(Boolean);if(!arr.length){host.innerHTML='<div class="notice">Nessuna analisi disponibile nella libreria</div><a class="btn primary full" href="search.html">Scopri le analisi</a>';return}host.innerHTML=arr.map(p=>`<div class="library-item"><div class="library-icon">${esc(p.emoji)}</div><div class="library-info"><h3>${esc(p.title)}</h3><small>${p.source==="subscription"?"Accesso Plus attivo":"Accesso permanente"}</small></div><a class="btn primary" href="analysis.html?slug=${encodeURIComponent(p.slug)}">Apri</a></div>`).join('')}).catch(e=>{console.error(e);host.innerHTML='<div class="notice">Impossibile caricare la libreria</div>'})}
+async function openCompare(){const c=getCompare();if(c.length!==2)return;const a=products[c[0]],b=products[c[1]];if(!a||!b)return;document.getElementById("modalContent").innerHTML=`<h2>Confronto rapido</h2><div class="compare-grid"><div class="compare-cell"><small>Attività</small><strong>${esc(a.title)}</strong></div><div class="compare-cell"><small>Attività</small><strong>${esc(b.title)}</strong></div><div class="compare-cell"><small>Rischio</small><strong>${a.risk} su 100</strong></div><div class="compare-cell"><small>Rischio</small><strong>${b.risk} su 100</strong></div><div class="compare-cell"><small>Investimento</small><strong>${esc(a.investment)}</strong></div><div class="compare-cell"><small>Investimento</small><strong>${esc(b.investment)}</strong></div><div class="compare-cell"><small>Rientro</small><strong>${esc(a.payback)}</strong></div><div class="compare-cell"><small>Rientro</small><strong>${esc(b.payback)}</strong></div></div><button class="btn blue full" style="margin-top:12px" onclick="closeModal()">Chiudi confronto</button>`;document.getElementById("modal").classList.add("show")}
+window.openCompare=openCompare;
+function closeModal(){document.getElementById("modal")?.classList.remove("show")}window.closeModal=closeModal;
+async function openBuy(slug){const p=products[slug]||await BizScanData.fetchAnalysisBySlug(slug);if(!p)return;const u=await BizScanData.currentUser();if(!u){location.href='account.html';return}const s=await BizScanData.accessSummary();const modal=document.getElementById('modal'),box=document.getElementById('modalContent');if(s.credits>0){box.innerHTML=`<h2>${esc(p.title)}</h2><p>Hai ${s.credits} credito${s.credits===1?'':'i'} disponibile${s.credits===1?'':'i'}.</p><button class="btn primary full" id="creditUnlockBtn">Usa 1 credito</button>`;modal.classList.add('show');document.getElementById('creditUnlockBtn').onclick=async()=>{const b=document.getElementById('creditUnlockBtn');b.disabled=true;b.textContent='Sblocco…';try{await BizScanData.unlockWithCredit(p.id);location.href=`analysis.html?slug=${encodeURIComponent(slug)}`}catch(e){console.error(e);b.disabled=false;b.textContent='Usa 1 credito';alert(e.message)}};return}box.innerHTML=`<h2>${esc(p.title)}</h2><p>Non hai crediti disponibili.</p><div class="notice">Il pagamento sicuro deve essere collegato tramite Stripe Checkout e webhook Supabase. Nessun accesso viene simulato nel browser.</div><a class="btn primary full" href="pricing.html">Vedi i piani</a>`;modal.classList.add('show')}
+window.openBuy=openBuy;
+function openPlan(){document.getElementById("modalContent").innerHTML='<h2>Menu BizScan</h2><div class="actions"><a class="btn dark full" href="index.html">Home</a><a class="btn dark full" href="search.html">Tutte le analisi</a><a class="btn dark full" href="pricing.html">Prezzi</a><a class="btn dark full" href="library.html">Libreria</a></div>';document.getElementById("modal").classList.add("show")}window.openPlan=openPlan;
+function searchBusiness(){const q=(document.getElementById("searchInput")?.value||document.getElementById('homeSearch')?.value||"").toLowerCase().trim();const hit=Object.values(products).find(p=>p.title.toLowerCase().includes(q)||p.slug.includes(q));location.href=hit?`analysis.html?slug=${encodeURIComponent(hit.slug)}`:`search.html?q=${encodeURIComponent(q)}`}
+window.searchBusiness=searchBusiness;window.runSearch=searchBusiness;
+function renderFavorites(){const host=document.getElementById('favoritesList');if(!host)return;const arr=favoriteSlugs.map(s=>products[s]).filter(Boolean);host.innerHTML=arr.length?arr.map(productRow).join(''):'<div class="empty-state">Nessuna analisi salvata</div>'}
+function renderIndexCompare(){const picker=document.getElementById('comparePicker'),result=document.getElementById('compareResult');if(!picker)return;picker.innerHTML=Object.values(products).map(productRow).join('');const arr=getCompare().map(s=>products[s]).filter(Boolean);if(result)result.innerHTML=arr.length===2?`<div class="scores"><div class="scorebox"><small>Attività</small><strong>${esc(arr[0].title)}</strong></div><div class="scorebox"><small>Attività</small><strong>${esc(arr[1].title)}</strong></div><div class="scorebox"><small>Rischio</small><strong>${arr[0].risk}</strong></div><div class="scorebox"><small>Rischio</small><strong>${arr[1].risk}</strong></div><div class="scorebox"><small>BizScan Score</small><strong>${arr[0].score}</strong></div><div class="scorebox"><small>BizScan Score</small><strong>${arr[1].score}</strong></div></div>`:'<div class="empty-state">Seleziona esattamente due attività</div>'}
+function updateIndexButtons(){document.querySelectorAll('[data-favorite]').forEach(b=>b.classList.toggle('active',favoriteSlugs.includes(b.dataset.favorite)));document.querySelectorAll('[data-compare]').forEach(b=>b.classList.toggle('active',getCompare().includes(b.dataset.compare)))}
+async function renderIndex(){const catsHost=document.getElementById('categoriesCarousel'),feat=document.getElementById('featuredCarousel'),explore=document.getElementById('exploreList'),details=document.getElementById('dynamicDetails'),riskHost=document.getElementById('highRiskList');if(catsHost){const cats=await BizScanData.fetchCategories();catsHost.innerHTML=cats.map(c=>`<a class="category co" href="#explore"><span>${esc(c.emoji||'📁')}</span><strong>${esc(c.name)}</strong></a>`).join('')}const arr=Object.values(products);if(feat)feat.innerHTML=arr.filter(p=>p.featured||p.homepage).slice(0,6).map(p=>`<article class="feature"><div class="visual ${p.visual}"><div class="card-tools"><button type="button" class="compare" data-compare="${p.slug}" onclick="event.preventDefault();toggleCompare('${p.slug}')">⇄</button><button type="button" class="favorite" data-favorite="${p.slug}" onclick="event.preventDefault();toggleFav('${p.slug}')">♡</button></div><span class="tag">${esc(p.card_label||p.category||'BIZSCAN')}</span><span class="emoji">${esc(p.emoji)}</span></div><div class="feature-body"><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p><div class="metrics"><div class="metric"><small>Rischio</small><strong>${esc(p.riskLabel.replace('Rischio ',''))}</strong></div><div class="metric"><small>Investimento</small><strong>${esc(p.investment)}</strong></div><div class="metric"><small>Rientro</small><strong>${esc(p.payback)}</strong></div></div><div class="foot"><div class="ring"><b>${p.score}</b></div><span class="price">${p.price.toFixed(2).replace('.',',')} €</span><a class="open" href="#${p.slug}">Apri</a></div></div></article>`).join('');if(explore)explore.innerHTML=arr.map(p=>`<a class="rowcard" href="#${p.slug}"><div class="thumb ${p.visual}">${esc(p.emoji)}</div><div class="rowinfo"><h3>${esc(p.title)}</h3><div class="riskline"><span><span class="dot ${p.riskColor}"></span>${esc(p.riskLabel)}</span><b>${p.score} punti</b></div></div></a>`).join('');if(riskHost)riskHost.innerHTML=arr.slice().sort((a,b)=>b.risk-a.risk).slice(0,4).map(p=>`<a class="rowcard" href="#${p.slug}"><div class="thumb ${p.visual}">${esc(p.emoji)}</div><div class="rowinfo"><h3>${esc(p.title)}</h3><div class="riskline"><span><span class="dot ${p.riskColor}"></span>${esc(p.riskLabel)}</span><b>${p.risk} su 100</b></div></div></a>`).join('');if(details)details.innerHTML=arr.map(p=>`<section id="${p.slug}" class="page"><div class="backbar"><button type="button" onclick="goBack()">←</button><strong>${esc(p.title)}</strong></div><div class="detail-hero ${p.visual}"><div class="card-tools"><button type="button" class="compare" data-compare="${p.slug}" onclick="toggleCompare('${p.slug}')">⇄</button><button type="button" class="favorite" data-favorite="${p.slug}" onclick="toggleFav('${p.slug}')">♡</button></div><span class="emoji">${esc(p.emoji)}</span><div><div class="kicker" style="color:white">ANALISI COMPLETA</div><h1>${esc(p.title)}</h1></div></div><div class="detail-body"><div class="verdict-card"><div class="verdict-icon">${p.verdict==='conviene'?'🟢':p.verdict==='non_conviene'?'🔴':'🟡'}</div><div><strong>${esc(p.verdictLabel)}</strong><small>${esc(p.conclusion||p.summary)}</small></div></div><div class="quick-facts"><div class="quick-fact"><small>Investimento</small><strong>${esc(p.investment)}</strong></div><div class="quick-fact"><small>Livello di rischio</small><strong>${esc(p.riskLabel.replace('Rischio ',''))}</strong></div><div class="quick-fact"><small>Tempo di rientro</small><strong>${esc(p.payback)}</strong></div></div><div class="bigscore"><div class="circle" data-score="${p.score>=80?'high':'medium'}"><strong>${p.score}</strong></div><div><h3>BizScan Score</h3><p>${esc(p.summary)}</p></div></div><div class="scores"><div class="scorebox"><small>Rischio</small><strong>${p.risk} su 100</strong></div><div class="scorebox"><small>Investimento</small><strong>${esc(p.investment)}</strong></div><div class="scorebox"><small>Profitto</small><strong>${esc(p.profit)}</strong></div><div class="scorebox"><small>Rientro</small><strong>${esc(p.payback)}</strong></div></div><div class="actions"><a class="action primary" href="analysis.html?slug=${encodeURIComponent(p.slug)}">Apri analisi completa</a><a class="action blue" href="#compare">Confronta</a><a class="action dark" href="#home">Torna alla Home</a></div></div></section>`).join('');renderIndexCompare();renderFavorites();updateIndexButtons()}
+window.navClick=function(){},window.goBack=function(){history.length>1?history.back():location.hash='#home'};
+document.addEventListener('DOMContentLoaded',async()=>{try{await connectSupabase();await loadProducts();await loadFavorites();renderCards();renderLibrary();await renderIndex();const q=new URLSearchParams(location.search).get('q');if(q&&document.getElementById('liveSearch')){document.getElementById('liveSearch').value=q;renderCards()}}catch(e){console.error('BizScan init',e);document.querySelectorAll('#cardsHost,#libraryList,#featuredCarousel,#exploreList').forEach(x=>x.innerHTML='<div class="notice">Impossibile caricare i dati. Riprova tra poco.</div>')}updateCompareBar()});

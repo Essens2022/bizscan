@@ -46,7 +46,7 @@
     </div>
   </div>
 </section>
-<section class="section" id="accountContent" style="display:none"><div class="grid">
+<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block;margin-bottom:14px"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div><div class="grid">
 <div class="card" style="display:block"><div class="card-body"><h3>Preferiti</h3><p>Salva le attività che vuoi controllare più tardi</p><a class="btn dark full" href="search.html">Apri ricerca</a></div></div>
 <div class="card" style="display:block"><div class="card-body"><h3>Libreria</h3><p>Apri le analisi già sbloccate</p><a class="btn primary full" href="library.html">Apri libreria</a></div></div>
 </div></section>
@@ -65,6 +65,7 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
+<script src="supabase-data.js"></script>
 <script src="app.js"></script>
 
 <script>
@@ -96,10 +97,8 @@ async function loginSupabase() {
   message.textContent = "Accesso effettuato"
 await updateAuthView()
 
-if (email === "ionbondari@icloud.com") {
-    location.href = "admin.html"
-    return
-}
+const {data:isAdmin}=await supabaseClient.rpc("is_admin")
+if(isAdmin){ location.href="admin.html"; return }
 }
 
 async function signupSupabase() {
@@ -164,8 +163,13 @@ document.getElementById("authPassword").style.display =
 document.querySelector('button[onclick="loginSupabase()"]').style.display =
   logged ? "none" : "block"
 
-document.getElementById("authMessage").textContent =
-  logged ? "Account collegato" : ""
+document.getElementById("authMessage").textContent = logged ? "Account collegato" : ""
+if(logged){
+  try{
+    const summary=await BizScanData.accessSummary(); const user=data.session.user;
+    document.getElementById("accountSummary").innerHTML=`<div class="card-body"><h3>${user.email}</h3><p>Crediti disponibili: <strong>${summary.credits}</strong></p><p>Abbonamento Plus: <strong>${summary.subscription_active?"Attivo":"Non attivo"}</strong></p><p>Analisi permanenti: <strong>${summary.unlocked.filter(x=>!x.expires_at).length}</strong></p></div>`
+  }catch(e){console.error(e)}
+}
 }
 
 updateAuthView()
