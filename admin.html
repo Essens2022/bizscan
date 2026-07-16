@@ -223,6 +223,8 @@ textarea{min-height:92px;resize:vertical}
 @media(max-width:600px){
   .summary-grid{grid-template-columns:1fr}
 }
+
+.display-editor-section{padding:12px;border:1px solid var(--line);border-radius:15px;background:#0d1118;margin-top:10px}.display-editor-section h3{margin:0 0 10px;font-size:15px}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}.display-grid-rows{display:grid;gap:8px}@media(max-width:760px){.four{grid-template-columns:1fr 1fr}}@media(max-width:520px){.four{grid-template-columns:1fr}}
 </style>
 </head>
 <body><div style="max-width:1180px;margin:14px auto 0;padding:0 14px"><a href="index.html?visualEditor=1" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;border-radius:18px;background:linear-gradient(135deg,#ffb703,#ff8a00);color:#111;font-weight:950;text-decoration:none;box-shadow:0 16px 40px rgba(255,183,3,.18)"><span><strong style="display:block;font-size:18px">Apri BizScan Visual Builder</strong><small style="display:block;margin-top:3px;font-weight:700">Modifica testi immagini colori spaziature ordine e visibilità direttamente sulla pagina</small></span><span style="font-size:24px">→</span></a></div>
@@ -308,7 +310,7 @@ textarea{min-height:92px;resize:vertical}
           <label>Slug<input id="slug" placeholder="nome-attivita"><div class="field-note">Nome tecnico del link · senza spazi · esempio nome-attivita</div></label>
         </div>
         <div class="two">
-          <label>Categoria<select id="category"></select><div class="field-note">Decide in quale categoria apparirà la scheda</div></label>
+          <label>Categoria<select id="category"></select><div class="field-note">Se scegli “Nessuna categoria”, l’attività non apparirà nelle sezioni per categoria</div></label>
           <label>Emoji
       <input id="emoji" type="hidden" value="">
       <button type="button" class="emoji-toggle" onclick="toggleEmojiPanel()">
@@ -350,6 +352,10 @@ textarea{min-height:92px;resize:vertical}
         </div>
         <label>Conclusione<textarea id="conclusion" placeholder="Breve conclusione BizScan"></textarea><div class="field-note">Risposta breve finale · Conviene oppure no e perché</div></label>
         <div class="card" style="margin-top:12px">
+          <div class="context-title"><div><h2>Dati visuali dell’analisi</h2><p class="section-intro">Tutti i numeri dei grafici e dei confronti sono specifici per questa attività</p></div><button type="button" class="btn dark" onclick="fillDisplayDataFromBase()">Compila dai dati base</button></div>
+          <div id="displayDataEditor"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <div class="context-title"><div><h2>Sezioni analisi</h2><p class="section-intro">Crea il contenuto gratuito e premium nell ordine corretto</p></div><button type="button" class="btn" onclick="addSectionRow()">+ Sezione</button></div>
           <div id="sectionsEditor"></div>
         </div>
@@ -357,6 +363,20 @@ textarea{min-height:92px;resize:vertical}
         <div class="file-name" id="coverName">Nessuna immagine selezionata</div>
         <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
         <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
+        <div class="card" style="margin-top:10px;padding:12px">
+          <h2 style="font-size:15px;margin:0 0 8px">Accesso al rapporto PDF</h2>
+          <label class="check"><input type="checkbox" id="pdfFree"> Download gratuito</label>
+          <div class="field-note">Se attivo, il PDF non consuma crediti ed è disponibile a tutti</div>
+          <div style="margin-top:10px;font-weight:900;font-size:12px">Piani autorizzati</div>
+          <div class="checks" id="pdfPlanRules">
+            <label class="check"><input type="checkbox" class="pdf-plan" value="smart"> Smart</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="pro"> Pro</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="advanced"> Advanced</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="business"> Business</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="max"> BizScan Max</label>
+          </div>
+          <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
+        </div>
         <label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
 <div class="two" style="margin-top:10px">
   <label>Prezzo analisi<input id="price" type="number" min="0" step="0.01" value="1.99"></label>
@@ -479,7 +499,7 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js"></script>
+ <script src="supabase-data.js?v=29"></script>
 <script src="app.js"></script>
 <script>
 let coverData="",pdfMeta=null
@@ -662,7 +682,7 @@ function renderHomeSectionChecks(selected=[]){
 function refreshSelects(){
   renderEmojiPicker()
   const cats=[..._supabaseCategories].sort((a,b)=>a.order_index-b.order_index)
-  document.getElementById("category").innerHTML=cats.map(c=>`<option value="${c.id}">${c.emoji||"📁"} ${c.name}</option>`).join("")
+  document.getElementById("category").innerHTML=`<option value="">Nessuna categoria</option>`+cats.map(c=>`<option value="${c.id}">${c.emoji||"📁"} ${c.name}</option>`).join("")
   document.getElementById("categoryFilter").innerHTML='<option value="all">Tutte le categorie</option>'+cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")
   document.getElementById("planChecks").innerHTML=_supabasePlans.map(p=>`<label class="check"><input type="checkbox" value="${p.type}" class="plan">${p.title}</label>`).join("")
   renderHomeSectionChecks(placementValues().filter(v=>v!=="home"))
@@ -699,6 +719,31 @@ function renderSectionsEditor(){
   box.querySelectorAll("select[data-select=premium]").forEach((sel,i)=>sel.addEventListener("change",()=>{_sectionDrafts[i].is_free=sel.value!=="1";renderSectionsEditor()}))
 }
 function collectSections(){syncSectionDrafts();return _sectionDrafts.filter(x=>x.title||x.content).map((x,i)=>({...x,section_order:i}))}
+
+
+const DISPLAY_DEFAULT={dashboard:{profit_score:74,roi_score:63,payback_score:44,chart:[34,48,57,72,88,78]},scenarios:{revenue:['','',''],net_profit:['','',''],roi:['','',''],payback:['','','']},costs:{total:'',items:[{label:'Attrezzature',percent:'',amount:''},{label:'Ristrutturazione',percent:'',amount:''},{label:'Arredi',percent:'',amount:''},{label:'Licenze e permessi',percent:'',amount:''},{label:'Marketing iniziale',percent:'',amount:''},{label:'Altro',percent:'',amount:''}]},benchmark:[{label:'ROI medio',activity:'',average:'',delta:''},{label:'Margine netto',activity:'',average:'',delta:''},{label:'Tempo recupero',activity:'',average:'',delta:''},{label:'Rischio',activity:'',average:'',delta:''}],indicators:[{label:'Domanda',value:'',tone:'low',icon:'♢'},{label:'Concorrenza',value:'',tone:'mid',icon:'▣'},{label:'Scalabilità',value:'',tone:'mid',icon:'⌁'},{label:'Gestione',value:'',tone:'mid',icon:'⌂'}]};
+let _displayDraft=structuredClone(DISPLAY_DEFAULT);
+function cloneDisplay(x){return JSON.parse(JSON.stringify(x||DISPLAY_DEFAULT))}
+function fieldInput(path,value,placeholder=''){return `<input data-display="${path}" value="${escapeHtml(value??'')}" placeholder="${escapeHtml(placeholder)}">`}
+function renderDisplayDataEditor(){
+ const box=document.getElementById('displayDataEditor');if(!box)return;const d=_displayDraft;
+ box.innerHTML=`<div class="display-editor-section"><h3>Dashboard</h3><div class="three"><label>Profitto score${fieldInput('dashboard.profit_score',d.dashboard.profit_score,'0-100')}</label><label>ROI score${fieldInput('dashboard.roi_score',d.dashboard.roi_score,'0-100')}</label><label>Rientro score${fieldInput('dashboard.payback_score',d.dashboard.payback_score,'0-100')}</label></div><label>Altezze grafico dashboard${fieldInput('dashboard.chart',(d.dashboard.chart||[]).join(', '),'34, 48, 57, 72, 88, 78')}<div class="field-note">Sei valori da 0 a 100 separati prin virgulă</div></label></div>
+ <div class="display-editor-section"><h3>Scenari di profitto</h3>${['revenue:Fatturato','net_profit:Utile netto','roi:ROI','payback:Recupero'].map(x=>{const[k,l]=x.split(':');return `<label>${l}${fieldInput('scenarios.'+k,(d.scenarios[k]||[]).join(' | '),'Prudente | Realistico | Ottimistico')}</label>`}).join('')}</div>
+ <div class="display-editor-section"><h3>Distribuzione costi</h3><label>Totale${fieldInput('costs.total',d.costs.total,'200.000 €')}</label><div class="display-grid-rows">${(d.costs.items||[]).map((x,i)=>`<div class="three"><label>Voce ${i+1}${fieldInput(`costs.items.${i}.label`,x.label)}</label><label>Percentuale${fieldInput(`costs.items.${i}.percent`,x.percent,'38%')}</label><label>Importo${fieldInput(`costs.items.${i}.amount`,x.amount,'76.000 €')}</label></div>`).join('')}</div></div>
+ <div class="display-editor-section"><h3>Confronto media categoria</h3>${(d.benchmark||[]).map((x,i)=>`<div class="four"><label>Indicatore${fieldInput(`benchmark.${i}.label`,x.label)}</label><label>Attività${fieldInput(`benchmark.${i}.activity`,x.activity)}</label><label>Media${fieldInput(`benchmark.${i}.average`,x.average)}</label><label>Differenza${fieldInput(`benchmark.${i}.delta`,x.delta,'+11%')}</label></div>`).join('')}</div>
+ <div class="display-editor-section"><h3>Indicatori chiave</h3>${(d.indicators||[]).map((x,i)=>`<div class="four"><label>Indicatore${fieldInput(`indicators.${i}.label`,x.label)}</label><label>Valore${fieldInput(`indicators.${i}.value`,x.value)}</label><label>Icona${fieldInput(`indicators.${i}.icon`,x.icon)}</label><label>Colore<select data-display="indicators.${i}.tone"><option value="low" ${x.tone==='low'?'selected':''}>Verde</option><option value="mid" ${x.tone==='mid'?'selected':''}>Giallo</option><option value="high" ${x.tone==='high'?'selected':''}>Rosso</option></select></label></div>`).join('')}</div>`;
+}
+function setPath(obj,path,value){const parts=path.split('.');let cur=obj;parts.slice(0,-1).forEach(k=>{cur=cur[k]??(cur[k]={})});cur[parts.at(-1)]=value}
+function collectDisplayData(){
+ const out=cloneDisplay(_displayDraft);document.querySelectorAll('[data-display]').forEach(el=>{let v=el.value,p=el.dataset.display;if(p==='dashboard.chart')v=v.split(',').map(x=>Number(x.trim())||0).slice(0,6);else if(p.startsWith('scenarios.'))v=v.split('|').map(x=>x.trim()).slice(0,3);else if(p.startsWith('dashboard.'))v=Number(v)||0;setPath(out,p,v)});_displayDraft=out;return out
+}
+function fillDisplayDataFromBase(){
+ _displayDraft=cloneDisplay(DISPLAY_DEFAULT);_displayDraft.scenarios.revenue=[val('investment'),val('investment'),val('investment')];_displayDraft.scenarios.net_profit=[getProfitValue(),getProfitValue(),getProfitValue()];_displayDraft.scenarios.payback=[val('payback'),val('payback'),val('payback')];_displayDraft.costs.total=val('investment');_displayDraft.benchmark[2].activity=val('payback');_displayDraft.benchmark[3].activity=val('risk')<50?'Basso':val('risk')<70?'Medio':'Alto';renderDisplayDataEditor()
+}
+async function loadDisplayData(analysisId){
+ _displayDraft=cloneDisplay(DISPLAY_DEFAULT);if(analysisId){const{data,error}=await supabaseClient.from('analysis_display_data').select('data').eq('analysis_id',analysisId).maybeSingle();if(!error&&data?.data)_displayDraft=cloneDisplay(data.data)}renderDisplayDataEditor()
+}
+async function saveDisplayData(analysisId){const data=collectDisplayData();const{error}=await supabaseClient.rpc('admin_set_analysis_display_data',{p_analysis_id:analysisId,p_data:data});if(error)throw error}
 
 function normalizeSlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
 function buildAnalysisPayload(id){
@@ -749,7 +794,7 @@ async function replaceAttachment(analysisId,type,file){
     fileUrl=data.publicUrl
   }
   const {data:old}=await supabaseClient.from("attachments").select("id,file_url").eq("analysis_id",analysisId).eq("type",type)
-  const {error:dbError}=await supabaseClient.from("attachments").insert({analysis_id:analysisId,type,file_url:fileUrl,file_name:file.name,mime_type:file.type,file_size_bytes:file.size,order_index:0})
+  const {data:inserted,error:dbError}=await supabaseClient.from("attachments").insert({analysis_id:analysisId,type,file_url:fileUrl,file_name:file.name,mime_type:file.type,file_size_bytes:file.size,order_index:0}).select("id,analysis_id,type,file_url,file_name").single()
   if(dbError){await supabaseClient.storage.from(bucket).remove([path]);throw dbError}
   if(old&&old.length){
     const {error:deleteRowsError}=await supabaseClient.from("attachments").delete().in("id",old.map(x=>x.id))
@@ -757,6 +802,20 @@ async function replaceAttachment(analysisId,type,file){
     const oldPaths=old.map(x=>attachmentStoragePath(x)).filter(Boolean)
     if(oldPaths.length){const {error:removeError}=await supabaseClient.storage.from(bucket).remove(oldPaths);if(removeError)console.warn("BizScan Storage cleanup",removeError)}
   }
+  return inserted
+}
+
+function selectedPdfPlans(){return [...document.querySelectorAll('.pdf-plan:checked')].map(x=>x.value)}
+async function saveCurrentPdfRule(attachmentId){
+  if(!attachmentId)return;
+  await supabaseClient.rpc('admin_set_pdf_access_rule',{p_attachment_id:attachmentId,p_is_free:document.getElementById('pdfFree').checked,p_allowed_plan_types:selectedPdfPlans()})
+}
+async function loadPdfRule(attachmentId){
+  document.getElementById('pdfFree').checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);
+  if(!attachmentId)return;
+  const {data,error}=await supabaseClient.from('pdf_access_rules').select('is_free,allowed_plan_types').eq('attachment_id',attachmentId).maybeSingle();
+  if(error){console.warn('PDF rule',error);return}
+  if(data){document.getElementById('pdfFree').checked=!!data.is_free;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=(data.allowed_plan_types||[]).includes(x.value))}
 }
 
 async function saveAnalysis(){
@@ -784,6 +843,7 @@ async function saveAnalysis(){
     // From this point the analysis already exists. Keep the form in edit mode
     // even if a cover or PDF upload fails, so a retry cannot create a duplicate slug.
     document.getElementById("editId").value=savedId
+    try{await saveDisplayData(savedId)}catch(error){attachmentWarnings.push("dati visuali: "+error.message)}
 
     const coverFile=document.getElementById("cover").files[0]
     const pdfFile=document.getElementById("pdf").files[0]
@@ -796,12 +856,18 @@ async function saveAnalysis(){
       }
     }
 
+    let pdfAttachment=null
     if(pdfFile){
-      try{await replaceAttachment(savedId,"pdf",pdfFile)}
+      try{pdfAttachment=await replaceAttachment(savedId,"pdf",pdfFile);await saveCurrentPdfRule(pdfAttachment.id)}
       catch(error){
         console.error("BizScan admin: PDF upload failed",error)
         attachmentWarnings.push("PDF: "+error.message)
       }
+    }
+
+    if(!pdfFile){
+      const {data:existingPdf}=await supabaseClient.from('attachments').select('id').eq('analysis_id',savedId).eq('type','pdf').maybeSingle();
+      if(existingPdf?.id){try{await saveCurrentPdfRule(existingPdf.id)}catch(error){attachmentWarnings.push("regole PDF: "+error.message)}}
     }
 
     await loadAnalyses()
@@ -844,7 +910,7 @@ async function saveAnalysis(){
     if(saveBtn){saveBtn.disabled=false;saveBtn.textContent="Salva analisi"}
   }
 }
-function editAnalysis(id){
+async function editAnalysis(id){
   const x=analyses().find(a=>a.id===id);if(!x)return
   refreshSelects()
   document.getElementById("title").value=x.title||""
@@ -876,6 +942,7 @@ function editAnalysis(id){
   const pdf=(x.attachments||[]).find(a=>a.type==="pdf")
   document.getElementById("coverName").textContent=cover?(cover.file_name||"Copertina caricata"):"Nessuna immagine selezionata"
   document.getElementById("pdfName").textContent=pdf?(pdf.file_name||"PDF caricato"):"Nessun PDF selezionato"
+  await loadPdfRule(pdf?.id);await loadDisplayData(x.id)
   document.querySelectorAll(".plan").forEach(c=>c.checked=(x.plan_types||[]).includes(c.value))
   document.querySelectorAll(".free").forEach(c=>c.checked=false)
   renderHomeSectionChecks(x.placement_slugs||[])
@@ -1018,7 +1085,7 @@ function resetForm(){
   document.querySelectorAll("#newPanel input:not([type=checkbox]),#newPanel textarea").forEach(x=>x.value="")
   document.getElementById("score").value=80;document.getElementById("risk").value=50;document.getElementById("order").value=1;document.getElementById("status").value="draft";document.getElementById("verdict").value="Conviene";document.getElementById("profitMode").value="Medio alto";document.getElementById("profit").value="Medio alto";document.getElementById("cardBadge").value="";document.getElementById("price").value="1.99";document.getElementById("tags").value="";document.getElementById("featured").checked=false;document.getElementById("popular").checked=false;document.getElementById("trending").checked=false;document.getElementById("homePosition").value="1";document.getElementById("emoji").value=""
   refreshSelects();document.querySelectorAll(".plan").forEach(x=>x.checked=x.value==="plus");document.querySelectorAll(".free").forEach(x=>x.checked=["score","risk","verdict"].includes(x.value));renderHomeSectionChecks([]);document.querySelectorAll(".placement").forEach(x=>x.checked=x.value==="home");renderEmojiPicker();renderPositionPicker();renderSectionsEditor()
-  coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
+  coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];_displayDraft=cloneDisplay(DISPLAY_DEFAULT);renderDisplayDataEditor();renderSectionsEditor();preview()
 }
 function readCover(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{coverData=r.result;document.getElementById("coverName").textContent=f.name;preview()};r.readAsDataURL(f)}
 function readPdf(input){const f=input.files[0];if(!f)return;pdfMeta={name:f.name,size:f.size,type:f.type};document.getElementById("pdfName").textContent=f.name}
@@ -1213,7 +1280,7 @@ function suggestScore(){
 
 
 function renderAll(){refreshSelects();renderStats();renderDashboard();renderAnalyses();renderCategories();renderPlans()}
-renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeChanged()
+renderAll();resetForm();renderDisplayDataEditor();renderEmojiPicker();renderPositionPicker();profitModeChanged()
 </script>
 
 <button type="button" class="assistant-fab" onclick="toggleAssistant()" aria-label="Assistente BizScan">✦</button>
@@ -1246,5 +1313,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js"></script></body>
+<script src="shell-ui.js?v=29"></script></body>
 </html>

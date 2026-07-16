@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account BizScan</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="premium.css"><link rel="stylesheet" href="visual-editor.css"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account BizScan</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="premium.css?v=29"><link rel="stylesheet" href="visual-editor.css?v=29"></head><body><div class="app">
 <header class="topbar account-topbar"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='index.html'}">←</button>
   <a class="brand" href="index.html">
     <img src="favicon.png" alt="BizScan">
@@ -61,7 +61,7 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js"></script>
+<script src="supabase-data.js?v=29"></script>
 <script src="app.js"></script>
 
 <script>
@@ -171,5 +171,5 @@ if(logged){
 updateAuthView()
 </script>
 
-<script src="builder-runtime.js"></script><script src="visual-editor.js"></script><script src="shell-ui.js"></script></body>
+<script src="builder-runtime.js?v=29"></script><script src="visual-editor.js?v=29"></script><script src="shell-ui.js?v=29"></script></body>
 </html>
