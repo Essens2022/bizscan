@@ -19,6 +19,7 @@ function packageValue(p){
 };
 let analyses=[],favorites=[],compare=[],access={authenticated:false,credits:0};
 let homeFilter='recommended';
+let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const euro=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
