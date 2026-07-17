@@ -416,8 +416,13 @@ textarea{min-height:92px;resize:vertical}
         <div class="checks">
           <label class="check"><input type="checkbox" value="score" class="free" checked>Score</label>
           <label class="check"><input type="checkbox" value="risk" class="free" checked>Rischio</label>
-          <label class="check"><input type="checkbox" value="investment" class="free">Investimento</label>
-          <label class="check"><input type="checkbox" value="verdict" class="free" checked>Verdetto</label>
+          <label class="check"><input type="checkbox" value="investment" class="free" checked>Investimento</label>
+          <label class="check"><input type="checkbox" value="profit" class="free">Profitto</label>
+          <label class="check"><input type="checkbox" value="payback" class="free" checked>Tempo di recupero</label>
+          <label class="check"><input type="checkbox" value="verdict" class="free">Verdetto</label>
+          <label class="check"><input type="checkbox" value="summary" class="free" checked>Descrizione breve</label>
+          <label class="check"><input type="checkbox" value="conclusion" class="free">Conclusione</label>
+          <label class="check"><input type="checkbox" value="price" class="free" checked>Prezzo</label>
         </div>
 
         <div class="actions">
@@ -853,7 +858,7 @@ async function saveAnalysis(){
 
     if(attachmentWarnings.length){
       const saved=analyses().find(a=>a.id===savedId)
-      if(saved)editAnalysis(savedId)
+      if(saved){const ff=[...document.querySelectorAll(".free:checked")].map(x=>x.value);await supabaseClient.from("analyses").update({free_fields:ff}).eq("id",savedId);editAnalysis(savedId)}
       alert("Analisi salvata correttamente. Alcuni file non sono stati caricati:\n\n"+attachmentWarnings.join("\n")+"\n\nPuoi riprovare senza creare una nuova analisi.")
       return
     }
@@ -922,7 +927,7 @@ async function editAnalysis(id){
   document.getElementById("pdfName").textContent=pdf?(pdf.file_name||"PDF caricato"):"Nessun PDF selezionato"
   await loadPdfRule(pdf?.id)
   document.querySelectorAll(".plan").forEach(c=>c.checked=(x.plan_types||[]).includes(c.value))
-  document.querySelectorAll(".free").forEach(c=>c.checked=false)
+  {const ff=x.free_fields||["score","risk","investment","payback","summary","price"];document.querySelectorAll(".free").forEach(c=>c.checked=ff.includes(c.value))}
   renderHomeSectionChecks(x.placement_slugs||[])
   document.querySelectorAll(".placement").forEach(c=>{
     if(c.value==="home")c.checked=!!x.homepage
