@@ -238,7 +238,7 @@
  font-size:18px;line-height:1;cursor:pointer;transition:border-color .18s,background .18s,transform .18s
 }
 .global-back:hover{border-color:#6f55a9;background:#111a28;transform:translateX(-1px)}
-.topbar{grid-template-columns:auto auto minmax(390px,1fr) minmax(260px,420px) auto;gap:13px}
+@media(min-width:1281px){.topbar{grid-template-columns:auto auto minmax(390px,1fr) minmax(260px,420px) auto;gap:13px}}
 
 @media(max-width:680px){
  .topbar{height:56px;padding:0 10px;gap:7px;grid-template-columns:auto minmax(0,1fr) auto}
