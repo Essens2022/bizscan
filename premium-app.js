@@ -24,11 +24,12 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const euro=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 function riskClass(p){return Number(p.risk)<45?'risk-low':Number(p.risk)<70?'risk-mid':'risk-high'}
 function mediaFor(p){return p.coverUrl||p.wideCover||''}
-function image(p,wide=false){const src=wide?(p.wideCover||p.coverUrl):p.coverUrl;return src?`<img src="${esc(src)}" alt="${esc(p.title)}">`:`<div class="visual-placeholder">${p.categoryEmoji||p.emoji||'📊'}</div>`}
+function image(p,wide=false){const src=wide?(p.wideCover||p.coverUrl):p.coverUrl;return src?`<img src="${esc(src)}" alt="${esc(p.title)}" loading="lazy" decoding="async">`:`<div class="visual-placeholder">${p.categoryEmoji||p.emoji||'📊'}</div>`}
 async function load(){
- try{analyses=await BizScanData.fetchPublishedAnalyses()}catch(e){console.warn('Supabase non disponibile',e);analyses=[]}
  favorites=JSON.parse(localStorage.getItem('bizscan_favorites')||'[]');compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
- try{access=await BizScanData.accessSummary()}catch(e){access={authenticated:false,credits:0}}
+ const [ra,rs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary()]);
+ if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
+ if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
  updateShell();
 }
 function updateShell(){const c=$('.top-actions .chip');if(c)c.textContent=`Crediti: ${access.credits||0}`}
