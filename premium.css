@@ -274,7 +274,10 @@
 
 @media(max-width:680px){
  /* Header: lighter and more refined */
- .topbar{height:52px!important;padding:0 9px!important;gap:6px!important}
+ .topbar{height:52px!important;padding:0 9px!important;gap:6px!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
+ .topbar>.brand{flex:1 1 auto!important;min-width:0!important;overflow:hidden!important}
+ .topbar>.global-back{flex:0 0 auto!important}
+ .topbar>.top-actions{flex:0 0 auto!important}
  .brand img{width:30px!important;height:30px!important;flex:0 0 30px!important}
  .brand .brand-word{font-size:17px!important;letter-spacing:-.04em!important}
  .top-actions{gap:4px!important}
