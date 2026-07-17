@@ -1,4 +1,4 @@
-const PACKAGES=[
+let PACKAGES=[
  {key:'single',name:'Analisi Singola',price:1.99,analyses:1,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['1 analisi interattiva','Indicatori essenziali','Accesso permanente','Report PDF acquistabile separatamente']},
  {key:'starter',name:'Starter',price:4.99,analyses:3,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['3 analisi interattive','Indicatori essenziali','Libreria personale','Report PDF acquistabili separatamente']},
  {key:'smart',name:'Smart',price:6.99,analyses:5,pdfCredits:1,badge:'SCELTA INTELLIGENTE',indicatorCount:1,compare:'Base',features:['5 analisi interattive','Break-even sbloccato','Confronto tra analisi','1 credito report PDF']},
@@ -26,11 +26,23 @@ const euro=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumF
 function riskClass(p){return Number(p.risk)<45?'risk-low':Number(p.risk)<70?'risk-mid':'risk-high'}
 function mediaFor(p){return p.coverUrl||p.wideCover||''}
 function image(p,wide=false){const src=wide?(p.wideCover||p.coverUrl):p.coverUrl;return src?`<img src="${esc(src)}" alt="${esc(p.title)}" loading="lazy" decoding="async">`:`<div class="visual-placeholder">${p.categoryEmoji||p.emoji||'📊'}</div>`}
+function applyDbPlans(rows){
+ const oneTime=(rows||[]).filter(r=>r&&r.billing_interval==='one_time'&&r.type!=='free');
+ if(!oneTime.length)return;
+ PACKAGES=oneTime.map(r=>{
+  const d=PACKAGES.find(p=>p.key===r.type)||{};
+  return {key:r.type,name:r.title||d.name||r.type,price:Number(r.price)||d.price||0,
+   analyses:Number(r.analysis_limit??d.analyses??0),pdfCredits:Number(r.pdf_credits??d.pdfCredits??0),
+   badge:d.badge||'',indicatorCount:d.indicatorCount||0,compare:d.compare||'Base',
+   features:d.features||[String(r.description||'')].filter(Boolean)};
+ });
+}
 async function load(){
  favorites=JSON.parse(localStorage.getItem('bizscan_favorites')||'[]');compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
- const [ra,rs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary()]);
+ const [ra,rs,rp]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans()]);
  if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
  if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
+ if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
  updateShell();
 }
 function updateShell(){const c=$('.top-actions .chip');if(c)c.textContent=`Crediti: ${access.credits||0}`}
