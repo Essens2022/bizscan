@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "BizScan",
+  "short_name": "BizScan",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
