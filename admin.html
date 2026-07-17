@@ -853,12 +853,16 @@ async function saveAnalysis(){
       if(existingPdf?.id){try{await saveCurrentPdfRule(existingPdf.id)}catch(error){attachmentWarnings.push("regole PDF: "+error.message)}}
     }
 
+    {const ff=[...document.querySelectorAll(".free:checked")].map(x=>x.value)
+     const{error:ffErr}=await supabaseClient.from("analyses").update({free_fields:ff}).eq("id",savedId)
+     if(ffErr){console.error("BizScan admin: could not save free_fields",ffErr);attachmentWarnings.push("informazioni gratuite: "+ffErr.message)}}
+
     await loadAnalyses()
     renderAll()
 
     if(attachmentWarnings.length){
       const saved=analyses().find(a=>a.id===savedId)
-      if(saved){const ff=[...document.querySelectorAll(".free:checked")].map(x=>x.value);await supabaseClient.from("analyses").update({free_fields:ff}).eq("id",savedId);editAnalysis(savedId)}
+      editAnalysis(savedId)
       alert("Analisi salvata correttamente. Alcuni file non sono stati caricati:\n\n"+attachmentWarnings.join("\n")+"\n\nPuoi riprovare senza creare una nuova analisi.")
       return
     }
