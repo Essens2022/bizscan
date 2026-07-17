@@ -357,6 +357,20 @@ textarea{min-height:92px;resize:vertical}
         <div class="file-name" id="coverName">Nessuna immagine selezionata</div>
         <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
         <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
+        <div class="card" style="margin-top:10px;padding:12px">
+          <h2 style="font-size:15px;margin:0 0 8px">Accesso al rapporto PDF</h2>
+          <label class="check"><input type="checkbox" id="pdfFree"> Download gratuito</label>
+          <div class="field-note">Se attivo, il PDF non consuma crediti ed è disponibile a tutti</div>
+          <div style="margin-top:10px;font-weight:900;font-size:12px">Piani autorizzati</div>
+          <div class="checks" id="pdfPlanRules">
+            <label class="check"><input type="checkbox" class="pdf-plan" value="smart"> Smart</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="pro"> Pro</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="advanced"> Advanced</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="business"> Business</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="max"> BizScan Max</label>
+          </div>
+          <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
+        </div>
         <label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
 <div class="two" style="margin-top:10px">
   <label>Prezzo analisi<input id="price" type="number" min="0" step="0.01" value="1.99"></label>
@@ -749,7 +763,7 @@ async function replaceAttachment(analysisId,type,file){
     fileUrl=data.publicUrl
   }
   const {data:old}=await supabaseClient.from("attachments").select("id,file_url").eq("analysis_id",analysisId).eq("type",type)
-  const {error:dbError}=await supabaseClient.from("attachments").insert({analysis_id:analysisId,type,file_url:fileUrl,file_name:file.name,mime_type:file.type,file_size_bytes:file.size,order_index:0})
+  const {data:inserted,error:dbError}=await supabaseClient.from("attachments").insert({analysis_id:analysisId,type,file_url:fileUrl,file_name:file.name,mime_type:file.type,file_size_bytes:file.size,order_index:0}).select("id,analysis_id,type,file_url,file_name").single()
   if(dbError){await supabaseClient.storage.from(bucket).remove([path]);throw dbError}
   if(old&&old.length){
     const {error:deleteRowsError}=await supabaseClient.from("attachments").delete().in("id",old.map(x=>x.id))
@@ -757,6 +771,20 @@ async function replaceAttachment(analysisId,type,file){
     const oldPaths=old.map(x=>attachmentStoragePath(x)).filter(Boolean)
     if(oldPaths.length){const {error:removeError}=await supabaseClient.storage.from(bucket).remove(oldPaths);if(removeError)console.warn("BizScan Storage cleanup",removeError)}
   }
+  return inserted
+}
+
+function selectedPdfPlans(){return [...document.querySelectorAll('.pdf-plan:checked')].map(x=>x.value)}
+async function saveCurrentPdfRule(attachmentId){
+  if(!attachmentId)return;
+  await supabaseClient.rpc('admin_set_pdf_access_rule',{p_attachment_id:attachmentId,p_is_free:document.getElementById('pdfFree').checked,p_allowed_plan_types:selectedPdfPlans()})
+}
+async function loadPdfRule(attachmentId){
+  document.getElementById('pdfFree').checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);
+  if(!attachmentId)return;
+  const {data,error}=await supabaseClient.from('pdf_access_rules').select('is_free,allowed_plan_types').eq('attachment_id',attachmentId).maybeSingle();
+  if(error){console.warn('PDF rule',error);return}
+  if(data){document.getElementById('pdfFree').checked=!!data.is_free;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=(data.allowed_plan_types||[]).includes(x.value))}
 }
 
 async function saveAnalysis(){
@@ -796,12 +824,18 @@ async function saveAnalysis(){
       }
     }
 
+    let pdfAttachment=null
     if(pdfFile){
-      try{await replaceAttachment(savedId,"pdf",pdfFile)}
+      try{pdfAttachment=await replaceAttachment(savedId,"pdf",pdfFile);await saveCurrentPdfRule(pdfAttachment.id)}
       catch(error){
         console.error("BizScan admin: PDF upload failed",error)
         attachmentWarnings.push("PDF: "+error.message)
       }
+    }
+
+    if(!pdfFile){
+      const {data:existingPdf}=await supabaseClient.from('attachments').select('id').eq('analysis_id',savedId).eq('type','pdf').maybeSingle();
+      if(existingPdf?.id){try{await saveCurrentPdfRule(existingPdf.id)}catch(error){attachmentWarnings.push("regole PDF: "+error.message)}}
     }
 
     await loadAnalyses()
@@ -844,7 +878,7 @@ async function saveAnalysis(){
     if(saveBtn){saveBtn.disabled=false;saveBtn.textContent="Salva analisi"}
   }
 }
-function editAnalysis(id){
+async function editAnalysis(id){
   const x=analyses().find(a=>a.id===id);if(!x)return
   refreshSelects()
   document.getElementById("title").value=x.title||""
@@ -876,6 +910,7 @@ function editAnalysis(id){
   const pdf=(x.attachments||[]).find(a=>a.type==="pdf")
   document.getElementById("coverName").textContent=cover?(cover.file_name||"Copertina caricata"):"Nessuna immagine selezionata"
   document.getElementById("pdfName").textContent=pdf?(pdf.file_name||"PDF caricato"):"Nessun PDF selezionato"
+  await loadPdfRule(pdf?.id)
   document.querySelectorAll(".plan").forEach(c=>c.checked=(x.plan_types||[]).includes(c.value))
   document.querySelectorAll(".free").forEach(c=>c.checked=false)
   renderHomeSectionChecks(x.placement_slugs||[])
@@ -1018,7 +1053,7 @@ function resetForm(){
   document.querySelectorAll("#newPanel input:not([type=checkbox]),#newPanel textarea").forEach(x=>x.value="")
   document.getElementById("score").value=80;document.getElementById("risk").value=50;document.getElementById("order").value=1;document.getElementById("status").value="draft";document.getElementById("verdict").value="Conviene";document.getElementById("profitMode").value="Medio alto";document.getElementById("profit").value="Medio alto";document.getElementById("cardBadge").value="";document.getElementById("price").value="1.99";document.getElementById("tags").value="";document.getElementById("featured").checked=false;document.getElementById("popular").checked=false;document.getElementById("trending").checked=false;document.getElementById("homePosition").value="1";document.getElementById("emoji").value=""
   refreshSelects();document.querySelectorAll(".plan").forEach(x=>x.checked=x.value==="plus");document.querySelectorAll(".free").forEach(x=>x.checked=["score","risk","verdict"].includes(x.value));renderHomeSectionChecks([]);document.querySelectorAll(".placement").forEach(x=>x.checked=x.value==="home");renderEmojiPicker();renderPositionPicker();renderSectionsEditor()
-  coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
+  coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
 }
 function readCover(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{coverData=r.result;document.getElementById("coverName").textContent=f.name;preview()};r.readAsDataURL(f)}
 function readPdf(input){const f=input.files[0];if(!f)return;pdfMeta={name:f.name,size:f.size,type:f.type};document.getElementById("pdfName").textContent=f.name}

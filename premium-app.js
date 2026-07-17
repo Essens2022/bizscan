@@ -101,7 +101,7 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>DASHBOARD</small><h2>Panoramica BizScan</h2></div><a href="analysis.html?slug=${encodeURIComponent(lead.slug)}">Analisi completa</a></div>
+   <div class="home18-head"><div><small>DASHBOARD</small><h2>Panoramica BizScan</h2></div><a href="search.html?tools=1">Esplora gli strumenti BizScan</a></div>
    <div class="home18-dashboard">
     <article class="home18-score-card">
      <div class="home18-score-top">${scoreRing(lead.score,'large')}<div><small>BIZSCAN SCORE</small><h3>${esc(lead.verdictLabel||'Opportunità forte')}</h3><p>${esc(lead.summary||'Buon equilibrio tra capitale rischio e recupero')}</p></div></div>
@@ -146,12 +146,128 @@ window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||DEMO[0]}
 function scenarioChart(){const groups=[[280,430,650],[18,45,80],[8,20,33]],max=650;return `<div class="scenario-chart">${groups.map((g,gi)=>`<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/max*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`).join('')}</div>`}
 function costLegend(){return `<div class="cost-layout"><div class="cost-donut"><div><small>Totale</small><b>200.000 €</b></div></div><div class="cost-list"><span><i class="c1"></i>Attrezzature <b>38% · 76.000 €</b></span><span><i class="c2"></i>Ristrutturazione <b>22% · 44.000 €</b></span><span><i class="c3"></i>Arredi <b>15% · 30.000 €</b></span><span><i class="c4"></i>Licenze e permessi <b>10% · 20.000 €</b></span><span><i class="c5"></i>Marketing iniziale <b>8% · 16.000 €</b></span><span><i class="c6"></i>Altro <b>7% · 14.000 €</b></span></div></div>`}
-function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><a href="search.html">← Torna all'esplorazione</a><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Aggiornata: 14 luglio 2026</span><span>♙ 12 fonti verificate</span></div></div><div class="head-actions"><button class="btn ghost" onclick="toggleCompare('${p.slug}')">⇄ Confronta</button><button class="btn outline-gold" onclick="toggleFavorite('${p.slug}')">♡ Salva</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview()}</div><section class="premium-lock"><div><h3>🔒 Contenuto premium</h3><p>Sblocca l'analisi completa per prendere decisioni con dati approfonditi</p><div class="lock-list"><span>Analisi dettagliata dei rischi</span><span>Piano operativo dettagliato</span><span>Cash-flow mensile completo</span><span>Analisi della concorrenza locale</span><span>Test di stress finanziario</span><span>Strategie di crescita</span></div></div><div class="premium-cta"><small>Sblocca con Pro</small><a class="btn gold" href="pricing.html">Vedi i pacchetti</a></div></section></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover"><div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo · Aggiornato 14/07/2026</small><button class="btn gold full" onclick="downloadReport('${p.slug}')">Scarica il rapporto</button></aside></div>`;bindTabs()}
+function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><a href="search.html">← Torna all'esplorazione</a><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Aggiornata: 14 luglio 2026</span><span>♙ 12 fonti verificate</span></div></div><div class="head-actions"><button class="btn ghost" onclick="toggleCompare('${p.slug}')">⇄ Confronta</button><button class="btn outline-gold" onclick="toggleFavorite('${p.slug}')">♡ Salva</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview()}</div><section class="premium-lock"><div><h3>🔒 Contenuto premium</h3><p>Sblocca l'analisi completa per prendere decisioni con dati approfonditi</p><div class="lock-list"><span>Analisi dettagliata dei rischi</span><span>Piano operativo dettagliato</span><span>Cash-flow mensile completo</span><span>Analisi della concorrenza locale</span><span>Test di stress finanziario</span><span>Strategie di crescita</span></div></div><div class="premium-cta"><small>Sblocca con Pro</small><a class="btn gold" href="pricing.html">Vedi i pacchetti</a></div></section></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo · Aggiornato 14/07/2026</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess('${p.slug}')}
 function analysisOverview(){return `<div class="dash-grid"><section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span></span><b>Prudente</b><b>Realistico</b><b>Ottimistico</b><span>Fatturato</span><b>280K €</b><b>430K €</b><b>650K €</b><span>Utile netto</span><b>18K €</b><b>45K €</b><b>80K €</b><span>ROI</span><b>8%</b><b>20%</b><b>33%</b><span>Recupero investimento</span><b>42 mesi</b><b>26 mesi</b><b>16 mesi</b></div>${scenarioChart()}</section><section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend()}</section><section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Attività</b><b>Media</b><span>ROI medio</span><b>20%</b><b>18% <mark>+11%</mark></b><span>Margine netto</span><b>15%</b><b>12% <mark>+25%</mark></b><span>Tempo recupero</span><b>24 mesi</b><b>30 mesi <mark>+20%</mark></b><span>Rischio</span><b>Medio</b><b>Medio-Alto</b></div></section><section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="green">♢</i><small>Domanda</small><b class="risk-low">Alta</b></div><div><i>▣</i><small>Concorrenza</small><b class="risk-mid">Media</b></div><div><i>⌁</i><small>Scalabilità</small><b class="risk-mid">Media</b></div><div><i>⌂</i><small>Gestione</small><b class="risk-mid">Media</b></div></div></section></div>`}
 function tabContent(tab){const content={finance:'<h3>Analisi finanziaria</h3><p>Cash-flow, capitale circolante, break-even e scenari finanziari caricati dai dati reali dell’analisi</p>',costs:'<h3>Costi e ricavi</h3><p>Distribuzione dei costi iniziali, costi fissi, costi variabili, margini e ricavi previsti</p>',market:'<h3>Mercato</h3><p>Domanda, concorrenza, bacino d’utenza, stagionalità e confronto con la categoria</p>',risks:'<h3>Rischi</h3><p>Matrice probabilità-impatto, test di stress e misure di mitigazione</p>',operations:'<h3>Operatività</h3><p>Personale, capacità, processi, fornitori, autorizzazioni e dipendenza dal proprietario</p>'};return `<section class="panel tab-panel">${content[tab]||''}<div class="locked-preview"><span>Contenuto disponibile secondo il pacchetto acquistato</span><a href="pricing.html" class="btn purple">Vedi i pacchetti</a></div></section>`}
-function bindTabs(){$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#analysisTabContent').innerHTML=b.dataset.tab==='overview'?analysisOverview():tabContent(b.dataset.tab)})}
-window.downloadReport=async slug=>{const p=analyses.find(x=>x.slug===slug);const pdf=p?.attachments?.find(a=>a.type==='pdf');if(!pdf){modal('Report PDF','<p>Il report è associato a questa analisi ma il download reale richiede un PDF caricato in Supabase Storage e un diritto di accesso valido</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}try{const url=await BizScanData.signedAttachmentUrl(pdf);window.open(url,'_blank','noopener')}catch(e){modal('Accesso richiesto',`<p>${esc(e.message||'Non è stato possibile aprire il report')}</p>`)} };
-function renderSearch(){const host=$('#searchContent');if(!host)return;const q=(new URLSearchParams(location.search).get('q')||'').toLowerCase();const arr=analyses.filter(p=>!q||p.title.toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q));host.innerHTML=`<section class="page-title"><h1>Esplora le analisi</h1><p>${arr.length} risultati disponibili</p></section><div class="search-deck"><div class="search-panel"><span>⌕</span><input id="searchBox" value="${esc(q)}" placeholder="Cerca un'attività"><button class="btn gold" onclick="location.href='search.html?q='+encodeURIComponent($('#searchBox').value)">Cerca</button></div></div><div class="business-grid search-results">${arr.map(card).join('')||'<div class="empty">Nessun risultato</div>'}</div>`}
+function bindTabs(){const nav=$('.tabs'),content=$('#analysisTabContent');if(!nav||!content)return;nav.querySelectorAll('button').forEach(b=>{const activate=()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');content.innerHTML=b.dataset.tab==='overview'?analysisOverview():tabContent(b.dataset.tab);b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})};b.addEventListener('click',activate);b.addEventListener('touchend',e=>{e.preventDefault();activate()},{passive:false})})}
+window.refreshReportAccess=async slug=>{
+ const p=analyses.find(x=>x.slug===slug),note=document.getElementById('reportAccessNote'),btn=document.getElementById('downloadReportBtn');
+ if(!note||!btn)return;
+ let pdf=p?.attachments?.find(a=>a.type==='pdf');
+ try{
+  if(!pdf&&p?.id){const atts=await BizScanData.fetchAttachments(p.id);pdf=atts.find(a=>a.type==='pdf')}
+  if(!pdf){note.className='report-access-note locked';note.textContent='Rapporto non disponibile';btn.disabled=true;btn.textContent='Rapporto non disponibile';return}
+  const st=await BizScanData.getPdfAccessStatus(pdf.id);
+  if(st.allowed){note.className='report-access-note free';note.textContent=st.is_free?'Rapporto gratuito · nessun credito richiesto':'Rapporto già sbloccato · accesso permanente';btn.textContent='Scarica il rapporto'}
+  else if(st.reason==='auth_required'){note.className='report-access-note locked';note.textContent='Accedi per verificare il piano e i crediti PDF';btn.textContent='Accedi per continuare'}
+  else if(st.reason==='plan_not_allowed'){note.className='report-access-note locked';note.textContent='Il tuo piano non include questo rapporto';btn.textContent='Vedi i pacchetti'}
+  else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Crediti PDF esauriti';btn.textContent='Acquista crediti PDF'}
+  else{note.className='report-access-note locked';note.textContent='Rapporto disponibile secondo il piano acquistato';btn.textContent='Sblocca con un credito PDF'}
+ }catch(e){note.className='report-access-note locked';note.textContent='Configura le regole PDF in Supabase';btn.textContent='Verifica accesso'}
+};
+window.downloadReport=async slug=>{
+ let p=analyses.find(x=>x.slug===slug),pdf=p?.attachments?.find(a=>a.type==='pdf'),btn=document.getElementById('downloadReportBtn');
+ try{
+  if(btn){btn.disabled=true;btn.textContent='Verifica accesso…'}
+  if(!pdf){const fresh=await BizScanData.fetchAnalysisBySlug(slug);if(fresh){p=fresh;pdf=fresh.attachments?.find(a=>a.type==='pdf')}}
+  if(!pdf&&p?.id){const atts=await BizScanData.fetchAttachments(p.id);pdf=atts.find(a=>a.type==='pdf')}
+  if(!pdf){modal('Report PDF non disponibile','<p>Il PDF non risulta collegato a questa analisi.</p>');return}
+  const result=await BizScanData.requestPdfAccess(pdf.id);
+  if(!result.allowed){
+    if(result.reason==='auth_required'){location.href='account.html';return}
+    if(result.reason==='plan_not_allowed'){modal('Rapporto non incluso','<p>Il piano attivo non consente di sbloccare questo rapporto.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
+    if(result.reason==='no_credits'){modal('Crediti PDF esauriti','<p>Hai già utilizzato tutti i crediti PDF disponibili. I rapporti già sbloccati restano accessibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti PDF</a>');return}
+    modal('Rapporto bloccato',`<p>${esc(result.message||'Questo rapporto non è disponibile per il tuo account')}</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
+  }
+  const url=await BizScanData.signedAttachmentUrl(pdf);window.open(url,'_blank','noopener');
+  await refreshReportAccess(slug)
+ }catch(e){modal('Impossibile aprire il report',`<p>${esc(e.message||'Controlla la configurazione PDF in Supabase')}</p>`,'<a class="btn gold full" href="account.html">Controlla il mio account</a>')}
+ finally{if(btn){btn.disabled=false}}
+};
+
+function catalogMatches(p,q,filter){
+ const hay=`${p.title||''} ${p.category||''} ${p.summary||''}`.toLowerCase();
+ if(q&&!hay.includes(q))return false;
+ if(filter==='all')return true;
+ return String(p.category||'').toLowerCase()===filter;
+}
+function renderCatalogResults(){
+ const host=$('#catalogResults');if(!host)return;
+ const q=($('#searchBox')?.value||'').trim().toLowerCase();
+ const arr=analyses.filter(p=>catalogMatches(p,q,catalogFilter));
+ const count=$('#catalogCount');if(count)count.textContent=`${arr.length} ${arr.length===1?'analisi disponibile':'analisi disponibili'}`;
+ host.innerHTML=arr.map(card).join('')||'<div class="catalog-empty"><strong>Nessuna analisi trovata</strong><span>Prova un altro settore o una parola diversa</span></div>';
+}
+window.setCatalogFilter=(filter,btn)=>{
+ catalogFilter=filter;
+ document.querySelectorAll('.catalog-filter').forEach(x=>x.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ renderCatalogResults();
+};
+function toolPreview(type){
+ const previews={
+  investment:'<div class="tool-kpi"><small>INVESTIMENTO</small><strong>150K–250K €</strong><span>Esempio visivo</span></div>',
+  profit:'<div class="tool-kpi"><small>PROFITTO ANNUO</small><strong>45.000 €</strong><span>Esempio visivo</span></div>',
+  roi:'<div class="tool-ring" style="--v:63"><b>18,6%</b><small>ROI</small></div>',
+  payback:'<div class="tool-kpi"><small>RECUPERO</small><strong>2,8 anni</strong><span>Esempio visivo</span></div>',
+  risk:'<div class="tool-risk"><i></i><b>Rischio medio</b><small>2,8 / 5</small></div>',
+  score:'<div class="tool-ring green" style="--v:82"><b>82</b><small>/100</small></div>',
+  costs:'<div class="tool-donut"><span></span><b>Costi</b></div>',
+  fixed:'<div class="tool-bars"><i style="height:42%"></i><i style="height:66%"></i><i style="height:52%"></i><i style="height:82%"></i></div>',
+  breakeven:'<div class="tool-lines"><i></i><i></i><b>Break-even</b></div>',
+  cashflow:'<div class="tool-spark"><svg viewBox="0 0 220 80" aria-hidden="true"><polyline points="5,62 38,50 70,56 104,30 140,20 176,28 215,10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+  scenarios:'<div class="tool-bars"><i style="height:34%"></i><i style="height:50%"></i><i style="height:72%"></i><i style="height:90%"></i></div>',
+  stress:'<div class="tool-gauge"><span></span><b>Stress test</b></div>',
+  market:'<div class="tool-market"><i>Domanda</i><b>Alta</b><i>Concorrenza</i><b>Media</b></div>',
+  operations:'<div class="tool-market"><i>Personale</i><b>Medio</b><i>Complessità</i><b>3/5</b></div>',
+  compare:'<div class="tool-compare"><span>A</span><b>VS</b><span>B</span></div>',
+  pdf:'<div class="tool-pdf"><b>PDF</b><span>Dossier completo</span></div>'
+ };
+ return previews[type]||previews.investment;
+}
+function renderToolsCatalog(){
+ const host=$('#searchContent');if(!host)return;
+ const groups=[
+  {k:'NUMERI ESSENZIALI',t:'Capisci subito la dimensione economica',items:[
+   ['investment','Investimento iniziale','Capitale necessario per avvio, attrezzature, lavori e riserva'],
+   ['profit','Profitto netto annuo','Stima del risultato economico dopo i costi principali'],
+   ['roi','ROI medio annuo','Rendimento potenziale del capitale investito'],
+   ['payback','Tempo di recupero','Periodo stimato per recuperare l’investimento iniziale'],
+   ['risk','Livello di rischio','Valutazione sintetica dei principali fattori di rischio'],
+   ['score','BizScan Score','Punteggio complessivo per confrontare opportunità diverse']
+  ]},
+  {k:'ANALISI FINANZIARIA',t:'Vai oltre i numeri di superficie',items:[
+   ['costs','Distribuzione costi iniziali','Ripartizione visiva delle principali voci di investimento'],
+   ['fixed','Costi fissi e variabili','Incidenza delle spese ricorrenti e legate alle vendite'],
+   ['breakeven','Break-even','Punto in cui ricavi e costi raggiungono l’equilibrio'],
+   ['cashflow','Cash-flow mensile','Entrate, uscite e liquidità nei diversi periodi'],
+   ['scenarios','Scenari finanziari','Ipotesi prudente, realistica e ottimistica'],
+   ['stress','Test di stress','Effetto di vendite inferiori o costi superiori alle attese']
+  ]},
+  {k:'MERCATO E OPERATIVITÀ',t:'Valuta ciò che può cambiare il risultato',items:[
+   ['market','Mercato e concorrenza','Domanda, concorrenza, stagionalità e bacino potenziale'],
+   ['operations','Complessità operativa','Personale, processi, fornitori e dipendenza dal proprietario']
+  ]},
+  {k:'DECISIONE',t:'Trasforma i dati in una scelta più chiara',items:[
+   ['compare','Confronto tra attività','Metti due opportunità una accanto all’altra con gli stessi criteri'],
+   ['pdf','Report PDF completo','Dossier ordinato da conservare, condividere e consultare offline']
+  ]}
+ ];
+ const total=groups.reduce((n,g)=>n+g.items.length,0);
+ host.innerHTML=`<section class="tools-hero"><div><small>STRUMENTI BIZSCAN</small><h1>Tutti gli strumenti per decidere prima di investire</h1><p>Scopri come BizScan trasforma costi, rischio e redditività in indicatori chiari, visivi e confrontabili</p></div><div class="tools-total"><b>${total}</b><span>strumenti mostrati</span></div></section><div class="tools-note">I valori presenti nei preview sono esempi dimostrativi e non appartengono a una singola attività</div>${groups.map(g=>`<section class="tools-section"><div class="tools-head"><small>${g.k}</small><h2>${g.t}</h2></div><div class="tools-grid">${g.items.map(([type,title,desc])=>`<article class="tool-card"><div class="tool-preview">${toolPreview(type)}</div><div class="tool-copy"><h3>${title}</h3><p>${desc}</p><span>Esempio visivo</span></div></article>`).join('')}</div></section>`).join('')}<section class="tools-cta"><div><small>PRONTO A ESPLORARE</small><h2>Vedi questi strumenti applicati a un’attività reale</h2></div><a class="btn gold" href="search.html">Esplora le attività</a></section>`;
+}
+function renderSearch(){
+ const host=$('#searchContent');if(!host)return;
+ const params=new URLSearchParams(location.search);
+ if(params.get('tools')==='1'){renderToolsCatalog();return}
+ const q=(params.get('q')||'').toLowerCase();
+ const cats=[...new Set(analyses.map(p=>String(p.category||'').trim()).filter(Boolean))];
+ host.innerHTML=`<section class="catalog-hero"><div><small>CATALOGO BIZSCAN</small><h1>Tutte le analisi in un unico spazio</h1><p>Esplora le opportunità disponibili e confronta investimento, rischio, profitto e tempi di recupero</p></div><div class="catalog-summary"><b>${analyses.length}</b><span>analisi pubblicate</span></div></section><section class="catalog-toolbar"><div class="catalog-search"><span>⌕</span><input id="searchBox" value="${esc(q)}" placeholder="Cerca per attività o settore"><button class="btn gold" type="button" onclick="renderCatalogResults()">Cerca</button></div><div class="catalog-filters"><button class="catalog-filter active" type="button" onclick="setCatalogFilter('all',this)">Tutte</button>${cats.map(c=>`<button class="catalog-filter" type="button" onclick="setCatalogFilter('${esc(c.toLowerCase())}',this)">${esc(c)}</button>`).join('')}</div><div class="catalog-meta"><span id="catalogCount"></span><small>Aggiornato automaticamente dai dati pubblicati</small></div></section><div id="catalogResults" class="business-grid catalog-grid"></div>`;
+ const box=$('#searchBox');
+ box?.addEventListener('input',renderCatalogResults);
+ box?.addEventListener('keydown',e=>{if(e.key==='Enter')renderCatalogResults()});
+ renderCatalogResults();
+}
 function renderLibrary(){const host=$('#libraryContent');if(!host)return;const arr=analyses.filter(p=>favorites.includes(p.slug));host.innerHTML=`<section class="page-title"><h1>I miei report</h1><p>Preferiti e analisi sbloccate nel tuo account</p></section><div class="business-grid search-results">${arr.map(card).join('')||'<div class="empty"><h2>La libreria è vuota</h2><p>Salva un’attività o sblocca un’analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>'}</div>`}
 function renderPricing(){
  const host=$('#pricingContent')
