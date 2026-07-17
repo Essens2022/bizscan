@@ -465,11 +465,15 @@ textarea{min-height:92px;resize:vertical}
       <div class="card">
         <h2>Piano</h2><p class="section-intro">Modifica nome prezzo quantità e descrizione di ogni pacchetto</p>
         <input type="hidden" id="planId">
-        <label>Tipo<select id="planType"><option value="free">Free</option><option value="single">Singola</option><option value="starter">Starter</option><option value="smart">Smart</option><option value="pro">Pro</option><option value="plus">Plus</option></select></label>
+        <label>Tipo<select id="planType"><option value="single">Singola</option><option value="starter">Starter</option><option value="smart">Smart</option><option value="pro">Pro</option><option value="advanced">Advanced</option><option value="business">Business</option><option value="max">Max</option><option value="free">Free</option><option value="plus">Plus (abbonamento)</option></select></label>
         <label>Nume<input id="planName" placeholder="Smart"></label>
         <div class="two">
           <label>Preț<input id="planPrice" placeholder="6,99 €"></label>
           <label>Număr analize<input id="planCount" type="number" value="10"></label>
+        </div>
+        <div class="two">
+          <label>Crediti report PDF<input id="planPdf" type="number" value="0"></label>
+          <label style="visibility:hidden"><input type="number" tabindex="-1"></label>
         </div>
         <label>Descriere<textarea id="planDescription" placeholder="10 analisi a scelta"></textarea></label>
         <label>Etichetă<input id="planBadge" placeholder="PIÙ SCELTO"></label>
@@ -491,8 +495,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607172109"></script>
-<script src="app.js?v=202607172109"></script>
+ <script src="supabase-data.js?v=202607172118"></script>
+<script src="app.js?v=202607172118"></script>
 <script>
 let coverData="",pdfMeta=null
 const emojiGroups={
@@ -527,7 +531,7 @@ async function loadSupabaseCategories(){
   _supabaseCategories=data||[]
 }
 async function loadSupabasePlans(){
-  const {data,error}=await supabaseClient.from("plans").select("id,type,title,description,price,currency,analysis_limit,billing_interval,is_active,order_index").eq("is_active",true).order("order_index")
+  const {data,error}=await supabaseClient.from("plans").select("id,type,title,description,price,currency,analysis_limit,pdf_credits,billing_interval,is_active,order_index").eq("is_active",true).order("order_index")
   if(error){console.error("BizScan admin: could not load plans",error);_supabasePlans=[];return}
   _supabasePlans=data||[]
 }
@@ -1026,11 +1030,11 @@ async function deleteCategory(id){if(!confirm("Disattivare la categoria?"))retur
 function resetCategory(){["categoryId","categoryName","categoryEmoji"].forEach(id=>document.getElementById(id).value="");document.getElementById("categoryColor").value="#ff8a00";document.getElementById("categoryOrder").value=1}
 function renderCategories(){const arr=categories().slice().sort((a,b)=>a.order_index-b.order_index);document.getElementById("categoryList").innerHTML=arr.map(c=>`<div class="category-row"><div class="color-dot" style="background:${c.color||'#ff8a00'}"></div><div><h3>${c.emoji||'📁'} ${c.name}</h3><small>Ordine ${c.order_index||0}</small></div><div class="item-menu"><button class="mini" onclick="editCategory('${c.id}')">✎</button><button class="mini" onclick="deleteCategory('${c.id}')">×</button></div></div>`).join("")}
 
-async function savePlan(){if(!val("planName"))return alert("Inserisci il nome");const id=val("planId")||undefined;const type=val("planType");const allowed=["free","single","starter","smart","pro","plus"];if(!allowed.includes(type))return alert("Tipo piano non valido");const price=parseFloat((val("planPrice")||"0").replace(",","."))||0;const obj={type,title:val("planName"),price,analysis_limit:type==="plus"?null:Number(val("planCount")||0),description:val("planDescription"),billing_interval:type==="plus"?"monthly":"one_time",is_active:true,order_index:id?(plans().find(p=>p.id===id)?.order_index||0):plans().length};let q=id?supabaseClient.from("plans").update(obj).eq("id",id):supabaseClient.from("plans").insert(obj);const{error}=await q;if(error)return alert(error.message);await loadSupabasePlans();resetPlan();renderAll()}
-function editPlan(id){const x=plans().find(p=>p.id===id);if(!x)return;document.getElementById("planId").value=x.id;document.getElementById("planType").value=x.type;document.getElementById("planName").value=x.title;document.getElementById("planPrice").value=String(x.price).replace(".",",");document.getElementById("planCount").value=x.analysis_limit||0;document.getElementById("planDescription").value=x.description||"";document.getElementById("planBadge").value=""}
+async function savePlan(){if(!val("planName"))return alert("Inserisci il nome");const id=val("planId")||undefined;const type=val("planType");const allowed=["free","single","starter","smart","pro","advanced","business","max","plus"];if(!allowed.includes(type))return alert("Tipo piano non valido");const price=parseFloat((val("planPrice")||"0").replace(",","."))||0;const obj={type,title:val("planName"),price,analysis_limit:type==="plus"?null:Number(val("planCount")||0),pdf_credits:Number(val("planPdf")||0),description:val("planDescription"),billing_interval:type==="plus"?"monthly":"one_time",is_active:true,order_index:id?(plans().find(p=>p.id===id)?.order_index||0):plans().length};let q=id?supabaseClient.from("plans").update(obj).eq("id",id):supabaseClient.from("plans").insert(obj);const{error}=await q;if(error)return alert(error.message);await loadSupabasePlans();resetPlan();renderAll()}
+function editPlan(id){const x=plans().find(p=>p.id===id);if(!x)return;document.getElementById("planId").value=x.id;document.getElementById("planType").value=x.type;document.getElementById("planName").value=x.title;document.getElementById("planPrice").value=String(x.price).replace(".",",");document.getElementById("planCount").value=x.analysis_limit||0;document.getElementById("planPdf").value=x.pdf_credits||0;document.getElementById("planDescription").value=x.description||"";document.getElementById("planBadge").value=""}
 async function deletePlan(id){if(!confirm("Disattivare il piano?"))return;const{error}=await supabaseClient.from("plans").update({is_active:false}).eq("id",id);if(error)return alert(error.message);await loadSupabasePlans();renderAll()}
 function resetPlan(){["planId","planName","planPrice","planDescription","planBadge"].forEach(id=>document.getElementById(id).value="");document.getElementById("planType").value="single";document.getElementById("planCount").value=1}
-function renderPlans(){document.getElementById("planList").innerHTML=plans().map(p=>`<div class="plan-row"><div class="item-icon">€</div><div><h3>${p.title}</h3><small>${p.price} € · ${p.analysis_limit??'∞'} analisi · ${p.description||''}</small></div><div class="item-menu"><button class="mini" onclick="editPlan('${p.id}')">✎</button><button class="mini" onclick="deletePlan('${p.id}')">×</button></div></div>`).join("")}
+function renderPlans(){document.getElementById("planList").innerHTML=plans().map(p=>`<div class="plan-row"><div class="item-icon">€</div><div><h3>${p.title}</h3><small>${p.price} € · ${p.analysis_limit??'∞'} analisi · ${p.pdf_credits||0} PDF · ${p.description||''}</small></div><div class="item-menu"><button class="mini" onclick="editPlan('${p.id}')">✎</button><button class="mini" onclick="deletePlan('${p.id}')">×</button></div></div>`).join("")}
 
 function renderDashboard(){
   const all=analyses(),pub=all.filter(x=>x.status==="published").length,draft=all.filter(x=>x.status==="draft").length,total=Math.max(all.length,1)
@@ -1279,5 +1283,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607172109"></script></body>
+<script src="shell-ui.js?v=202607172118"></script></body>
 </html>
