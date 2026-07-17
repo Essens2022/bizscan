@@ -52,6 +52,11 @@ textarea{min-height:92px;resize:vertical}
 
 .section-editor-row{padding:12px;border:1px solid var(--line);border-radius:14px;background:#11151b;margin-top:10px}.section-editor-head{display:grid;grid-template-columns:1fr 150px 90px 42px;gap:8px;align-items:end}.section-editor-row textarea{min-height:110px;margin-top:8px}.section-editor-actions{display:flex;gap:6px;margin-top:8px}.section-editor-actions button{width:auto;padding:7px 10px}
 @media(max-width:700px){.toolbar{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}.section-editor-head{grid-template-columns:1fr}.item{grid-template-columns:48px 1fr}.item-menu{grid-column:1/-1;justify-content:flex-start}}
+.step-head{display:flex;align-items:center;gap:11px;margin:22px 0 12px;padding-top:16px;border-top:1px dashed var(--line)}
+.step-head:first-of-type{margin-top:6px;padding-top:0;border-top:0}
+.step-num{display:grid;place-items:center;width:30px;height:30px;min-width:30px;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:#111;font-weight:950;font-size:14px}
+.step-head b{display:block;font-size:14px}
+.step-head small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 </style>
 
 <style>
@@ -301,7 +306,7 @@ textarea{min-height:92px;resize:vertical}
       <div class="card">
         <h2 id="formTitle">Nuova analisi</h2><p class="section-intro">Compila i dati principali e controlla sempre l anteprima sulla destra</p>
         <input type="hidden" id="editId">
-        <div class="two">
+        <div class="step-head"><span class="step-num">1</span><div><b>Informazioni principali</b><small>Titolo, categoria e descrizione · appaiono sulla card e in cima alla pagina dell'analisi</small></div></div><div class="two">
           <label>Titolo<input id="title" placeholder="Titolo dell’analisi"><div class="field-note">Titolo corto con hook che apparirà sulla scheda</div></label>
           <label>Slug<input id="slug" placeholder="nome-attivita"><div class="field-note">Nome tecnico del link · senza spazi · esempio nome-attivita</div></label>
         </div>
@@ -321,7 +326,7 @@ textarea{min-height:92px;resize:vertical}
     </label>
         </div>
         <label>Descrizione breve<textarea id="summary" placeholder="Costi profitto rischio e tempo di rientro"></textarea><div class="field-note">Massimo una o due righe · appare sotto il titolo</div></label>
-        <div class="three">
+        <div class="step-head"><span class="step-num">2</span><div><b>Numeri chiave</b><small>Score, rischio, investimento e rientro · i primi dati che il cliente vede</small></div></div><div class="three">
           <label>BizScan Score<input id="score" type="number" min="0" max="100" value="80"><div class="field-note">Valutazione generale da 0 a 100</div></label>
           <label>Rischio su 100<input id="risk" type="number" min="0" max="100" value="50"><div class="field-note">0 significa rischio basso · 100 rischio molto alto</div></label>
           <label>Ordine<input id="order" type="number" min="1" value="1"><div class="field-note">Ordine generale nella lista delle analisi</div></label>
@@ -347,12 +352,12 @@ textarea{min-height:92px;resize:vertical}
           <label>Verdetto<select id="verdict"><option>Conviene</option><option>Dipende</option><option>Non conviene</option></select></label>
         </div>
         <label>Conclusione<textarea id="conclusion" placeholder="Breve conclusione BizScan"></textarea><div class="field-note">Risposta breve finale · Conviene oppure no e perché</div></label>
-        <div class="card" style="margin-top:12px">
+        <div class="step-head"><span class="step-num">3</span><div><b>Contenuto della pagina</b><small>Le sezioni testuali dell'analisi · decidi cosa è gratuito e cosa è premium</small></div></div><div class="card" style="margin-top:12px">
           <div class="context-title"><div><h2>Sezioni analisi</h2><p class="section-intro">Crea il contenuto gratuito e premium nell ordine corretto</p></div><button type="button" class="btn" onclick="addSectionRow()">+ Sezione</button></div>
           <div id="sectionsEditor"></div>
         </div>
-        <label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
-        <div class="file-name" id="coverName">Nessuna immagine selezionata</div>
+        <div class="step-head"><span class="step-num">4</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
+        <div class="field-note">Consigliato: JPG orizzontale, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
         <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
         <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
         <div class="card" style="margin-top:10px;padding:12px">
@@ -369,7 +374,7 @@ textarea{min-height:92px;resize:vertical}
           </div>
           <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
         </div>
-        <label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
+        <div class="step-head"><span class="step-num">5</span><div><b>Pubblicazione e posizionamento</b><small>Stato, prezzo, dove appare sul sito e in quali piani è inclusa</small></div></div><label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
 <div class="two" style="margin-top:10px">
   <label>Prezzo analisi<input id="price" type="number" min="0" step="0.01" value="1.99"></label>
   <label>Tag<input id="tags" placeholder="costi, profitto, franchising"><small>Separali con una virgola</small></label>
