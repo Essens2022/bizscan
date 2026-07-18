@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="stylesheet" href="styles.css?v=202607181545"><link rel="stylesheet" href="premium.css?v=202607181545"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="stylesheet" href="styles.css?v=202607181549"><link rel="stylesheet" href="premium.css?v=202607181549"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="index.html">
     <img src="favicon.png" alt="BizScan">
@@ -20,12 +20,12 @@
       <p>Accedi al tuo account BizScan</p>
 
       <input id="authEmail" type="email" placeholder="Email"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
 
       <input id="authPassword" type="password" placeholder="Password"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
 
-      <button class="btn primary full" onclick="loginSupabase()">
+      <button class="btn primary full" onclick="loginSupabase()" style="display:none">
         Accedi
       </button>
       
@@ -61,8 +61,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607181545"></script>
-<script src="app.js?v=202607181545"></script>
+<script src="supabase-data.js?v=202607181549"></script>
+<script src="app.js?v=202607181549"></script>
 
 <script>
 async function waitForSupabase() {
@@ -172,5 +172,5 @@ if(logged){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607181545"></script></body>
+<script src="shell-ui.js?v=202607181549"></script></body>
 </html>
