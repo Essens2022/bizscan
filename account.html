@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607182052"><link rel="stylesheet" href="premium.css?v=202607182052"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607182126"><link rel="stylesheet" href="premium.css?v=202607182126"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="index.html">
     <img src="favicon.png" alt="BizScan">
@@ -46,7 +46,7 @@
     </div>
   </div>
 </section>
-<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block;margin-bottom:14px"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div><div class="grid">
+<section class="section" id="accountContent" style="display:none"><div id="checkoutSuccessBanner" style="display:none;margin-bottom:14px;padding:20px;border-radius:14px;background:linear-gradient(135deg,#0f3d2b,#0a2a1e);border:1px solid #2dd4a7;text-align:center"><div style="font-size:34px">✅</div><h3 style="margin:8px 0 4px;color:#7ef2c9">Pagamento riuscito</h3><p style="color:#bcd9cd;font-size:13px;margin:0">Grazie! Il tuo acquisto è stato completato con successo, i crediti sono stati aggiunti al tuo account.</p></div><div id="accountSummary" class="card" style="display:block;margin-bottom:14px"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div><div class="grid">
 <div class="card" style="display:block"><div class="card-body"><h3>Preferiti</h3><p>Salva le attività che vuoi controllare più tardi</p><a class="btn dark full" href="search.html">Apri ricerca</a></div></div>
 <div class="card" style="display:block"><div class="card-body"><h3>Libreria</h3><p>Apri le analisi già sbloccate</p><a class="btn primary full" href="library.html">Apri libreria</a></div></div>
 </div></section>
@@ -61,8 +61,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607182052"></script>
-<script src="app.js?v=202607182052"></script>
+<script src="supabase-data.js?v=202607182126"></script>
+<script src="app.js?v=202607182126"></script>
 
 <script>
 async function waitForSupabase() {
@@ -164,13 +164,19 @@ document.getElementById("authMessage").textContent = logged ? "Account collegato
 if(logged){
   try{
     const summary=await BizScanData.accessSummary(); const user=data.session.user;
-    document.getElementById("accountSummary").innerHTML=`<div class="card-body"><h3>${user.email}</h3><p>Crediti disponibili: <strong>${summary.credits}</strong></p><p>Abbonamento Plus: <strong>${summary.subscription_active?"Attivo":"Non attivo"}</strong></p><p>Analisi permanenti: <strong>${summary.unlocked.filter(x=>!x.expires_at).length}</strong></p></div>`
+    const planLabel=summary.plan&&summary.plan!=='free'?String(summary.plan).charAt(0).toUpperCase()+String(summary.plan).slice(1):'Nessuno'
+    document.getElementById("accountSummary").innerHTML=`<div class="card-body"><h3>${user.email}</h3><p>Crediti analisi disponibili: <strong>${summary.available_credits??0}</strong></p><p>Crediti report PDF disponibili: <strong>${summary.available_pdf_credits??0}</strong></p><p>Piano attivo: <strong>${planLabel}</strong></p><p>Analisi sbloccate: <strong>${summary.unlocked_analyses??0}</strong></p></div>`
   }catch(e){console.error(e)}
+  const params=new URLSearchParams(location.search)
+  if(params.get("checkout")==="success"){
+    const banner=document.getElementById("checkoutSuccessBanner")
+    if(banner)banner.style.display="block"
+  }
 }
 }
 
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607182052"></script></body>
+<script src="shell-ui.js?v=202607182126CACHEV"></script></body>
 </html>
