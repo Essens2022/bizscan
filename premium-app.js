@@ -485,4 +485,33 @@ function bindShellEvents(){
  const homeInput=$('#homeSearch')
  if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()});attachSearchSuggestions(homeInput)}
 }
-document.addEventListener('DOMContentLoaded',async()=>{await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.()});
+function celebrateCheckoutSuccess(planName){
+ const colors=['#ffb703','#ff8a00','#2dd4a7','#3a86ff','#8357ff','#ffd053'];
+ const box=document.createElement('div');
+ box.className='confetti-box';
+ for(let i=0;i<60;i++){
+  const p=document.createElement('i');
+  p.style.left=(Math.random()*100)+'%';
+  p.style.background=colors[i%colors.length];
+  p.style.animationDelay=(Math.random()*0.5)+'s';
+  p.style.animationDuration=(2.4+Math.random()*1.4)+'s';
+  p.style.transform=`rotate(${Math.floor(Math.random()*360)}deg)`;
+  box.appendChild(p);
+ }
+ document.body.appendChild(box);
+ const card=document.createElement('div');
+ card.className='celebrate-card';
+ card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Congratulazioni!</h3><p>Il tuo pagamento${planName?' per <b>'+esc(planName)+'</b>':''} è andato a buon fine.</p>`;
+ document.body.appendChild(card);
+ requestAnimationFrame(()=>card.classList.add('show'));
+ setTimeout(()=>{card.classList.remove('show');card.classList.add('hide')},3600);
+ setTimeout(()=>{card.remove();box.remove()},4300);
+}
+document.addEventListener('DOMContentLoaded',async()=>{
+ await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();
+ const params=new URLSearchParams(location.search);
+ if(params.get('checkout')==='success'){
+  celebrateCheckoutSuccess(params.get('plan'));
+  history.replaceState(null,'',location.pathname);
+ }
+});
