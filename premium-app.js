@@ -339,6 +339,7 @@ function renderSearch(){
  const box=$('#searchBox');
  box?.addEventListener('input',renderCatalogResults);
  box?.addEventListener('keydown',e=>{if(e.key==='Enter')renderCatalogResults()});
+ attachSearchSuggestions(box,{onPick:slug=>location.href='analysis.html?slug='+encodeURIComponent(slug)});
  renderCatalogResults();
 }
 function renderLibrary(){const host=$('#libraryContent');if(!host)return;const arr=analyses.filter(p=>favorites.includes(p.slug));host.innerHTML=`<section class="page-title"><h1>I miei report</h1><p>Preferiti e analisi sbloccate nel tuo account</p></section><div class="business-grid search-results">${arr.map(card).join('')||'<div class="empty"><h2>La libreria è vuota</h2><p>Salva un’attività o sblocca un’analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>'}</div>`}
@@ -388,12 +389,50 @@ window.choosePdfPack=(count,price)=>modal('Crediti PDF',`<p>${count} ${count===1
 window.choosePackage=key=>{const p=PACKAGES.find(x=>x.key===key);modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Il Checkout reale verrà aperto quando gli ID prezzo Stripe e il webhook saranno configurati</p>`,`<button class="btn ghost full" onclick="closeModal()">Chiudi</button>`)};
 function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score}</b><b>${arr[1].score}</b><span>Investimento</span><b>${esc(arr[0].investment)}</b><b>${esc(arr[1].investment)}</b><span>Profitto</span><b>${esc(arr[0].profit)}</b><b>${esc(arr[1].profit)}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback)}</b><b>${esc(arr[1].payback)}</b><span>Rischio</span><b>${esc(arr[0].riskLabel)}</b><b>${esc(arr[1].riskLabel)}</b></div></section>`}
 function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare()}
+function searchSuggestions(query,limit=6){
+ const q=String(query||'').trim().toLowerCase();
+ if(q.length<2)return[];
+ const scored=[];
+ for(const p of analyses){
+  const title=String(p.title||'').toLowerCase();
+  const cat=String(p.category||'').toLowerCase();
+  const tags=(Array.isArray(p.tags)?p.tags:[]).map(t=>String(t).toLowerCase());
+  let score=0;
+  if(title===q)score=100;
+  else if(title.startsWith(q))score=80;
+  else if(title.includes(q))score=60;
+  else if(tags.some(t=>t===q))score=50;
+  else if(tags.some(t=>t.includes(q)))score=35;
+  else if(cat.includes(q))score=20;
+  if(score>0)scored.push({p,score});
+ }
+ scored.sort((a,b)=>b.score-a.score||(a.p.title||'').localeCompare(b.p.title||''));
+ return scored.slice(0,limit).map(x=>x.p);
+}
+function attachSearchSuggestions(input,{onPick}={}){
+ if(!input||input.__bizscanSuggest)return;
+ input.__bizscanSuggest=true;
+ const box=document.createElement('div');box.className='search-suggest';box.hidden=true;
+ (input.closest('.top-search,.home18-search,.catalog-search')||input.parentElement).appendChild(box);
+ let debounce;
+ const render=()=>{
+  const items=searchSuggestions(input.value);
+  if(!items.length){box.hidden=true;box.innerHTML='';return}
+  box.innerHTML=items.map(p=>`<a href="analysis.html?slug=${encodeURIComponent(p.slug)}" data-slug="${esc(p.slug)}"><span class="ss-emoji">${esc(p.categoryEmoji||p.emoji||'📊')}</span><span class="ss-text"><b>${esc(p.title)}</b><small>${esc(p.category||'')}</small></span></a>`).join('');
+  box.hidden=false;
+  box.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{if(onPick){e.preventDefault();onPick(a.dataset.slug)}}));
+ };
+ input.addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(render,120)});
+ input.addEventListener('focus',render);
+ input.addEventListener('blur',()=>setTimeout(()=>{box.hidden=true},150));
+}
 function bindShellEvents(){
  const topInput=$('.top-search input')
  if(topInput){
   topInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=topInput.value.trim();location.href='search.html?q='+encodeURIComponent(q)}})
+  attachSearchSuggestions(topInput)
  }
  const homeInput=$('#homeSearch')
- if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()})}
+ if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()});attachSearchSuggestions(homeInput)}
 }
 document.addEventListener('DOMContentLoaded',async()=>{await load();renderRoute();bindShellEvents()});
