@@ -409,7 +409,29 @@ function standaloneProducts(){const items=[{icon:'▣',title:'Analisi interattiv
 window.chooseAddon=type=>{const map={analysis:['Analisi interattiva',UNIT_PRICES.analysis],indicator:['Indicatore premium',UNIT_PRICES.indicator],pdf:['Report PDF completo',UNIT_PRICES.pdf],comparison:['Confronto avanzato',UNIT_PRICES.comparison]};const item=map[type];modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Il checkout reale verrà attivato quando Stripe sarà collegato al catalogo prodotti</p>`,'<a class="btn gold full" href="account.html">Accedi per continuare</a>')}
 function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
 window.choosePdfPack=(count,price)=>modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>I crediti restano nel conto finché non vengono utilizzati</p>`,`<button class="btn ghost full" onclick="closeModal()">Chiudi</button>`)
-window.choosePackage=key=>{const p=PACKAGES.find(x=>x.key===key);modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Il Checkout reale verrà aperto quando gli ID prezzo Stripe e il webhook saranno configurati</p>`,`<button class="btn ghost full" onclick="closeModal()">Chiudi</button>`)};
+window.choosePackage=async key=>{
+ const p=PACKAGES.find(x=>x.key===key);if(!p)return;
+ if(!access.authenticated){toast('Accedi per acquistare un pacchetto');setTimeout(()=>{location.href='account.html?next='+encodeURIComponent(location.pathname+location.search)},650);return}
+ modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  const{data:{session}}=await c.auth.getSession();
+  const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
+   method:'POST',
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+   body:JSON.stringify({plan_type:key})
+  });
+  const data=await res.json();
+  if(!res.ok||!data.url){
+   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(data.error||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+   return;
+  }
+  location.href=data.url;
+ }catch(e){
+  console.error('checkout error',e);
+  modal(p.name,'<p>Non è stato possibile aprire il pagamento. Riprova tra poco.</p>','<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+ }
+};
 function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score}</b><b>${arr[1].score}</b><span>Investimento</span><b>${esc(arr[0].investment)}</b><b>${esc(arr[1].investment)}</b><span>Profitto</span><b>${esc(arr[0].profit)}</b><b>${esc(arr[1].profit)}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback)}</b><b>${esc(arr[1].payback)}</b><span>Rischio</span><b>${esc(arr[0].riskLabel)}</b><b>${esc(arr[1].riskLabel)}</b></div></section>`}
 function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare()}
 function searchSuggestions(query,limit=6){
