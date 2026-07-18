@@ -65,10 +65,22 @@ async function load(){
  }
  updateShell();
 }
-function updateShell(){const c=$('.top-actions .chip');if(!c)return;
+function updateShell(){
+ const c=$('.top-actions .chip');
  const n=access.credits??access.available_credits??0;
  const plan=(access.plan&&access.plan!=='free')?String(access.plan).charAt(0).toUpperCase()+String(access.plan).slice(1):'';
- c.textContent=plan?`Crediti: ${n} · ${plan}`:`Crediti: ${n}`}
+ if(c)c.textContent=plan?`Crediti: ${n} · ${plan}`:`Crediti: ${n}`;
+ const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
+ if(nameEl){
+  if(access.authenticated){
+   BizScanData.currentUser().then(u=>{if(u?.email)nameEl.textContent=u.email}).catch(()=>{});
+   if(statusEl)statusEl.textContent=plan?`Piano ${plan} · ${n} crediti`:`${n} crediti disponibili`;
+  }else{
+   nameEl.textContent='Ospite non autenticato';
+   if(statusEl)statusEl.textContent='Accedi per vedere crediti e report';
+  }
+ }
+}
 function toast(t){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.append(e)}e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1700)}
 function modal(title,body,actions=''){const m=$('#globalModal'),c=$('#globalModalContent');if(!m||!c)return;c.innerHTML=`<div class="modal-head"><h2>${esc(title)}</h2><button onclick="closeModal()">×</button></div>${body}${actions}`;m.classList.add('show')}
 window.closeModal=()=>$('#globalModal')?.classList.remove('show');
@@ -344,7 +356,16 @@ function renderSearch(){
  attachSearchSuggestions(box,{onPick:slug=>location.href='analysis.html?slug='+encodeURIComponent(slug)});
  renderCatalogResults();
 }
-function renderLibrary(){const host=$('#libraryContent');if(!host)return;const arr=analyses.filter(p=>favorites.includes(p.slug));host.innerHTML=`<section class="page-title"><h1>I miei report</h1><p>Preferiti e analisi sbloccate nel tuo account</p></section><div class="business-grid search-results">${arr.map(card).join('')||'<div class="empty"><h2>La libreria è vuota</h2><p>Salva un’attività o sblocca un’analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>'}</div>`}
+function renderLibrary(){
+ const host=$('#libraryContent');if(!host)return;
+ const view=(new URLSearchParams(location.search).get('view')||'favorites');
+ const isReports=view==='reports';
+ const arr=isReports?analyses.filter(p=>p.has_access):analyses.filter(p=>favorites.includes(p.slug));
+ const title=isReports?'I miei report':'Preferiti';
+ const subtitle=isReports?'Le analisi complete sbloccate nel tuo account':'Le attività che hai salvato per dopo';
+ const emptyMsg=isReports?'Non hai ancora sbloccato nessuna analisi completa':'Non hai ancora salvato nessuna attività';
+ host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="${!isReports?'active':''}">Preferiti</a><a href="library.html?view=reports" class="${isReports?'active':''}">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results">${arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`}</div>`
+}
 function renderPricing(){
  const host=$('#pricingContent')
  if(!host)return
@@ -437,4 +458,4 @@ function bindShellEvents(){
  const homeInput=$('#homeSearch')
  if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()});attachSearchSuggestions(homeInput)}
 }
-document.addEventListener('DOMContentLoaded',async()=>{await load();renderRoute();bindShellEvents()});
+document.addEventListener('DOMContentLoaded',async()=>{await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.()});

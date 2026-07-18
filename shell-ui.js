@@ -77,13 +77,13 @@
       profileTrigger.setAttribute('aria-haspopup','menu');
       profileTrigger.setAttribute('aria-expanded','false');
       var profile=buildPopover('shellProfilePopover',
-        '<div class="shell-popover-head"><div><small>ACCOUNT</small><strong>Il tuo spazio BizScan</strong></div><button type="button" data-close aria-label="Chiudi">×</button></div>'+
-        '<div class="shell-profile-summary"><span class="shell-avatar">♙</span><div><b id="shellProfileName">Account BizScan</b><small id="shellProfileStatus">Crediti e analisi personali</small></div></div>'+
+        '<div class="shell-popover-head"><div><small>ACCOUNT</small><span class="brand-word"><strong>Biz</strong><b>Scan</b></span></div><button type="button" data-close aria-label="Chiudi">×</button></div>'+
+        '<div class="shell-profile-summary"><span class="shell-avatar"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></span><div><b id="shellProfileName">Account BizScan</b><small id="shellProfileStatus">Crediti e analisi personali</small></div></div>'+
         '<nav class="shell-menu-list">'+
         '<a href="account.html"><span>♙</span><b>Profilo e accesso</b></a>'+
-        '<a href="library.html"><span>▤</span><b>I miei report</b></a>'+
-        '<a href="library.html"><span>♡</span><b>Preferiti</b></a>'+
-        '<a href="pricing.html"><span>€</span><b>Crediti e pacchetti</b></a>'+
+        '<a href="library.html?view=reports"><span>▤</span><b>I miei report</b></a>'+
+        '<a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b></a>'+
+        '<a href="account.html"><span>€</span><b>Crediti e pacchetti</b></a>'+
         '</nav>');
       profileTrigger.onclick=function(e){e.preventDefault();e.stopPropagation();togglePopover(profile,profileTrigger)};
     }
@@ -100,6 +100,7 @@
 
   function setupFooter(){
     if(document.querySelector('.site-footer'))return;
+    if(!document.getElementById('homeContent'))return;
     var shell=document.querySelector('.app-shell');if(!shell)return;
     var year=new Date().getFullYear();
     var html=''
@@ -107,7 +108,7 @@
       +'<div class="footer-brand"><a class="footer-logo" href="index.html"><strong>Biz</strong><b>Scan</b></a><p>Analisi strutturate per capire un business prima di investirci tempo o capitale.</p></div>'
       +'<div class="footer-nav">'
       +'<div class="footer-col"><h4>Piattaforma</h4><a href="index.html">Dashboard</a><a href="search.html">Esplora</a><a href="compare.html">Confronta</a><a href="library.html">Preferiti</a><a href="pricing.html">Pacchetti</a></div>'
-      +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html">I miei report</a><a href="account.html">Assistenza</a></div>'
+      +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html?view=reports">I miei report</a><a href="account.html">Assistenza</a></div>'
       +'<div class="footer-col"><h4>Legale</h4><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="termini.html">Termini e Condizioni</a></div>'
       +'</div>'
       +'<div class="footer-trust">'
@@ -125,6 +126,7 @@
       +'</footer>';
     shell.insertAdjacentHTML('beforeend',html);
   }
+  window.__bizscanSetupFooter=setupFooter;
 
-  document.addEventListener('DOMContentLoaded',function(){setupHeader();setupFooter()});
+  document.addEventListener('DOMContentLoaded',function(){setupHeader()});
 })();
