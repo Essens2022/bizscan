@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="stylesheet" href="styles.css?v=202607181531"><link rel="stylesheet" href="premium.css?v=202607181531"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="stylesheet" href="styles.css?v=202607181545"><link rel="stylesheet" href="premium.css?v=202607181545"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="index.html">
     <img src="favicon.png" alt="BizScan">
@@ -7,7 +7,7 @@
   <div class="top-actions account-actions">
     <a class="home18-head-icon" href="library.html" aria-label="Libreria">▤</a>
     <button class="home18-head-icon" type="button" aria-label="Menu">☰</button>
-    <a class="home18-head-icon active-profile" href="account.html" aria-label="Profilo">♙</a>
+    <a class="home18-head-icon active-profile" href="account.html" aria-label="Profilo"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></a>
   </div>
 </header><div class="page-back-row"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='index.html'}">←</button></div>
 
@@ -56,13 +56,13 @@
   <a href="search.html"><span>⌕</span><span>Cerca</span></a>
   <a href="pricing.html"><span>★</span><span>Prezzi</span></a>
   <a href="library.html"><span>▤</span><span>Libreria</span></a>
-  <a href="account.html"><span>♙</span><span>Profilo</span></a>
+  <a href="account.html"><span class="bottom-nav-icon"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></span><span>Profilo</span></a>
 </nav>
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607181531"></script>
-<script src="app.js?v=202607181531"></script>
+<script src="supabase-data.js?v=202607181545"></script>
+<script src="app.js?v=202607181545"></script>
 
 <script>
 async function waitForSupabase() {
@@ -172,5 +172,5 @@ if(logged){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607181531"></script></body>
+<script src="shell-ui.js?v=202607181545"></script></body>
 </html>
