@@ -505,3 +505,4 @@
 .search-suggest .ss-text{display:flex;flex-direction:column;min-width:0}
 .search-suggest .ss-text b{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .search-suggest .ss-text small{font-size:11px;color:var(--muted)}
+.btn.ghost.active{border-color:#9c7000;color:#ffd053;background:#1a1204}
