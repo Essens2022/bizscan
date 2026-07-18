@@ -464,7 +464,9 @@
 @media(max-width:680px){input[type="text"],input[type="search"],input[type="email"],input[type="password"],input:not([type]),textarea,select{font-size:16px!important}}
 .site-footer{margin-top:36px;padding:40px 26px 26px;border-top:1px solid var(--line);text-align:center;display:flex;flex-direction:column;align-items:center}
 .footer-brand{max-width:420px}
-.footer-brand .footer-logo{font-size:22px;font-weight:950;color:var(--gold)}
+.footer-brand .footer-logo{font-size:22px;font-weight:950}
+.footer-brand .footer-logo strong{color:#fff;font:inherit}
+.footer-brand .footer-logo b{color:var(--gold);font:inherit}
 .footer-brand p{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}
 .footer-nav{margin-top:30px;display:flex;justify-content:center;gap:64px}
 .footer-col{display:flex;flex-direction:column;gap:9px;text-align:center}
@@ -483,7 +485,9 @@
 .pay-mc i{width:16px;height:16px;border-radius:50%;display:inline-block}
 .pay-mc i:first-child{background:#eb001b;margin-right:-6px}
 .pay-mc i:last-child{background:#f79e1b;mix-blend-mode:multiply}
-.pay-apple{background:#000;color:#fff}
+.pay-apple{background:#000;color:#fff;gap:5px}
+.apple-mark{width:13px;height:15px}
+.footer-stripe-note{display:block;margin-top:10px;color:#6b7686;font-size:10px}
 .pay-paypal{background:#ecf2fb;color:#003087}
 .pay-paypal b{color:#009cde}
 .footer-bottom{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:#6b7686;font-size:11px;width:100%;max-width:420px}
