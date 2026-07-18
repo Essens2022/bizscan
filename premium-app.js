@@ -415,21 +415,26 @@ window.choosePackage=async key=>{
  modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
-  const{data:{session}}=await c.auth.getSession();
+  const{data:sessionData,error:sessionErr}=await c.auth.getSession();
+  const session=sessionData?.session;
+  if(sessionErr||!session?.access_token){
+   modal(p.name,'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html">Accedi</a>');
+   return;
+  }
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
    body:JSON.stringify({plan_type:key})
   });
-  const data=await res.json();
+  const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.url){
-   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(data.error||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
    return;
   }
   location.href=data.url;
  }catch(e){
   console.error('checkout error',e);
-  modal(p.name,'<p>Non è stato possibile aprire il pagamento. Riprova tra poco.</p>','<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+  modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
  }
 };
 function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score}</b><b>${arr[1].score}</b><span>Investimento</span><b>${esc(arr[0].investment)}</b><b>${esc(arr[1].investment)}</b><span>Profitto</span><b>${esc(arr[0].profit)}</b><b>${esc(arr[1].profit)}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback)}</b><b>${esc(arr[1].payback)}</b><span>Rischio</span><b>${esc(arr[0].riskLabel)}</b><b>${esc(arr[1].riskLabel)}</b></div></section>`}
