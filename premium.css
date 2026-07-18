@@ -462,25 +462,32 @@
 .report-access-note.locked{border-color:rgba(123,77,255,.38);color:#d9caff;background:rgba(123,77,255,.08)}
 .report-card .btn[disabled]{opacity:.65;cursor:wait}
 @media(max-width:680px){input[type="text"],input[type="search"],input[type="email"],input[type="password"],input:not([type]),textarea,select{font-size:16px!important}}
-.site-footer{margin-top:36px;padding:34px 26px 22px;border-top:1px solid var(--line)}
-.footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:26px}
-.footer-brand .footer-logo{font-size:20px;font-weight:950;color:var(--gold)}
-.footer-brand p{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6;max-width:280px}
-.footer-col h4{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.footer-col{display:flex;flex-direction:column;gap:9px}
+.site-footer{margin-top:36px;padding:40px 26px 26px;border-top:1px solid var(--line);text-align:center;display:flex;flex-direction:column;align-items:center}
+.footer-brand{max-width:420px}
+.footer-brand .footer-logo{font-size:22px;font-weight:950;color:var(--gold)}
+.footer-brand p{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}
+.footer-nav{margin-top:30px;display:flex;justify-content:center;gap:64px}
+.footer-col{display:flex;flex-direction:column;gap:9px;text-align:center}
+.footer-col h4{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
 .footer-col a{color:#c7d0dd;font-size:13px}
 .footer-col a:hover{color:var(--gold)}
-.footer-trust{margin-top:28px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:#0a121f}
-.footer-trust-head{display:flex;align-items:center;gap:12px}
-.footer-lock{font-size:20px}
-.footer-trust-head strong{display:block;font-size:13px}
-.footer-trust-head small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
-.footer-pay-icons{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.footer-pay-icons span{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:800;color:#a8b3c3}
-.footer-pay-note{display:block;margin-top:8px;color:#6b7686;font-size:10px}
-.footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:#6b7686;font-size:11px}
-@media(max-width:900px){.footer-top{grid-template-columns:1fr 1fr}}
-@media(max-width:680px){.site-footer{padding:26px 12px 100px;margin-top:26px}.footer-top{grid-template-columns:1fr;gap:22px}.footer-bottom{flex-direction:column}}
+.footer-trust{margin-top:30px;padding:20px 26px;border:1px solid var(--line);border-radius:16px;background:#0a121f;display:flex;flex-direction:column;align-items:center;max-width:420px;width:100%}
+.footer-trust-head{display:flex;align-items:center;gap:9px}
+.footer-shield{width:20px;height:20px;color:var(--gold)}
+.footer-trust-head strong{font-size:13px}
+.footer-trust-note{margin-top:6px;color:var(--muted);font-size:11px;max-width:320px}
+.footer-pay-icons{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:16px}
+.pay-badge{display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 12px;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:.01em}
+.pay-visa{background:#1a1f71;color:#fff;font-style:italic}
+.pay-mc{background:#f4f4f4;gap:0;padding:0 10px}
+.pay-mc i{width:16px;height:16px;border-radius:50%;display:inline-block}
+.pay-mc i:first-child{background:#eb001b;margin-right:-6px}
+.pay-mc i:last-child{background:#f79e1b;mix-blend-mode:multiply}
+.pay-apple{background:#000;color:#fff}
+.pay-paypal{background:#ecf2fb;color:#003087}
+.pay-paypal b{color:#009cde}
+.footer-bottom{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:#6b7686;font-size:11px;width:100%;max-width:420px}
+@media(max-width:680px){.site-footer{padding:30px 12px 100px;margin-top:26px}.footer-nav{gap:30px;flex-wrap:wrap}}
 .legal-body{max-width:760px;color:#c7d0dd;font-size:14px;line-height:1.7}
 .legal-body h3{margin-top:26px;font-size:16px;color:#fff}
 .legal-body p{margin-top:8px}

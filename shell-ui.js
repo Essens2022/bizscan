@@ -103,15 +103,24 @@
     var shell=document.querySelector('.app-shell');if(!shell)return;
     var year=new Date().getFullYear();
     var html=''
-      +'<footer class="site-footer"><div class="footer-top">'
+      +'<footer class="site-footer">'
       +'<div class="footer-brand"><a class="footer-logo" href="index.html">BizScan</a><p>Analisi strutturate per capire un business prima di investirci tempo o capitale.</p></div>'
+      +'<div class="footer-nav">'
       +'<div class="footer-col"><h4>Piattaforma</h4><a href="index.html">Dashboard</a><a href="search.html">Esplora</a><a href="compare.html">Confronta</a><a href="library.html">Preferiti</a><a href="pricing.html">Pacchetti</a></div>'
       +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html">I miei report</a><a href="account.html">Assistenza</a></div>'
       +'<div class="footer-col"><h4>Legale</h4><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="termini.html">Termini e Condizioni</a></div>'
       +'</div>'
-      +'<div class="footer-trust"><div class="footer-trust-head"><span class="footer-lock">🔒</span><div><strong>Pagamenti sicuri</strong><small>I dati di pagamento non transitano né vengono conservati sui nostri server</small></div></div>'
-      +'<div class="footer-pay-icons" aria-hidden="true"><span>VISA</span><span>Mastercard</span><span>Apple Pay</span><span>PayPal</span></div><small class="footer-pay-note">Metodi di pagamento in fase di attivazione</small></div>'
-      +'<div class="footer-bottom"><span>© '+year+' BizScan. Tutti i diritti riservati.</span><span>P.IVA in fase di attivazione</span></div>'
+      +'<div class="footer-trust">'
+      +'<div class="footer-trust-head"><svg class="footer-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" fill="currentColor" opacity=".16"/><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 12.2l2.1 2.1 4.3-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Pagamenti sicuri</strong></div>'
+      +'<p class="footer-trust-note">I dati di pagamento non transitano né vengono conservati sui nostri server</p>'
+      +'<div class="footer-pay-icons" aria-label="Metodi di pagamento supportati">'
+      +'<span class="pay-badge pay-visa">VISA</span>'
+      +'<span class="pay-badge pay-mc"><i></i><i></i></span>'
+      +'<span class="pay-badge pay-apple">🍎 Pay</span>'
+      +'<span class="pay-badge pay-paypal">Pay<b>Pal</b></span>'
+      +'</div>'
+      +'</div>'
+      +'<div class="footer-bottom">© '+year+' BizScan. Tutti i diritti riservati.</div>'
       +'</footer>';
     shell.insertAdjacentHTML('beforeend',html);
   }
