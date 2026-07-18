@@ -157,15 +157,15 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>PIATTAFORMA</small><h2>Gli strumenti che usiamo per analizzare ogni business</h2></div><a href="search.html?tools=1">Apri tutti gli strumenti</a></div>
+   <div class="home18-head"><div><small>PIATTAFORMA</small><h2>Strumenti di analisi</h2></div><a href="search.html?tools=1">Apri tutti gli strumenti</a></div>
    <div class="home18-dashboard">
     <article class="home18-score-card">
-     <div class="home18-score-top">${scoreRing(82,'large')}<div><small>BIZSCAN SCORE</small><h3>Un punteggio su 100, per ogni analisi</h3><p>Calcolato da rischio, investimento, profitto e tempo di recupero, per confrontare rapidamente opportunità diverse</p></div></div>
+     <div class="home18-score-top">${scoreRing(82,'large')}<div><small>BIZSCAN SCORE</small><h3>Punteggio su 100</h3><p>Rischio, investimento, profitto e rientro in un unico numero</p></div></div>
      <div class="home18-bars">
-      <div><span>Rischio</span><i><b class="risk" style="width:52%"></b></i><strong>Basso</strong></div>
-      <div><span>Profitto</span><i><b class="profit" style="width:74%"></b></i><strong>Stimato</strong></div>
-      <div><span>ROI</span><i><b class="roi" style="width:63%"></b></i><strong>Calcolato</strong></div>
-      <div><span>Rientro</span><i><b class="payback" style="width:44%"></b></i><strong>In mesi</strong></div>
+      <div><span>Rischio</span><i><b class="risk" style="width:52%"></b></i><strong>52</strong></div>
+      <div><span>Profitto</span><i><b class="profit" style="width:74%"></b></i><strong>74</strong></div>
+      <div><span>ROI</span><i><b class="roi" style="width:63%"></b></i><strong>63</strong></div>
+      <div><span>Rientro</span><i><b class="payback" style="width:44%"></b></i><strong>44</strong></div>
      </div>
     </article>
     <article class="home18-chart-card"><small>SCENARI DI PROFITTO</small><div class="home18-bars-chart"><i style="height:34%"></i><i style="height:48%"></i><i style="height:57%"></i><i style="height:72%"></i><i style="height:88%"></i><i style="height:78%"></i></div><div class="home18-chart-labels"><span>Prudente</span><span>Realistico</span><span>Ottimistico</span></div></article>
