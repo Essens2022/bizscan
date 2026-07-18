@@ -428,7 +428,7 @@ window.choosePackage=async key=>{
   });
   const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.url){
-   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
    return;
   }
   location.href=data.url;
