@@ -104,7 +104,7 @@
     var year=new Date().getFullYear();
     var html=''
       +'<footer class="site-footer">'
-      +'<div class="footer-brand"><a class="footer-logo" href="index.html">BizScan</a><p>Analisi strutturate per capire un business prima di investirci tempo o capitale.</p></div>'
+      +'<div class="footer-brand"><a class="footer-logo" href="index.html"><strong>Biz</strong><b>Scan</b></a><p>Analisi strutturate per capire un business prima di investirci tempo o capitale.</p></div>'
       +'<div class="footer-nav">'
       +'<div class="footer-col"><h4>Piattaforma</h4><a href="index.html">Dashboard</a><a href="search.html">Esplora</a><a href="compare.html">Confronta</a><a href="library.html">Preferiti</a><a href="pricing.html">Pacchetti</a></div>'
       +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html">I miei report</a><a href="account.html">Assistenza</a></div>'
@@ -116,9 +116,10 @@
       +'<div class="footer-pay-icons" aria-label="Metodi di pagamento supportati">'
       +'<span class="pay-badge pay-visa">VISA</span>'
       +'<span class="pay-badge pay-mc"><i></i><i></i></span>'
-      +'<span class="pay-badge pay-apple">🍎 Pay</span>'
+      +'<span class="pay-badge pay-apple"><svg viewBox="0 0 17 20" class="apple-mark" aria-hidden="true"><path fill="currentColor" d="M13.9 10.6c0-2 1.6-3 1.7-3.1-1-1.4-2.5-1.6-3-1.6-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.7-2.7-.7-1.4 0-2.6.8-3.3 2-1.4 2.4-.4 6 1 8 .7 1 1.5 2.1 2.6 2 1-.1 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.6 1.1 0 1.8-1 2.5-2 .8-1.1 1.1-2.2 1.1-2.3-.1 0-2.2-.9-2.2-3.4Z"/><path fill="currentColor" d="M11.7 4.3c.6-.7 1-1.7.9-2.6-.8 0-1.9.6-2.5 1.3-.5.6-1 1.6-.9 2.5.9.1 1.9-.5 2.5-1.2Z"/></svg><b>Pay</b></span>'
       +'<span class="pay-badge pay-paypal">Pay<b>Pal</b></span>'
       +'</div>'
+      +'<small class="footer-stripe-note">Elaborazione pagamenti a cura di Stripe</small>'
       +'</div>'
       +'<div class="footer-bottom">© '+year+' BizScan. Tutti i diritti riservati.</div>'
       +'</footer>';
