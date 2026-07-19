@@ -522,3 +522,12 @@
 @keyframes celebrate-bounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.08)}}
 .celebrate-card h3{margin:6px 0 4px;color:#7ef2c9;font-size:17px}
 .celebrate-card p{margin:0;color:#c7d0dd;font-size:12px}
+.confetti-box i{background:var(--cc)}
+.confetti-box i.c-rect{width:11px;height:5px;border-radius:2px}
+.confetti-box i.c-square{width:8px;height:8px;border-radius:2px}
+.confetti-box i.c-dot{width:7px;height:7px;border-radius:50%}
+.confetti-box i.c-star{width:16px;height:16px;background:var(--cc);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.confetti-box i.c-star-sm{width:9px;height:9px;background:var(--cc);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.confetti-box i.c-spiral{width:14px;height:14px;background:transparent;border:2.5px solid var(--cc);border-radius:50%;border-bottom-color:transparent;border-left-color:transparent}
+.guest-auth-links{display:flex;gap:8px}
+.guest-auth-links .btn{min-height:32px;padding:0 14px;font-size:11px}

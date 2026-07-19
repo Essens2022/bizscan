@@ -76,8 +76,8 @@ function updateShell(){
    BizScanData.currentUser().then(u=>{if(u?.email)nameEl.textContent=u.email}).catch(()=>{});
    if(statusEl)statusEl.textContent=plan?`Piano ${plan} · ${n} crediti`:`${n} crediti disponibili`;
   }else{
-   nameEl.textContent='Ospite non autenticato';
-   if(statusEl)statusEl.textContent='Accedi per vedere crediti e report';
+   nameEl.innerHTML='<span class="guest-auth-links"><a class="btn gold" href="account.html">Accedi</a><a class="btn ghost" href="account.html">Registrati</a></span>';
+   if(statusEl)statusEl.textContent='';
   }
  }
 }
@@ -415,10 +415,13 @@ window.choosePackage=async key=>{
  modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
-  const{data:sessionData,error:sessionErr}=await c.auth.getSession();
-  const session=sessionData?.session;
-  if(sessionErr||!session?.access_token){
-   modal(p.name,'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html">Accedi</a>');
+  let{data:sessionData}=await c.auth.getSession();
+  let session=sessionData?.session;
+  if(!session?.access_token){
+   try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
+  }
+  if(!session?.access_token){
+   modal(p.name,'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent('pricing.html')+'">Accedi</a>');
    return;
   }
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
@@ -489,19 +492,22 @@ function celebrateCheckoutSuccess(planName){
  const colors=['#ffb703','#ff8a00','#2dd4a7','#3a86ff','#8357ff','#ffd053'];
  const box=document.createElement('div');
  box.className='confetti-box';
- for(let i=0;i<60;i++){
+ const shapes=['c-rect','c-square','c-star','c-dot','c-spiral','c-star-sm'];
+ for(let i=0;i<70;i++){
   const p=document.createElement('i');
+  p.className=shapes[i%shapes.length];
+  const col=colors[i%colors.length];
   p.style.left=(Math.random()*100)+'%';
-  p.style.background=colors[i%colors.length];
-  p.style.animationDelay=(Math.random()*0.5)+'s';
-  p.style.animationDuration=(2.4+Math.random()*1.4)+'s';
+  p.style.setProperty('--cc',col);
+  p.style.animationDelay=(Math.random()*0.6)+'s';
+  p.style.animationDuration=(2.4+Math.random()*1.6)+'s';
   p.style.transform=`rotate(${Math.floor(Math.random()*360)}deg)`;
   box.appendChild(p);
  }
  document.body.appendChild(box);
  const card=document.createElement('div');
  card.className='celebrate-card';
- card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Congratulazioni!</h3><p>Il tuo pagamento${planName?' per <b>'+esc(planName)+'</b>':''} è andato a buon fine.</p>`;
+ card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Congratulazioni!</h3><p>Il tuo pagamento${planName?' per il pacchetto <b>'+esc(planName)+'</b> di BizScan':''} è andato a buon fine.</p>`;
  document.body.appendChild(card);
  requestAnimationFrame(()=>card.classList.add('show'));
  setTimeout(()=>{card.classList.remove('show');card.classList.add('hide')},3600);
