@@ -334,7 +334,8 @@ function toolBlock(key,title,fallback,realHtml){
  return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
 }
 const TOOL_MIN_PLAN_LABEL={scenario:'Starter',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
-const PLAN_BADGE_COLOR={Starter:'#35d49a',Smart:'#5b8cff',Pro:'#ff9d3d',Advanced:'#e05fc9',Business:'#2fd8d8',Max:'#ffb703'};
+const PLAN_TIER_COLOR={single:'#94a3b8',starter:'#22c55e',smart:'#3b82f6',pro:'#06b6d4',advanced:'#ec4899',business:'#a855f7',max:'#ffb703'};
+const PLAN_BADGE_COLOR={Starter:PLAN_TIER_COLOR.starter,Smart:PLAN_TIER_COLOR.smart,Pro:PLAN_TIER_COLOR.pro,Advanced:PLAN_TIER_COLOR.advanced,Business:PLAN_TIER_COLOR.business,Max:PLAN_TIER_COLOR.max};
 function lockedCta(toolKey){
  if(!access.authenticated){
   return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
@@ -569,7 +570,7 @@ function renderPricing(){
   if(p.key==='max')items.push('Tutte le funzioni BizScan')
   return items.slice(0,5)
  }
- const PRICE_CARD_COLOR={single:'#9198a5',starter:'#7c93c4',smart:'#5478e6',pro:'#6f5fea',advanced:'#8850e6',business:'#9c3fdb',max:'#7c3aed'}
+ const PRICE_CARD_COLOR=PLAN_TIER_COLOR
  const cards=PACKAGES.map(p=>{
   const v=packageValue(p)
   const saving=v.saving>.01
