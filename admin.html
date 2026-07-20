@@ -60,6 +60,7 @@ textarea{min-height:92px;resize:vertical}
 .step-head small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .admin-back{width:34px;height:34px;min-width:34px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text);font-size:17px;cursor:pointer;margin-right:10px;transition:border-color .18s,background .18s}
 .admin-back:hover{border-color:#6f55a9;background:#111a28}
+@media(max-width:900px){.homepage-editor-layout{grid-template-columns:1fr!important}.homepage-editor-preview{position:static!important}}
 </style>
 
 <style>
@@ -585,6 +586,8 @@ textarea{min-height:92px;resize:vertical}
   </section>
 
   <section id="homepagePanel" class="panel">
+   <div class="homepage-editor-layout" style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start">
+    <div class="homepage-editor-controls">
     <div class="card">
       <h2>Stile di transizione del carosello</h2>
       <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Come passa da un'immagine/video all'altro, e ogni quanto tempo cambia.</p>
@@ -631,11 +634,7 @@ textarea{min-height:92px;resize:vertical}
 
       <div class="card" style="background:#0d1420;border:1px solid var(--line)">
         <h3 style="margin-top:0">Crea una nuova frase</h3>
-        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli colore e dimensione, premi "+". Ripeti per ogni pezzo diverso.</p>
-        <p style="color:var(--muted);font-size:11px;margin-bottom:4px">Anteprima reale (come apparirà sul sito):</p>
-        <div id="phraseChunkPreview" style="font-size:32px;line-height:1.15;font-weight:900;text-align:center;padding:28px 16px;background:#050914;border-radius:14px;margin:6px 0 14px;min-height:40px;font-family:Arial,Helvetica,sans-serif">
-          <span style="color:var(--muted);font-weight:400;font-size:13px">L'anteprima della frase apparirà qui</span>
-        </div>
+        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli colore e dimensione, premi "+". Ripeti per ogni pezzo diverso. Guarda l'anteprima a destra.</p>
         <div id="phraseChunksList" style="display:grid;gap:6px;margin-bottom:12px"></div>
         <div class="three">
           <label>Testo del pezzo<input id="chunkText" placeholder="giusta"></label>
@@ -657,10 +656,19 @@ textarea{min-height:92px;resize:vertical}
         </div>
       </div>
     </div>
+    </div>
+
+    <div class="homepage-editor-preview" style="position:sticky;top:16px">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800;font-size:12px;color:var(--muted)">ANTEPRIMA DAL VIVO — come appare sul sito ora</div>
+        <div id="adminLivePreview" style="background:#050914;min-height:280px;padding:20px 14px;position:relative;overflow:hidden"></div>
+      </div>
+    </div>
+   </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607202113"></script>
-<script src="app.js?v=202607202113"></script>
+ <script src="supabase-data.js?v=202607202120"></script>
+<script src="app.js?v=202607202120"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -783,6 +791,22 @@ function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;",
 function checked(cls){return [...document.querySelectorAll("."+cls+":checked")].map(x=>x.value)}
 
 let _heroMedia=[],_heroPhrases=[]
+function renderAdminLivePreview(){
+  const host=document.getElementById("adminLivePreview");if(!host)return
+  const activeMedia=_heroMedia.filter(m=>m.is_active)
+  const mediaHtml=activeMedia.length?`<div style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:${activeMedia.length||_phraseChunks.length||_heroPhrases.length?'-30px':'0'}">
+      ${activeMedia[0].media_type==="video"
+        ?`<video src="${esc(activeMedia[0].url)}" muted autoplay loop style="width:100%;height:100%;object-fit:cover"></video>`
+        :`<img src="${esc(activeMedia[0].url)}" style="width:100%;height:100%;object-fit:cover" alt="">`}
+      <div style="position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(to top,rgba(5,9,20,.92),rgba(5,9,20,0))"></div>
+      ${activeMedia.length>1?`<span style="position:absolute;bottom:8px;right:10px;color:#fff;font-size:10px;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:6px">1/${activeMedia.length}</span>`:''}
+    </div>`:''
+  const chunks=_phraseChunks.length?_phraseChunks:(_heroPhrases[0]?.segments||(_heroPhrases[0]?[{text:_heroPhrases[0].text,color:_heroPhrases[0].color}]:null))
+  const titleHtml=chunks&&chunks.length
+    ?`<h3 style="position:relative;z-index:2;font-size:26px;font-weight:900;line-height:1.15;margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5)">${chunks.map(c=>`<span style="color:${esc(c.color||'#fff')};font-size:${SEGMENT_SIZE_EM[c.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system}">${esc(c.text)}</span>`).join('')}</h3>`
+    :'<p style="color:var(--muted);font-size:12px;margin:0">Nessuna frase ancora - qui apparirà il titolo</p>'
+  host.innerHTML=(mediaHtml||'')+titleHtml+(!activeMedia.length&&!chunks?'<p style="color:var(--muted);font-size:11px;margin-top:10px">Aggiungi media o una frase per vedere l\'anteprima</p>':'')
+}
 async function loadCarouselTransition(){
   const{data,error}=await supabaseClient.rpc("public_get_hero_settings")
   if(error){console.error(error);return}
@@ -800,6 +824,7 @@ async function loadHeroMedia(){
   if(error){console.error(error);return}
   _heroMedia=(data||[]).sort((a,b)=>a.order_index-b.order_index)
   renderHeroMediaList()
+  renderAdminLivePreview()
 }
 function renderHeroMediaList(){
   const host=document.getElementById("heroMediaList");if(!host)return
@@ -900,6 +925,7 @@ async function loadHeroPhrases(){
   if(error){console.error(error);return}
   _heroPhrases=(data||[]).sort((a,b)=>a.order_index-b.order_index)
   renderHeroPhraseList()
+  renderAdminLivePreview()
 }
 function renderHeroPhraseList(){
   const host=document.getElementById("heroPhraseList");if(!host)return
@@ -919,19 +945,17 @@ const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28}
 const SEGMENT_FONT_FAMILY={system:"Arial,Helvetica,sans-serif",poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"}
 const SEGMENT_FONT_LABEL={system:"sistema",poppins:"Poppins",playfair:"Playfair",montserrat:"Montserrat",oswald:"Oswald",merriweather:"Merriweather"}
 function renderPhraseChunks(){
-  const preview=document.getElementById("phraseChunkPreview")
   const list=document.getElementById("phraseChunksList")
   if(_phraseChunks.length){
-    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)};font-size:${SEGMENT_SIZE_EM[c.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system}">${esc(c.text)}</span>`).join("")
     list.innerHTML=_phraseChunks.map((c,i)=>`<div class="panel" style="padding:8px 12px;display:flex;align-items:center;gap:10px">
       <span style="width:16px;height:16px;border-radius:4px;background:${esc(c.color)};border:1px solid #333;flex-shrink:0"></span>
       <span style="flex:1;font-size:13px">${esc(c.text)} <small style="color:var(--muted)">(${c.size==='small'?'piccolo':c.size==='large'?'grande':'normale'} · ${SEGMENT_FONT_LABEL[c.font]||'sistema'})</small></span>
       <button class="btn danger" type="button" onclick="removePhraseChunk(${i})">Rimuovi</button>
     </div>`).join("")
   }else{
-    preview.innerHTML='<span style="color:var(--muted);font-weight:400;font-size:13px">L\'anteprima della frase apparirà qui</span>'
     list.innerHTML=""
   }
+  renderAdminLivePreview()
 }
 window.addPhraseChunk=()=>{
   const text=document.getElementById("chunkText").value.trim()
@@ -1680,5 +1704,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607202113"></script></body>
+<script src="shell-ui.js?v=202607202120"></script></body>
 </html>
