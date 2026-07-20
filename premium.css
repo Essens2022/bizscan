@@ -541,3 +541,5 @@
 .premium-lock-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#ffb703,#ff8a00);color:#1a0f38;flex-shrink:0}
 .locked-preview.plan-locked{border-color:#5c2bb5;background:linear-gradient(135deg,rgba(91,37,174,.12),rgba(28,13,63,.2))}
 .locked-preview.plan-locked span{color:#b4a0e5}
+.plan-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid;font-size:11px;font-weight:900}
+.locked-preview.plan-locked{flex-direction:column;align-items:flex-start;gap:10px}
