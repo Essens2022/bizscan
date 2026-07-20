@@ -68,13 +68,14 @@ async function load(){
 function updateShell(){
  const c=$('.top-actions .chip');
  const n=access.credits??access.available_credits??0;
+ const pdfN=access.available_pdf_credits??0;
  const plan=(access.plan&&access.plan!=='free')?String(access.plan).charAt(0).toUpperCase()+String(access.plan).slice(1):'';
- if(c)c.textContent=plan?`Crediti: ${n} · ${plan}`:`Crediti: ${n}`;
+ if(c)c.textContent=`Crediti: ${n} · PDF: ${pdfN}`;
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
  if(nameEl){
   if(access.authenticated){
    BizScanData.currentUser().then(u=>{if(u?.email)nameEl.textContent=u.email}).catch(()=>{});
-   if(statusEl)statusEl.textContent=plan?`Piano ${plan} · ${n} crediti`:`${n} crediti disponibili`;
+   if(statusEl)statusEl.textContent=`${n} crediti analisi · ${pdfN} crediti PDF${plan?' · Piano '+plan:''}`;
   }else{
    nameEl.innerHTML='<span class="guest-auth-links"><a class="btn gold" href="account.html">Accedi</a><a class="btn ghost" href="account.html">Registrati</a></span>';
    if(statusEl)statusEl.textContent='';
