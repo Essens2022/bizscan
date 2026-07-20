@@ -377,7 +377,55 @@ textarea{min-height:92px;resize:vertical}
           </div>
           <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
         </div>
-        <div class="step-head"><span class="step-num">5</span><div><b>Pubblicazione e posizionamento</b><small>Stato, prezzo, dove appare sul sito e in quali piani è inclusa</small></div></div><label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
+        <div class="step-head"><span class="step-num">5</span><div><b>Grafici e cifre reali</b><small>Numeri veri al posto degli esempi generici, per tutti i 16 strumenti · lascia vuoto per usare l'esempio</small></div></div>
+
+        <div style="margin-top:14px;font-weight:900">Scenari di profitto (annuo)</div>
+        <label class="check"><input type="checkbox" id="freeScenario">Gratuito (visibile senza acquisto)</label>
+        <div class="three" style="margin-top:8px"><b></b><label>Prudente</label><label>Realistico</label></div>
+        <div class="three"><label>Fatturato<input id="scPrudFatt" placeholder="280K €"></label><input id="scRealFatt" placeholder="430K €"><input id="scOttiFatt" placeholder="650K €"></div>
+        <div class="three"><label>Utile netto<input id="scPrudUtile" placeholder="18K €"></label><input id="scRealUtile" placeholder="45K €"><input id="scOttiUtile" placeholder="80K €"></div>
+        <div class="three"><label>ROI<input id="scPrudRoi" placeholder="8%"></label><input id="scRealRoi" placeholder="20%"><input id="scOttiRoi" placeholder="33%"></div>
+        <div class="three"><label>Recupero<input id="scPrudRec" placeholder="42 mesi"></label><input id="scRealRec" placeholder="26 mesi"><input id="scOttiRec" placeholder="16 mesi"></div>
+
+        <div style="margin-top:16px;font-weight:900">Confronto con la media categoria</div>
+        <label class="check"><input type="checkbox" id="freeBenchmark">Gratuito (visibile senza acquisto)</label>
+        <div class="three" style="margin-top:8px"><b></b><label>Attività (dato reale)</label><label>Media categoria</label></div>
+        <div class="three"><label>ROI medio<input id="bmRoiA" placeholder="20%"></label><input id="bmRoiM" placeholder="18%"></div>
+        <div class="three"><label>Margine netto<input id="bmMargA" placeholder="15%"></label><input id="bmMargM" placeholder="12%"></div>
+        <div class="three"><label>Tempo recupero<input id="bmRecA" placeholder="24 mesi"></label><input id="bmRecM" placeholder="30 mesi"></div>
+        <div class="three"><label>Rischio<input id="bmRiskA" placeholder="Medio"></label><input id="bmRiskM" placeholder="Medio-Alto"></div>
+
+        <div style="margin-top:16px;font-weight:900">Indicatori chiave</div>
+        <label class="check"><input type="checkbox" id="freeIndicators">Gratuito (visibile senza acquisto)</label>
+        <div class="two" style="margin-top:8px">
+          <label>Domanda<select id="indDomanda"><option value="">Media (esempio)</option><option>Bassa</option><option>Media</option><option>Alta</option></select></label>
+          <label>Concorrenza<select id="indConcorrenza"><option value="">Media (esempio)</option><option>Bassa</option><option>Media</option><option>Alta</option></select></label>
+        </div>
+        <div class="two">
+          <label>Scalabilità<select id="indScalabilita"><option value="">Media (esempio)</option><option>Bassa</option><option>Media</option><option>Alta</option></select></label>
+          <label>Gestione<select id="indGestione"><option value="">Media (esempio)</option><option>Bassa</option><option>Media</option><option>Alta</option></select></label>
+        </div>
+
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line);font-weight:900">Analisi finanziaria (dal piano Smart/Pro)</div>
+        <label>Break-even mensile<textarea id="toolBreakEven" rows="2" placeholder="Es: L'attività raggiunge il pareggio al 9° mese, con un margine mensile medio di 3.200 €"></textarea></label>
+        <label>Cash-flow a 12 mesi<textarea id="toolCashFlow" rows="3" placeholder="Es: descrivi entrate/uscite mese per mese, o incolla la tabella"></textarea></label>
+
+        <div style="margin-top:16px;font-weight:900">Costi e ricavi (dal piano Pro)</div>
+        <label>Costi fissi e variabili mensili<textarea id="toolCostiFissiVar" rows="2" placeholder="Es: Fissi ~2.100 €/mese (affitto, utenze), variabili ~35% del fatturato"></textarea></label>
+
+        <div style="margin-top:16px;font-weight:900">Mercato (dal piano Business)</div>
+        <label>Concorrenza locale<textarea id="toolConcorrenzaLocale" rows="2" placeholder="Es: 3 attività simili entro 1 km, mercato moderatamente saturo"></textarea></label>
+        <label>Domanda e stagionalità<textarea id="toolStagionalita" rows="2" placeholder="Es: picco giugno-agosto (+40%), calo gennaio-febbraio"></textarea></label>
+
+        <div style="margin-top:16px;font-weight:900">Rischi (dal piano Max)</div>
+        <label>Matrice dei rischi<textarea id="toolMatriceRischi" rows="3" placeholder="Es: elenca i rischi principali con probabilità, impatto e mitigazione"></textarea></label>
+
+        <div style="margin-top:16px;font-weight:900">Operatività (dal piano Advanced/Max)</div>
+        <label>Fabbisogno di personale<textarea id="toolPersonale" rows="2" placeholder="Es: 2 persone part-time + 1 titolare, turni su 6 giorni"></textarea></label>
+        <label>Fornitori e autorizzazioni<textarea id="toolFornitori" rows="2" placeholder="Es: fornitore principale X, licenza commerciale + HACCP richiesti"></textarea></label>
+        <label>Strategie di crescita<textarea id="toolStrategieCrescita" rows="2" placeholder="Es: aprire un secondo punto vendita dopo 18 mesi, introdurre delivery"></textarea></label>
+
+<div class="step-head"><span class="step-num">6</span><div><b>Pubblicazione e posizionamento</b><small>Stato, prezzo, dove appare sul sito e in quali piani è inclusa</small></div></div><label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
 <div class="two" style="margin-top:10px">
   <label>Prezzo analisi<input id="price" type="number" min="0" step="0.01" value="1.99"></label>
   <label>Tag<input id="tags" placeholder="costi, profitto, franchising"><small>Separali con una virgola</small></label>
@@ -794,6 +842,37 @@ async function saveCurrentPdfRule(attachmentId){
   if(!attachmentId)return;
   await supabaseClient.rpc('admin_set_pdf_access_rule',{p_attachment_id:attachmentId,p_is_free:document.getElementById('pdfFree').checked,p_allowed_plan_types:selectedPdfPlans()})
 }
+function v_(id){const el=document.getElementById(id);const t=el?el.value.trim():'';return t||null}
+function buildDisplayData(){
+  const scen={};
+  const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
+  for(const k in cols){const[fatt,utile,roi,rec]=cols[k].map(v_);if(fatt||utile||roi||rec)scen[k]={fatturato:fatt,utile:utile,roi:roi,recupero:rec}}
+  const bm={};
+  const pairs=[['roi','bmRoiA','bmRoiM'],['margine','bmMargA','bmMargM'],['recupero','bmRecA','bmRecM'],['rischio','bmRiskA','bmRiskM']];
+  for(const[k,a,m]of pairs){const av=v_(a),mv=v_(m);if(av||mv)bm[k]={a:av,m:mv}}
+  const ind={};
+  for(const[k,id]of[['domanda','indDomanda'],['concorrenza','indConcorrenza'],['scalabilita','indScalabilita'],['gestione','indGestione']]){const val=document.getElementById(id)?.value;if(val)ind[k]=val}
+  const free=[];
+  if(document.getElementById('freeScenario')?.checked)free.push('scenario');
+  if(document.getElementById('freeBenchmark')?.checked)free.push('benchmark');
+  if(document.getElementById('freeIndicators')?.checked)free.push('indicators');
+  const tools={};
+  for(const[k,id]of[['break_even','toolBreakEven'],['cash_flow','toolCashFlow'],['costi_fissi_variabili','toolCostiFissiVar'],['concorrenza_locale','toolConcorrenzaLocale'],['stagionalita','toolStagionalita'],['matrice_rischi','toolMatriceRischi'],['personale','toolPersonale'],['fornitori','toolFornitori'],['strategie_crescita','toolStrategieCrescita']]){const val=v_(id);if(val)tools[k]=val}
+  return{scenario:Object.keys(scen).length?scen:undefined,benchmark:Object.keys(bm).length?bm:undefined,indicators:Object.keys(ind).length?ind:undefined,free,tools:Object.keys(tools).length?tools:undefined}
+}
+function loadDisplayDataForm(d){
+  d=d||{};const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{},free=d.free||[],tools=d.tools||{};
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''}
+  const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
+  for(const k in cols){const row=sc[k]||{};const[fatt,utile,roi,rec]=cols[k];set(fatt,row.fatturato);set(utile,row.utile);set(roi,row.roi);set(rec,row.recupero)}
+  const pairs=[['roi','bmRoiA','bmRoiM'],['margine','bmMargA','bmMargM'],['recupero','bmRecA','bmRecM'],['rischio','bmRiskA','bmRiskM']];
+  for(const[k,a,m]of pairs){const row=bm[k]||{};set(a,row.a);set(m,row.m)}
+  for(const[k,id]of[['domanda','indDomanda'],['concorrenza','indConcorrenza'],['scalabilita','indScalabilita'],['gestione','indGestione']]){const el=document.getElementById(id);if(el)el.value=ind[k]||''}
+  document.getElementById('freeScenario').checked=free.includes('scenario');
+  document.getElementById('freeBenchmark').checked=free.includes('benchmark');
+  document.getElementById('freeIndicators').checked=free.includes('indicators');
+  for(const[k,id]of[['break_even','toolBreakEven'],['cash_flow','toolCashFlow'],['costi_fissi_variabili','toolCostiFissiVar'],['concorrenza_locale','toolConcorrenzaLocale'],['stagionalita','toolStagionalita'],['matrice_rischi','toolMatriceRischi'],['personale','toolPersonale'],['fornitori','toolFornitori'],['strategie_crescita','toolStrategieCrescita']]){set(id,tools[k])}
+}
 async function loadPdfRule(attachmentId){
   document.getElementById('pdfFree').checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);
   if(!attachmentId)return;
@@ -856,6 +935,9 @@ async function saveAnalysis(){
     {const ff=[...document.querySelectorAll(".free:checked")].map(x=>x.value)
      const{error:ffErr}=await supabaseClient.from("analyses").update({free_fields:ff}).eq("id",savedId)
      if(ffErr){console.error("BizScan admin: could not save free_fields",ffErr);attachmentWarnings.push("informazioni gratuite: "+ffErr.message)}}
+
+    {const{error:ddErr}=await supabaseClient.rpc("admin_set_analysis_display_data",{p_analysis_id:savedId,p_data:buildDisplayData()})
+     if(ddErr){console.error("BizScan admin: could not save display data",ddErr);attachmentWarnings.push("grafici e strumenti: "+ddErr.message)}}
 
     await loadAnalyses()
     renderAll()
@@ -932,6 +1014,7 @@ async function editAnalysis(id){
   await loadPdfRule(pdf?.id)
   document.querySelectorAll(".plan").forEach(c=>c.checked=(x.plan_types||[]).includes(c.value))
   {const ff=x.free_fields||["score","risk","investment","payback","summary","price"];document.querySelectorAll(".free").forEach(c=>c.checked=ff.includes(c.value))}
+  loadDisplayDataForm(x.display)
   renderHomeSectionChecks(x.placement_slugs||[])
   document.querySelectorAll(".placement").forEach(c=>{
     if(c.value==="home")c.checked=!!x.homepage
@@ -1073,6 +1156,7 @@ function resetForm(){
   document.getElementById("score").value=80;document.getElementById("risk").value=50;document.getElementById("order").value=1;document.getElementById("status").value="draft";document.getElementById("verdict").value="Conviene";document.getElementById("profitMode").value="Medio alto";document.getElementById("profit").value="Medio alto";document.getElementById("cardBadge").value="";document.getElementById("price").value="1.99";document.getElementById("tags").value="";document.getElementById("featured").checked=false;document.getElementById("popular").checked=false;document.getElementById("trending").checked=false;document.getElementById("homePosition").value="1";document.getElementById("emoji").value=""
   refreshSelects();document.querySelectorAll(".plan").forEach(x=>x.checked=x.value==="plus");document.querySelectorAll(".free").forEach(x=>x.checked=["score","risk","verdict"].includes(x.value));renderHomeSectionChecks([]);document.querySelectorAll(".placement").forEach(x=>x.checked=x.value==="home");renderEmojiPicker();renderPositionPicker();renderSectionsEditor()
   coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
+  loadDisplayDataForm(null)
 }
 function readCover(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{coverData=r.result;document.getElementById("coverName").textContent=f.name;preview()};r.readAsDataURL(f)}
 function readPdf(input){const f=input.files[0];if(!f)return;pdfMeta={name:f.name,size:f.size,type:f.type};document.getElementById("pdfName").textContent=f.name}
