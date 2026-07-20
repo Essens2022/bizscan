@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>BizScan Admin V1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Playfair+Display:wght@700;900&family=Montserrat:wght@700;900&family=Oswald:wght@600;700&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#080a0e;--panel:#12161d;--panel2:#181d25;--line:#29303a;--text:#f7f8fb;--muted:#9fa6b2;--yellow:#ffb703;--orange:#ff8a00;--blue:#3a86ff;--cyan:#21c7d8;--green:#2dd4a7;--red:#ff4d4f;--purple:#8357ff}
 *{box-sizing:border-box}
@@ -585,6 +586,18 @@ textarea{min-height:92px;resize:vertical}
 
   <section id="homepagePanel" class="panel">
     <div class="card">
+      <h2>Stile di transizione del carosello</h2>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Come passa da un'immagine/video all'altro.</p>
+      <div class="three">
+        <label>Transizione<select id="carouselTransition" onchange="saveCarouselTransition()">
+          <option value="fade">Dissolvenza - sfuma dolcemente</option>
+          <option value="slide">Scorrimento - scivola da destra</option>
+          <option value="zoom">Zoom - effetto cinematico lento</option>
+        </select></label>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
       <h2>Carosello media (in alto nella pagina principale)</h2>
       <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Immagini, GIF o brevi video mostrati a rotazione sopra il titolo. Lascia vuoto per non mostrare nulla.</p>
       <div id="heroMediaList" style="display:grid;gap:10px;margin-bottom:16px"></div>
@@ -619,6 +632,14 @@ textarea{min-height:92px;resize:vertical}
           <label>Colore<input id="chunkColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
           <label>Dimensione<select id="chunkSize"><option value="small">Piccolo</option><option value="medium" selected>Normale</option><option value="large">Grande</option></select></label>
         </div>
+        <label>Font<select id="chunkFont">
+          <option value="system" selected>Sistema (predefinito)</option>
+          <option value="poppins" style="font-family:'Poppins'">Poppins - moderno</option>
+          <option value="playfair" style="font-family:'Playfair Display'">Playfair Display - elegante</option>
+          <option value="montserrat" style="font-family:'Montserrat'">Montserrat - pulito</option>
+          <option value="oswald" style="font-family:'Oswald'">Oswald - deciso</option>
+          <option value="merriweather" style="font-family:'Merriweather'">Merriweather - classico</option>
+        </select></label>
         <button class="btn dark full" type="button" onclick="addPhraseChunk()" style="margin-top:10px">+ Aggiungi pezzo</button>
         <div style="display:flex;gap:10px;margin-top:14px">
           <button class="btn gold" type="button" onclick="saveHeroPhraseFromChunks()">Salva frase</button>
@@ -628,8 +649,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607201603"></script>
-<script src="app.js?v=202607201603"></script>
+ <script src="supabase-data.js?v=202607201610"></script>
+<script src="app.js?v=202607201610"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -752,6 +773,16 @@ function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;",
 function checked(cls){return [...document.querySelectorAll("."+cls+":checked")].map(x=>x.value)}
 
 let _heroMedia=[],_heroPhrases=[]
+async function loadCarouselTransition(){
+  const{data,error}=await supabaseClient.rpc("public_get_hero_settings")
+  if(error){console.error(error);return}
+  document.getElementById("carouselTransition").value=(data&&data.carousel_transition)||"fade"
+}
+window.saveCarouselTransition=async()=>{
+  const val=document.getElementById("carouselTransition").value
+  const{error}=await supabaseClient.rpc("admin_set_hero_settings",{p_carousel_transition:val})
+  if(error)alert("Errore: "+error.message)
+}
 async function loadHeroMedia(){
   const{data,error}=await supabaseClient.rpc("admin_list_hero_media")
   if(error){console.error(error);return}
@@ -834,7 +865,7 @@ async function loadHeroPhrases(){
 function renderHeroPhraseList(){
   const host=document.getElementById("heroPhraseList");if(!host)return
   const preview=p=>Array.isArray(p.segments)&&p.segments.length
-    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em">${esc(s.text)}</span>`).join("")
+    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system}">${esc(s.text)}</span>`).join("")
     :`<span style="color:${esc(p.color)}">${esc(p.text)}</span>`
   host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
     <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
@@ -846,14 +877,16 @@ function renderHeroPhraseList(){
 }
 let _phraseChunks=[]
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28}
+const SEGMENT_FONT_FAMILY={system:"Arial,Helvetica,sans-serif",poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"}
+const SEGMENT_FONT_LABEL={system:"sistema",poppins:"Poppins",playfair:"Playfair",montserrat:"Montserrat",oswald:"Oswald",merriweather:"Merriweather"}
 function renderPhraseChunks(){
   const preview=document.getElementById("phraseChunkPreview")
   const list=document.getElementById("phraseChunksList")
   if(_phraseChunks.length){
-    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)};font-size:${SEGMENT_SIZE_EM[c.size]||1}em">${esc(c.text)}</span>`).join("")
+    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)};font-size:${SEGMENT_SIZE_EM[c.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system}">${esc(c.text)}</span>`).join("")
     list.innerHTML=_phraseChunks.map((c,i)=>`<div class="panel" style="padding:8px 12px;display:flex;align-items:center;gap:10px">
       <span style="width:16px;height:16px;border-radius:4px;background:${esc(c.color)};border:1px solid #333;flex-shrink:0"></span>
-      <span style="flex:1;font-size:13px">${esc(c.text)} <small style="color:var(--muted)">(${c.size==='small'?'piccolo':c.size==='large'?'grande':'normale'})</small></span>
+      <span style="flex:1;font-size:13px">${esc(c.text)} <small style="color:var(--muted)">(${c.size==='small'?'piccolo':c.size==='large'?'grande':'normale'} · ${SEGMENT_FONT_LABEL[c.font]||'sistema'})</small></span>
       <button class="btn danger" type="button" onclick="removePhraseChunk(${i})">Rimuovi</button>
     </div>`).join("")
   }else{
@@ -865,8 +898,9 @@ window.addPhraseChunk=()=>{
   const text=document.getElementById("chunkText").value.trim()
   const color=document.getElementById("chunkColor").value
   const size=document.getElementById("chunkSize").value
+  const font=document.getElementById("chunkFont").value
   if(!text){alert("Scrivi il testo del pezzo");return}
-  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color,size})
+  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color,size,font})
   document.getElementById("chunkText").value=""
   renderPhraseChunks()
 }
@@ -906,7 +940,7 @@ function showTab(name,btn){
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"))
   btn.classList.add("active")
   if(name==="new")refreshSelects()
-  if(name==="homepage"){loadHeroMedia();loadHeroPhrases()}
+  if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
 }
 
 
@@ -1607,5 +1641,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607201603"></script></body>
+<script src="shell-ui.js?v=202607201610"></script></body>
 </html>

@@ -559,3 +559,7 @@
 .hero-rotating-h1.fading span{opacity:0}
 .hero-subtitle-small{text-align:center;font-size:13px;color:#8d99aa;margin:14px 0 0;max-width:480px;margin-left:auto;margin-right:auto}
 @media(max-width:640px){.hero-rotating-h1{font-size:26px}.hero-media-carousel{aspect-ratio:16/10}}
+.transition-slide .hero-media-slide{opacity:1;transform:translateX(100%);transition:transform .9s cubic-bezier(.4,0,.2,1)}
+.transition-slide .hero-media-slide.active{transform:translateX(0)}
+.transition-zoom .hero-media-slide.active img,.transition-zoom .hero-media-slide.active video{animation:hero-kenburns 5s ease-out forwards}
+@keyframes hero-kenburns{from{transform:scale(1)}to{transform:scale(1.09)}}

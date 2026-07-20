@@ -18,7 +18,7 @@ function packageValue(p){
  return {analysisValue,indicatorValue,pdfValue,comparisonValue,total,saving:Math.max(0,total-p.price),resources:p.analyses+p.indicatorCount+p.pdfCredits+(COMPARISON_UNITS[p.compare]||0)}
 };
 let analyses=[],favorites=[],compare=[],access={authenticated:false,credits:0};
-let heroMedia=[],heroPhrases=[];
+let heroMedia=[],heroPhrases=[],heroTransition='fade';
 let homeFilter='recommended';
 let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -51,12 +51,13 @@ function applyDbPlans(rows){
 }
 async function load(){
  compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
- const [ra,rs,rp,rhm,rhp]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases()]);
+ const [ra,rs,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
  if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
  if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
  if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
  heroMedia=rhm.status==='fulfilled'?rhm.value:[];
  heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
+ heroTransition=rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):'fade';
  // I preferiti sono dati personali dell'account: l'unica fonte di verità è il server.
  // Un ospite non autenticato non ha una lista di preferiti locale che poi "eredita" al login.
  if(access.authenticated){
@@ -154,9 +155,10 @@ function filterHomeAnalyses(items,filter){
 }
 window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28};
+const SEGMENT_FONT_FAMILY={system:'Arial,Helvetica,sans-serif',poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"};
 function renderPhraseHtml(ph){
  if(Array.isArray(ph.segments)&&ph.segments.length){
-  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em">${esc(s.text||'')}</span>`).join('');
+  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system}">${esc(s.text||'')}</span>`).join('');
  }
  return `<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
 }
@@ -198,7 +200,7 @@ function renderHome(){
  const metric=(label,value)=>`<div class="home18-metric"><small>${label}</small><b>${esc(value||'—')}</b></div>`
  host.innerHTML=`<div class="home18">
   <section class="home18-hero">
-   ${heroMedia.length?`<div class="hero-media-carousel" id="heroMediaCarousel">${heroMedia.map((m,i)=>{
+   ${heroMedia.length?`<div class="hero-media-carousel transition-${esc(heroTransition)}" id="heroMediaCarousel">${heroMedia.map((m,i)=>{
      const inner=m.media_type==='video'?`<video src="${esc(m.url)}" autoplay muted loop playsinline></video>`:`<img src="${esc(m.url)}" alt="" loading="${i===0?'eager':'lazy'}">`;
      return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
    }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div>`:''}
