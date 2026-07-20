@@ -279,6 +279,7 @@ textarea{min-height:92px;resize:vertical}
     <button class="tab" onclick="showTab('categories',this)">Categorie <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('plans',this)">Piani <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('data',this)">Importa esporta <span class="tab-help">?</span></button>
+    <button class="tab" onclick="showTab('homepage',this)">Pagina principale <span class="tab-help">?</span></button>
   </nav>
 
   <section id="dashboardPanel" class="panel active">
@@ -581,10 +582,36 @@ textarea{min-height:92px;resize:vertical}
       </div>
     </div>
   </section>
+
+  <section id="homepagePanel" class="panel">
+    <div class="card">
+      <h2>Carosello media (in alto nella pagina principale)</h2>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Immagini, GIF o brevi video mostrati a rotazione sopra il titolo. Lascia vuoto per non mostrare nulla.</p>
+      <div id="heroMediaList" style="display:grid;gap:10px;margin-bottom:16px"></div>
+      <div class="three">
+        <label>Tipo<select id="newMediaType"><option value="image">Immagine</option><option value="gif">GIF</option><option value="video">Video</option></select></label>
+        <label>URL del file<input id="newMediaUrl" placeholder="https://..."></label>
+        <label>Link opzionale (dove porta al click)<input id="newMediaLink" placeholder="https://..."></label>
+      </div>
+      <button class="btn gold" onclick="addHeroMedia()">+ Aggiungi al carosello</button>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>Frasi del titolo (rotazione automatica)</h2>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Il titolo principale cambia lentamente tra queste frasi, ognuna con il proprio colore. Con una sola frase attiva, non ruota.</p>
+      <div id="heroPhraseList" style="display:grid;gap:10px;margin-bottom:16px"></div>
+      <div class="two">
+        <label>Testo della frase<input id="newPhraseText" placeholder="Trova l'attività giusta prima di rischiare capitale"></label>
+        <label>Colore<input id="newPhraseColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
+      </div>
+      <button class="btn gold" onclick="addHeroPhrase()">+ Aggiungi frase</button>
+    </div>
+  </section>
 </main>
- <script src="supabase-data.js?v=202607201541"></script>
-<script src="app.js?v=202607201541"></script>
+ <script src="supabase-data.js?v=202607201547"></script>
+<script src="app.js?v=202607201547"></script>
 <script>
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
 const emojiGroups={
   "Tutti":["🍕","🍔","☕","🚗","🏨","✂️","🍦","🥐","🍝","🏪","🛒","💻","📱","🏠","🔧","🧼","💇","🍺","🐶","📊","💶","🚚","🏋️","🧁","🧑‍🍳","🍷","🥩","🍣","🥗","🛏️","🏢","🏭","🚘","⛽","🛠️","📦","🚲","🛵","🚌","✈️","🚤","🌴","🏖️","🎓","📚","🧑‍⚕️","💊","🦷","👓","👗","👟","💍","🎁","🎮","🎥","📸","🎨","🌿","🌸","🐾","🧸","🧹","🔑","💡","⚡","☀️","❄️"],
@@ -704,12 +731,107 @@ function val(id){return document.getElementById(id).value.trim()}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function checked(cls){return [...document.querySelectorAll("."+cls+":checked")].map(x=>x.value)}
 
+let _heroMedia=[],_heroPhrases=[]
+async function loadHeroMedia(){
+  const{data,error}=await supabaseClient.rpc("admin_list_hero_media")
+  if(error){console.error(error);return}
+  _heroMedia=(data||[]).sort((a,b)=>a.order_index-b.order_index)
+  renderHeroMediaList()
+}
+function renderHeroMediaList(){
+  const host=document.getElementById("heroMediaList");if(!host)return
+  host.innerHTML=_heroMedia.length?_heroMedia.map((m,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:10px;background:#232f42;padding:3px 8px;border-radius:6px;text-transform:uppercase">${esc(m.media_type)}</span>
+    <span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.url)}</span>
+    <label class="check" style="margin:0"><input type="checkbox" ${m.is_active?"checked":""} onchange="toggleHeroMedia('${m.id}',this.checked)">Attivo</label>
+    <button class="btn ghost" type="button" onclick="moveHeroMedia(${i},-1)" ${i===0?"disabled":""}>↑</button>
+    <button class="btn ghost" type="button" onclick="moveHeroMedia(${i},1)" ${i===_heroMedia.length-1?"disabled":""}>↓</button>
+    <button class="btn danger" type="button" onclick="deleteHeroMedia('${m.id}')">Elimina</button>
+  </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessun media aggiunto - il carosello non verrà mostrato sul sito</p>'
+}
+window.addHeroMedia=async()=>{
+  const media_type=document.getElementById("newMediaType").value
+  const url=document.getElementById("newMediaUrl").value.trim()
+  const link_url=document.getElementById("newMediaLink").value.trim()||null
+  if(!url){alert("Inserisci l'URL del file");return}
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:link_url,p_order_index:_heroMedia.length,p_is_active:true})
+  if(error){alert("Errore: "+error.message);return}
+  document.getElementById("newMediaUrl").value="";document.getElementById("newMediaLink").value=""
+  await loadHeroMedia()
+}
+window.toggleHeroMedia=async(id,active)=>{
+  const m=_heroMedia.find(x=>x.id===id);if(!m)return
+  await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:m.link_url,p_order_index:m.order_index,p_is_active:active})
+  await loadHeroMedia()
+}
+window.deleteHeroMedia=async(id)=>{
+  if(!confirm("Eliminare questo media dal carosello?"))return
+  await supabaseClient.rpc("admin_delete_hero_media",{p_id:id})
+  await loadHeroMedia()
+}
+window.moveHeroMedia=async(idx,dir)=>{
+  const j=idx+dir;if(j<0||j>=_heroMedia.length)return
+  const a=_heroMedia[idx],b=_heroMedia[j]
+  await Promise.all([
+    supabaseClient.rpc("admin_upsert_hero_media",{p_id:a.id,p_media_type:a.media_type,p_url:a.url,p_link_url:a.link_url,p_order_index:j,p_is_active:a.is_active}),
+    supabaseClient.rpc("admin_upsert_hero_media",{p_id:b.id,p_media_type:b.media_type,p_url:b.url,p_link_url:b.link_url,p_order_index:idx,p_is_active:b.is_active})
+  ])
+  await loadHeroMedia()
+}
+
+async function loadHeroPhrases(){
+  const{data,error}=await supabaseClient.rpc("admin_list_hero_phrases")
+  if(error){console.error(error);return}
+  _heroPhrases=(data||[]).sort((a,b)=>a.order_index-b.order_index)
+  renderHeroPhraseList()
+}
+function renderHeroPhraseList(){
+  const host=document.getElementById("heroPhraseList");if(!host)return
+  host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+    <span style="width:20px;height:20px;border-radius:5px;background:${esc(p.color)};border:1px solid #333;flex-shrink:0"></span>
+    <span style="flex:1;font-size:13px">${esc(p.text)}</span>
+    <label class="check" style="margin:0"><input type="checkbox" ${p.is_active?"checked":""} onchange="toggleHeroPhrase('${p.id}',this.checked)">Attiva</label>
+    <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},-1)" ${i===0?"disabled":""}>↑</button>
+    <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},1)" ${i===_heroPhrases.length-1?"disabled":""}>↓</button>
+    <button class="btn danger" type="button" onclick="deleteHeroPhrase('${p.id}')">Elimina</button>
+  </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessuna frase - verrà usato il titolo predefinito</p>'
+}
+window.addHeroPhrase=async()=>{
+  const text=document.getElementById("newPhraseText").value.trim()
+  const color=document.getElementById("newPhraseColor").value
+  if(!text){alert("Scrivi il testo della frase");return}
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:null,p_text:text,p_color:color,p_order_index:_heroPhrases.length,p_is_active:true})
+  if(error){alert("Errore: "+error.message);return}
+  document.getElementById("newPhraseText").value=""
+  await loadHeroPhrases()
+}
+window.toggleHeroPhrase=async(id,active)=>{
+  const p=_heroPhrases.find(x=>x.id===id);if(!p)return
+  await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:id,p_text:p.text,p_color:p.color,p_order_index:p.order_index,p_is_active:active})
+  await loadHeroPhrases()
+}
+window.deleteHeroPhrase=async(id)=>{
+  if(!confirm("Eliminare questa frase?"))return
+  await supabaseClient.rpc("admin_delete_hero_phrase",{p_id:id})
+  await loadHeroPhrases()
+}
+window.moveHeroPhrase=async(idx,dir)=>{
+  const j=idx+dir;if(j<0||j>=_heroPhrases.length)return
+  const a=_heroPhrases[idx],b=_heroPhrases[j]
+  await Promise.all([
+    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:a.id,p_text:a.text,p_color:a.color,p_order_index:j,p_is_active:a.is_active}),
+    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:b.id,p_text:b.text,p_color:b.color,p_order_index:idx,p_is_active:b.is_active})
+  ])
+  await loadHeroPhrases()
+}
+
 function showTab(name,btn){
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"))
   document.getElementById(name+"Panel").classList.add("active")
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"))
   btn.classList.add("active")
   if(name==="new")refreshSelects()
+  if(name==="homepage"){loadHeroMedia();loadHeroPhrases()}
 }
 
 
@@ -1410,5 +1532,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607201541"></script></body>
+<script src="shell-ui.js?v=202607201547"></script></body>
 </html>
