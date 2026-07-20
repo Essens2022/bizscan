@@ -118,7 +118,7 @@
       profileTrigger.setAttribute('aria-expanded','false');
       var profile=buildPopover('shellProfilePopover',
         '<div class="shell-popover-head"><div><small>ACCOUNT</small><span class="brand-word"><strong>Biz</strong><b>Scan</b></span></div><button type="button" data-close aria-label="Chiudi">×</button></div>'+
-        '<div class="shell-profile-summary"><span class="shell-avatar"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></span><div><b id="shellProfileName">Account BizScan</b><small id="shellProfileStatus">Crediti e analisi personali</small></div></div>'+
+        '<a class="shell-profile-summary" href="account.html"><span class="shell-avatar"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></span><div><b id="shellProfileName">Account BizScan</b><small id="shellProfileStatus">Crediti e analisi personali</small></div></a>'+
         '<nav class="shell-menu-list">'+
         '<a href="library.html?view=reports"><span>▤</span><b>I miei report</b></a>'+
         '<a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b></a>'+
