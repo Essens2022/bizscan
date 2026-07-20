@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607200230"><link rel="stylesheet" href="premium.css?v=202607200230"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607200314"><link rel="stylesheet" href="premium.css?v=202607200314"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -42,7 +42,22 @@
         Esci
       </button>
 
+      <button id="deleteAccountBtn" class="btn full" style="display:none;margin-top:10px;background:transparent;border:1px solid #5a2530;color:#ff8a8a"
+              onclick="confirmDeleteAccountStep1()">
+        Elimina il mio account
+      </button>
+
       <p id="authMessage" style="margin-top:12px"></p>
+    </div>
+
+    <div id="deleteAccountModal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+      <div style="background:#0d1420;border:1px solid #5a2530;border-radius:16px;padding:24px;max-width:380px;width:100%;text-align:center">
+        <div style="font-size:30px">⚠️</div>
+        <h3 id="deleteModalTitle" style="margin:10px 0 6px;color:#ff8a8a">Eliminare il tuo account?</h3>
+        <p id="deleteModalText" style="color:#c7d0dd;font-size:13px;margin:0 0 18px">Questa azione è permanente: perderai crediti, preferiti e cronologia. Non può essere annullata.</p>
+        <button id="deleteModalConfirmBtn" class="btn full" style="background:#7a1f2b;border:none;color:#fff" onclick="deleteAccountNextStep()">Sì, elimina il mio account</button>
+        <button class="btn ghost full" style="margin-top:8px" onclick="closeDeleteAccountModal()">Annulla</button>
+      </div>
     </div>
   </div>
 </section>
@@ -61,8 +76,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607200230"></script>
-<script src="app.js?v=202607200230"></script>
+<script src="supabase-data.js?v=202607200314"></script>
+<script src="app.js?v=202607200314"></script>
 
 <script>
 async function waitForSupabase() {
@@ -151,6 +166,9 @@ async function updateAuthView() {
 document.getElementById("accountContent").style.display =
   logged ? "block" : "none"
 
+document.getElementById("deleteAccountBtn").style.display =
+  logged ? "block" : "none"
+
 document.getElementById("authEmail").style.display =
   logged ? "none" : "block"
 
@@ -170,8 +188,55 @@ if(logged){
 }
 }
 
+let _deleteStep=0
+function confirmDeleteAccountStep1(){
+  _deleteStep=1
+  document.getElementById("deleteModalTitle").textContent="Eliminare il tuo account?"
+  document.getElementById("deleteModalText").textContent="Questa azione è permanente: perderai crediti, preferiti e cronologia. Non può essere annullata."
+  document.getElementById("deleteModalConfirmBtn").textContent="Sì, elimina il mio account"
+  document.getElementById("deleteAccountModal").style.display="flex"
+}
+function closeDeleteAccountModal(){
+  _deleteStep=0
+  document.getElementById("deleteAccountModal").style.display="none"
+}
+async function deleteAccountNextStep(){
+  if(_deleteStep===1){
+    _deleteStep=2
+    document.getElementById("deleteModalTitle").textContent="Sei assolutamente sicuro?"
+    document.getElementById("deleteModalText").textContent="Ultima conferma: il tuo account e tutti i dati collegati verranno eliminati definitivamente."
+    document.getElementById("deleteModalConfirmBtn").textContent="Conferma eliminazione definitiva"
+    return
+  }
+  const btn=document.getElementById("deleteModalConfirmBtn")
+  btn.disabled=true;btn.textContent="Eliminazione in corso…"
+  try{
+    await waitForSupabase()
+    const{data:sessionData}=await supabaseClient.auth.getSession()
+    const token=sessionData?.session?.access_token
+    if(!token)throw new Error("Sessione non trovata, accedi di nuovo e riprova")
+    const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/delete-account',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token}
+    })
+    const data=await res.json().catch(()=>({}))
+    if(!res.ok||!data.success)throw new Error(data.detail||data.error||'Errore sconosciuto')
+    await supabaseClient.auth.signOut()
+    closeDeleteAccountModal()
+    const t=document.createElement('div')
+    t.textContent="Account eliminato con successo"
+    t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#132a1f;border:1px solid #2dd4a7;color:#7ef2c9;padding:12px 20px;border-radius:12px;z-index:1000;font-size:13px"
+    document.body.appendChild(t)
+    setTimeout(()=>{location.href='index.html'},1800)
+  }catch(e){
+    console.error(e)
+    btn.disabled=false;btn.textContent="Riprova"
+    document.getElementById("deleteModalText").textContent="Si è verificato un errore: "+(e.message||'riprova tra poco')
+  }
+}
+
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607200230CACHEV"></script></body>
+<script src="shell-ui.js?v=202607200314CACHEV"></script></body>
 </html>
