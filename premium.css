@@ -535,3 +535,7 @@
 #page-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;background:transparent;pointer-events:none}
 #page-progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#ffb703,#ff8a00,#ffd053);box-shadow:0 0 8px rgba(255,183,3,.7);transition:width .25s ease-out;border-radius:0 3px 3px 0}
 #page-progress.active i{transition:width .3s ease-out}
+.pdf-topup-kicker{display:inline-flex;align-items:center;gap:6px}
+.pdf-topup-kicker i{font-style:normal;font-size:13px}
+.premium-lock h3{display:flex;align-items:center;gap:8px}
+.premium-lock-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#ffb703,#ff8a00);color:#1a0f38;flex-shrink:0}
