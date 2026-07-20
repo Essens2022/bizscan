@@ -377,7 +377,7 @@ textarea{min-height:92px;resize:vertical}
           <div id="sectionsEditor"></div>
         </div>
         <div class="step-head"><span class="step-num">4</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
-        <div class="field-note">Consigliato: JPG orizzontale, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
+        <div class="field-note">Consigliato: JPG orizzontale, formato 31:16, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
         <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
         <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
         <div class="card" style="margin-top:10px;padding:12px">
@@ -667,8 +667,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607202138"></script>
-<script src="app.js?v=202607202138"></script>
+ <script src="supabase-data.js?v=202607202148"></script>
+<script src="app.js?v=202607202148"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1711,5 +1711,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607202138"></script></body>
+<script src="shell-ui.js?v=202607202148"></script></body>
 </html>

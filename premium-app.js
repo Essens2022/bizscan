@@ -285,14 +285,14 @@ function renderHome(){
    <a href="pricing.html">Scopri i dati premium con BizScan Plus</a>
   </section>
 
-  <section class="home18-how">
-   <div class="home18-how-copy"><small>COME FUNZIONA</small><h2>Dalla curiosità a una decisione più consapevole</h2><p>Un percorso semplice che riduce il rumore e porta subito ai numeri che contano</p><a href="pricing.html">Vedi i pacchetti</a></div>
-   <div class="home18-steps"><article><b>01</b><div><h3>Scegli l’attività</h3><p>Cerca per nome o settore e apri la scheda che ti interessa</p></div></article><article><b>02</b><div><h3>Leggi i numeri chiave</h3><p>Valuta costi margini rischio ROI e tempo di recupero</p></div></article><article><b>03</b><div><h3>Confronta e decidi</h3><p>Metti due opportunità una accanto all’altra e scarica il dossier completo</p></div></article></div>
-  </section>
-
   <section class="home18-section">
    <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html">Tutte le categorie</a></div>
    <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?q=${encodeURIComponent(n)}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
+  </section>
+
+  <section class="home18-how">
+   <div class="home18-how-copy"><small>COME FUNZIONA</small><h2>Dalla curiosità a una decisione più consapevole</h2><p>Un percorso semplice che riduce il rumore e porta subito ai numeri che contano</p><a href="pricing.html">Vedi i pacchetti</a></div>
+   <div class="home18-steps"><article><b>01</b><div><h3>Scegli l’attività</h3><p>Cerca per nome o settore e apri la scheda che ti interessa</p></div></article><article><b>02</b><div><h3>Leggi i numeri chiave</h3><p>Valuta costi margini rischio ROI e tempo di recupero</p></div></article><article><b>03</b><div><h3>Confronta e decidi</h3><p>Metti due opportunità una accanto all’altra e scarica il dossier completo</p></div></article></div>
   </section>
 
   <section class="home18-faq">
@@ -329,12 +329,12 @@ function analysisOverview(p){
  return `${hasCustom?'':'<div class="tools-note">I valori mostrati in questa panoramica sono esempi dimostrativi e non riflettono ancora i dati specifici di questa attività</div>'}<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend()}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
-const TOOL_MIN_PLAN_LABEL={scenario:'Starter',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
-const PLAN_TIER_COLOR={single:'#94a3b8',starter:'#22c55e',smart:'#3b82f6',pro:'#06b6d4',advanced:'#ec4899',business:'#a855f7',max:'#ffb703'};
-const PLAN_BADGE_COLOR={Starter:PLAN_TIER_COLOR.starter,Smart:PLAN_TIER_COLOR.smart,Pro:PLAN_TIER_COLOR.pro,Advanced:PLAN_TIER_COLOR.advanced,Business:PLAN_TIER_COLOR.business,Max:PLAN_TIER_COLOR.max};
+const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
+const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
+const PLAN_TIER_COLOR={single:'#facc15',starter:'#7dd3fc',smart:'#38bdf8',pro:'#0ea5e9',advanced:'#818cf8',business:'#a78bfa',max:'#7c3aed'};
 function toolMinPlanColor(key){
- const label=TOOL_MIN_PLAN_LABEL[key];
- return label?(PLAN_BADGE_COLOR[label]||'#ffb703'):null;
+ const planKey=TOOL_MIN_PLAN_KEY[key];
+ return planKey?(PLAN_TIER_COLOR[planKey]||'#ffb703'):null;
 }
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
@@ -346,16 +346,14 @@ function lockedCta(toolKey){
  if(!access.authenticated){
   return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
  }
+ const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const userPlan=access.plan||'free';
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
- const minPlanKey=toolKey?Object.keys(TOOL_MIN_PLAN_LABEL).includes(toolKey)?
-  (['starter','smart','pro','advanced','business','max'][['scenario','break_even','benchmark','distribuzione_costi','cash_flow','costi_fissi_variabili','personale','fornitori','concorrenza_locale','stagionalita','matrice_rischi','strategie_crescita'].indexOf(toolKey)]||'starter')
-  :null:null;
  const userPlanIdx=planOrder.indexOf(userPlan);
  const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
  if(minPlanKey&&userPlanIdx<minPlanIdx){
-  const color=PLAN_BADGE_COLOR[minPlan]||'#ffb703';
+  const color=PLAN_TIER_COLOR[minPlanKey]||'#ffb703';
   return `<div class="locked-preview plan-locked"><span class="plan-badge" style="background:${color}22;color:${color};border-color:${color}55">🔒 Richiede piano ${esc(minPlan)}</span><a href="pricing.html" class="btn" style="background:${color};color:#0c1420;font-weight:900">Upgrade a ${esc(minPlan)}</a></div>`;
  }
  const n=access.available_credits??access.credits??0;
