@@ -331,7 +331,7 @@ const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distr
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
-const PLAN_TIER_COLOR={single:'#facc15',starter:'#7dd3fc',smart:'#38bdf8',pro:'#0ea5e9',advanced:'#818cf8',business:'#a78bfa',max:'#7c3aed'};
+const PLAN_TIER_COLOR={single:'#94a3b8',starter:'#22c55e',smart:'#3b82f6',pro:'#06b6d4',advanced:'#ec4899',business:'#a855f7',max:'#ffb703'};
 function toolMinPlanColor(key){
  const planKey=TOOL_MIN_PLAN_KEY[key];
  return planKey?(PLAN_TIER_COLOR[planKey]||'#ffb703'):null;
