@@ -230,6 +230,20 @@ textarea{min-height:92px;resize:vertical}
 @media(max-width:600px){
   .summary-grid{grid-template-columns:1fr}
 }
+.tools-form-header{display:flex;align-items:center;gap:10px;margin:22px 0 4px;padding-top:16px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
+.tools-form-badge{background:linear-gradient(135deg,var(--yellow),var(--orange));color:#111;font-weight:950;font-size:10px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.tool-field-card{margin-top:14px;padding:14px 16px 4px;border-radius:14px;background:#0d1420;border:1px solid var(--line);border-left:4px solid var(--line)}
+.tool-field-card.tier-medio{border-left-color:#35d49a}
+.tool-field-card.tier-avanzato{border-left-color:#5b8cff}
+.tool-field-card.tier-premium{border-left-color:#c584ff}
+.tool-field-card.tier-max{border-left-color:#ffb703}
+.tool-field-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.tool-field-head b{font-size:13px}
+.tier-pill{font-size:9px;font-weight:950;letter-spacing:.03em;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.tier-pill.tier-medio{background:rgba(53,212,154,.15);color:#6ff0bd}
+.tier-pill.tier-avanzato{background:rgba(91,140,255,.15);color:#8fb0ff}
+.tier-pill.tier-premium{background:rgba(197,132,255,.15);color:#d9aeff}
+.tier-pill.tier-max{background:rgba(255,183,3,.16);color:#ffcf5c}
 </style>
 </head>
 <body><div class="login" id="login">
@@ -406,24 +420,36 @@ textarea{min-height:92px;resize:vertical}
           <label>Gestione<select id="indGestione"><option value="">Media (esempio)</option><option>Bassa</option><option>Media</option><option>Alta</option></select></label>
         </div>
 
-        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line);font-weight:900">Analisi finanziaria (dal piano Smart/Pro)</div>
-        <label>Break-even mensile<textarea id="toolBreakEven" rows="2" placeholder="Es: L'attività raggiunge il pareggio al 9° mese, con un margine mensile medio di 3.200 €"></textarea></label>
-        <label>Cash-flow a 12 mesi<textarea id="toolCashFlow" rows="3" placeholder="Es: descrivi entrate/uscite mese per mese, o incolla la tabella"></textarea></label>
+        <div class="tools-form-header"><span class="tools-form-badge">9 strumenti</span><span>Ogni strumento appare in una scheda separata sul sito, sbloccata dal piano indicato</span></div>
 
-        <div style="margin-top:16px;font-weight:900">Costi e ricavi (dal piano Pro)</div>
-        <label>Costi fissi e variabili mensili<textarea id="toolCostiFissiVar" rows="2" placeholder="Es: Fissi ~2.100 €/mese (affitto, utenze), variabili ~35% del fatturato"></textarea></label>
+        <div class="tool-field-card tier-medio">
+          <div class="tool-field-head"><span class="tier-pill tier-medio">Smart / Pro</span><b>Analisi finanziaria</b></div>
+          <label>Break-even mensile<textarea id="toolBreakEven" rows="2" placeholder="Es: L'attività raggiunge il pareggio al 9° mese, con un margine mensile medio di 3.200 €"></textarea></label>
+          <label>Cash-flow a 12 mesi<textarea id="toolCashFlow" rows="3" placeholder="Es: descrivi entrate/uscite mese per mese, o incolla la tabella"></textarea></label>
+        </div>
 
-        <div style="margin-top:16px;font-weight:900">Mercato (dal piano Business)</div>
-        <label>Concorrenza locale<textarea id="toolConcorrenzaLocale" rows="2" placeholder="Es: 3 attività simili entro 1 km, mercato moderatamente saturo"></textarea></label>
-        <label>Domanda e stagionalità<textarea id="toolStagionalita" rows="2" placeholder="Es: picco giugno-agosto (+40%), calo gennaio-febbraio"></textarea></label>
+        <div class="tool-field-card tier-avanzato">
+          <div class="tool-field-head"><span class="tier-pill tier-avanzato">Pro</span><b>Costi e ricavi</b></div>
+          <label>Costi fissi e variabili mensili<textarea id="toolCostiFissiVar" rows="2" placeholder="Es: Fissi ~2.100 €/mese (affitto, utenze), variabili ~35% del fatturato"></textarea></label>
+        </div>
 
-        <div style="margin-top:16px;font-weight:900">Rischi (dal piano Max)</div>
-        <label>Matrice dei rischi<textarea id="toolMatriceRischi" rows="3" placeholder="Es: elenca i rischi principali con probabilità, impatto e mitigazione"></textarea></label>
+        <div class="tool-field-card tier-premium">
+          <div class="tool-field-head"><span class="tier-pill tier-premium">Business</span><b>Mercato</b></div>
+          <label>Concorrenza locale<textarea id="toolConcorrenzaLocale" rows="2" placeholder="Es: 3 attività simili entro 1 km, mercato moderatamente saturo"></textarea></label>
+          <label>Domanda e stagionalità<textarea id="toolStagionalita" rows="2" placeholder="Es: picco giugno-agosto (+40%), calo gennaio-febbraio"></textarea></label>
+        </div>
 
-        <div style="margin-top:16px;font-weight:900">Operatività (dal piano Advanced/Max)</div>
-        <label>Fabbisogno di personale<textarea id="toolPersonale" rows="2" placeholder="Es: 2 persone part-time + 1 titolare, turni su 6 giorni"></textarea></label>
-        <label>Fornitori e autorizzazioni<textarea id="toolFornitori" rows="2" placeholder="Es: fornitore principale X, licenza commerciale + HACCP richiesti"></textarea></label>
-        <label>Strategie di crescita<textarea id="toolStrategieCrescita" rows="2" placeholder="Es: aprire un secondo punto vendita dopo 18 mesi, introdurre delivery"></textarea></label>
+        <div class="tool-field-card tier-max">
+          <div class="tool-field-head"><span class="tier-pill tier-max">Max</span><b>Rischi</b></div>
+          <label>Matrice dei rischi<textarea id="toolMatriceRischi" rows="3" placeholder="Es: elenca i rischi principali con probabilità, impatto e mitigazione"></textarea></label>
+        </div>
+
+        <div class="tool-field-card tier-avanzato">
+          <div class="tool-field-head"><span class="tier-pill tier-avanzato">Advanced / Max</span><b>Operatività</b></div>
+          <label>Fabbisogno di personale<textarea id="toolPersonale" rows="2" placeholder="Es: 2 persone part-time + 1 titolare, turni su 6 giorni"></textarea></label>
+          <label>Fornitori e autorizzazioni<textarea id="toolFornitori" rows="2" placeholder="Es: fornitore principale X, licenza commerciale + HACCP richiesti"></textarea></label>
+          <label>Strategie di crescita<textarea id="toolStrategieCrescita" rows="2" placeholder="Es: aprire un secondo punto vendita dopo 18 mesi, introdurre delivery"></textarea></label>
+        </div>
 
 <div class="step-head"><span class="step-num">6</span><div><b>Pubblicazione e posizionamento</b><small>Stato, prezzo, dove appare sul sito e in quali piani è inclusa</small></div></div><label style="margin-top:10px">Stato<select id="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="hidden">Nascosta</option></select></label>
 <div class="two" style="margin-top:10px">
