@@ -516,6 +516,7 @@ function celebrateCheckoutSuccess(planName){
 }
 document.addEventListener('DOMContentLoaded',async()=>{
  await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();
+ window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
   celebrateCheckoutSuccess(params.get('plan'));
