@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607201130"><link rel="stylesheet" href="premium.css?v=202607201130"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607201144"><link rel="stylesheet" href="premium.css?v=202607201144"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -18,31 +18,36 @@
   <section class="section" id="authSection">
   <div class="card" style="display:block;max-width:520px">
     <div class="card-body">
-      <h3>Accesso</h3>
-      <p>Accedi al tuo account BizScan</p>
+      <div class="auth-tabs" id="authTabs">
+        <button type="button" class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Accedi</button>
+        <button type="button" class="auth-tab" id="authTabSignup" onclick="switchAuthTab('signup')">Registrati</button>
+      </div>
 
-      <input id="authFirstName" type="text" placeholder="Nome"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
+      <div id="loginPanel">
+        <p>Accedi al tuo account BizScan</p>
+        <input id="authEmail" type="email" placeholder="Email"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <input id="authPassword" type="password" placeholder="Password"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <button class="btn primary full" onclick="loginSupabase()">
+          Accedi
+        </button>
+      </div>
 
-      <input id="authLastName" type="text" placeholder="Cognome"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
-
-      <input id="authEmail" type="email" placeholder="Email"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
-
-      <input id="authPassword" type="password" placeholder="Password"
-             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
-
-      <button class="btn primary full" onclick="loginSupabase()" style="display:none">
-        Accedi
-      </button>
-      
-      <button
-  class="btn dark full"
-  style="margin-top:10px"
-  onclick="signupSupabase()">
-  Registrati
-</button>
+      <div id="signupPanel" style="display:none">
+        <p>Crea il tuo account BizScan</p>
+        <input id="authFirstName" type="text" placeholder="Nome"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <input id="authLastName" type="text" placeholder="Cognome"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <input id="authEmailSignup" type="email" placeholder="Email"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <input id="authPasswordSignup" type="password" placeholder="Password"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <button class="btn dark full" onclick="signupSupabase()">
+          Registrati
+        </button>
+      </div>
 
       <button id="logoutBtn" class="btn dark full"
               style="display:none;margin-top:10px"
@@ -87,14 +92,24 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607201130"></script>
-<script src="app.js?v=202607201130"></script>
+<script src="supabase-data.js?v=202607201144"></script>
+<script src="app.js?v=202607201144"></script>
 
 <script>
 async function waitForSupabase() {
   while (!supabaseClient) {
     await new Promise(resolve => setTimeout(resolve, 100))
   }
+}
+
+function switchAuthTab(tab){
+  const isLogin=tab==='login'
+  document.getElementById("authTabLogin").classList.toggle('active',isLogin)
+  document.getElementById("authTabSignup").classList.toggle('active',!isLogin)
+  document.getElementById("loginPanel").style.display=isLogin?'block':'none'
+  document.getElementById("signupPanel").style.display=isLogin?'none':'block'
+  document.getElementById("authMessage").textContent=''
+  document.getElementById("signupSuccessCard").style.display='none'
 }
 
 async function loginSupabase() {
@@ -128,8 +143,8 @@ async function signupSupabase() {
 
   const firstName = document.getElementById("authFirstName").value.trim()
   const lastName = document.getElementById("authLastName").value.trim()
-  const email = document.getElementById("authEmail").value.trim()
-  const password = document.getElementById("authPassword").value
+  const email = document.getElementById("authEmailSignup").value.trim()
+  const password = document.getElementById("authPasswordSignup").value
   const message = document.getElementById("authMessage")
 
   if (!firstName || !lastName) {
@@ -163,12 +178,9 @@ async function signupSupabase() {
 
   message.textContent = ""
   document.getElementById("signupSuccessCard").style.display = "block"
-  document.getElementById("authFirstName").style.display = "none"
-  document.getElementById("authLastName").style.display = "none"
-  document.getElementById("authEmail").style.display = "none"
-  document.getElementById("authPassword").style.display = "none"
-  document.querySelector('button[onclick="loginSupabase()"]').style.display = "none"
-  document.querySelector('button[onclick="signupSupabase()"]').style.display = "none"
+  document.getElementById("loginPanel").style.display = "none"
+  document.getElementById("signupPanel").style.display = "none"
+  document.getElementById("authTabs").style.display = "none"
 }
   
   
@@ -194,20 +206,14 @@ document.getElementById("accountContent").style.display =
 document.getElementById("deleteAccountBtn").style.display =
   logged ? "block" : "none"
 
-document.getElementById("authFirstName").style.display =
-  logged ? "none" : "block"
+document.getElementById("authTabs").style.display =
+  logged ? "none" : "flex"
 
-document.getElementById("authLastName").style.display =
-  logged ? "none" : "block"
+document.getElementById("loginPanel").style.display =
+  logged ? "none" : (document.getElementById("authTabLogin").classList.contains('active') ? "block" : "none")
 
-document.getElementById("authEmail").style.display =
-  logged ? "none" : "block"
-
-document.getElementById("authPassword").style.display =
-  logged ? "none" : "block"
-
-document.querySelector('button[onclick="loginSupabase()"]').style.display =
-  logged ? "none" : "block"
+document.getElementById("signupPanel").style.display =
+  logged ? "none" : (document.getElementById("authTabSignup").classList.contains('active') ? "block" : "none")
 
 document.getElementById("authMessage").textContent = logged ? "Account collegato" : ""
 if(logged){
@@ -270,5 +276,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607201130CACHEV"></script></body>
+<script src="shell-ui.js?v=202607201144CACHEV"></script></body>
 </html>

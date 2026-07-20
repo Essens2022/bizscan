@@ -543,3 +543,6 @@
 .locked-preview.plan-locked span{color:#b4a0e5}
 .plan-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;border:1px solid;font-size:11px;font-weight:900}
 .locked-preview.plan-locked{flex-direction:column;align-items:flex-start;gap:10px}
+.auth-tabs{display:flex;gap:4px;background:#0b1420;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
+.auth-tab{flex:1;padding:10px;border:none;background:transparent;color:#8d99aa;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer}
+.auth-tab.active{background:linear-gradient(135deg,#ffb703,#ff8a00);color:#111}
