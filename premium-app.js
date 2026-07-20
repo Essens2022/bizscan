@@ -153,6 +153,12 @@ function filterHomeAnalyses(items,filter){
  return arr.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))
 }
 window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
+function renderPhraseHtml(ph){
+ if(Array.isArray(ph.segments)&&ph.segments.length){
+  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')}">${esc(s.text||'')}</span>`).join('');
+ }
+ return `<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
+}
 let _heroMediaTimer=null,_heroPhraseTimer=null,_heroPhraseIdx=0,_heroMediaIdx=0;
 function initHeroRotation(){
  clearInterval(_heroMediaTimer);clearInterval(_heroPhraseTimer);
@@ -173,7 +179,7 @@ function initHeroRotation(){
    setTimeout(()=>{
     _heroPhraseIdx=(_heroPhraseIdx+1)%heroPhrases.length;
     const ph=heroPhrases[_heroPhraseIdx];
-    h1.innerHTML=`<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
+    h1.innerHTML=renderPhraseHtml(ph);
     h1.classList.remove('fading');
    },700);
   },4500);
@@ -195,7 +201,7 @@ function renderHome(){
      const inner=m.media_type==='video'?`<video src="${esc(m.url)}" autoplay muted loop playsinline></video>`:`<img src="${esc(m.url)}" alt="" loading="${i===0?'eager':'lazy'}">`;
      return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
    }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div>`:''}
-   <h1 class="hero-rotating-h1" id="heroRotatingHeadline"><span style="color:${esc(heroPhrases[0].color||'#ffffff')}">${esc(heroPhrases[0].text)}</span></h1>
+   <h1 class="hero-rotating-h1" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
    <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
    <div class="home18-trust"><span>Fonti verificabili</span><span>Dati confrontabili</span><span>Pagamento unico</span></div>

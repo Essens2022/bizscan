@@ -598,18 +598,31 @@ textarea{min-height:92px;resize:vertical}
 
     <div class="card" style="margin-top:18px">
       <h2>Frasi del titolo (rotazione automatica)</h2>
-      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Il titolo principale cambia lentamente tra queste frasi, ognuna con il proprio colore. Con una sola frase attiva, non ruota.</p>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Il titolo principale cambia lentamente tra queste frasi, ognuna può avere più colori al suo interno. Con una sola frase attiva, non ruota.</p>
       <div id="heroPhraseList" style="display:grid;gap:10px;margin-bottom:16px"></div>
-      <div class="two">
-        <label>Testo della frase<input id="newPhraseText" placeholder="Trova l'attività giusta prima di rischiare capitale"></label>
-        <label>Colore<input id="newPhraseColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
+
+      <div class="card" style="background:#0d1420;border:1px solid var(--line)">
+        <h3 style="margin-top:0">Crea una nuova frase</h3>
+        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli il colore, premi "+". Ripeti per ogni pezzo con colore diverso.</p>
+        <div id="phraseChunkPreview" style="font-size:20px;font-weight:900;padding:16px;background:#050914;border-radius:12px;margin:10px 0;min-height:28px">
+          <span style="color:var(--muted);font-weight:400;font-size:13px">L'anteprima della frase apparirà qui</span>
+        </div>
+        <div id="phraseChunksList" style="display:grid;gap:6px;margin-bottom:12px"></div>
+        <div class="three">
+          <label>Testo del pezzo<input id="chunkText" placeholder="giusta"></label>
+          <label>Colore<input id="chunkColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
+          <button class="btn dark" type="button" onclick="addPhraseChunk()" style="align-self:end;height:44px">+ Aggiungi pezzo</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn gold" type="button" onclick="saveHeroPhraseFromChunks()">Salva frase</button>
+          <button class="btn ghost" type="button" onclick="clearPhraseChunks()">Ricomincia</button>
+        </div>
       </div>
-      <button class="btn gold" onclick="addHeroPhrase()">+ Aggiungi frase</button>
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607201547"></script>
-<script src="app.js?v=202607201547"></script>
+ <script src="supabase-data.js?v=202607201556"></script>
+<script src="app.js?v=202607201556"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -787,27 +800,54 @@ async function loadHeroPhrases(){
 }
 function renderHeroPhraseList(){
   const host=document.getElementById("heroPhraseList");if(!host)return
+  const preview=p=>Array.isArray(p.segments)&&p.segments.length
+    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')}">${esc(s.text)}</span>`).join("")
+    :`<span style="color:${esc(p.color)}">${esc(p.text)}</span>`
   host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
-    <span style="width:20px;height:20px;border-radius:5px;background:${esc(p.color)};border:1px solid #333;flex-shrink:0"></span>
-    <span style="flex:1;font-size:13px">${esc(p.text)}</span>
+    <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
     <label class="check" style="margin:0"><input type="checkbox" ${p.is_active?"checked":""} onchange="toggleHeroPhrase('${p.id}',this.checked)">Attiva</label>
     <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},-1)" ${i===0?"disabled":""}>↑</button>
     <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},1)" ${i===_heroPhrases.length-1?"disabled":""}>↓</button>
     <button class="btn danger" type="button" onclick="deleteHeroPhrase('${p.id}')">Elimina</button>
   </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessuna frase - verrà usato il titolo predefinito</p>'
 }
-window.addHeroPhrase=async()=>{
-  const text=document.getElementById("newPhraseText").value.trim()
-  const color=document.getElementById("newPhraseColor").value
-  if(!text){alert("Scrivi il testo della frase");return}
-  const{error}=await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:null,p_text:text,p_color:color,p_order_index:_heroPhrases.length,p_is_active:true})
+let _phraseChunks=[]
+function renderPhraseChunks(){
+  const preview=document.getElementById("phraseChunkPreview")
+  const list=document.getElementById("phraseChunksList")
+  if(_phraseChunks.length){
+    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)}">${esc(c.text)}</span>`).join(" ")
+    list.innerHTML=_phraseChunks.map((c,i)=>`<div class="panel" style="padding:8px 12px;display:flex;align-items:center;gap:10px">
+      <span style="width:16px;height:16px;border-radius:4px;background:${esc(c.color)};border:1px solid #333;flex-shrink:0"></span>
+      <span style="flex:1;font-size:13px">${esc(c.text)}</span>
+      <button class="btn danger" type="button" onclick="removePhraseChunk(${i})">Rimuovi</button>
+    </div>`).join("")
+  }else{
+    preview.innerHTML='<span style="color:var(--muted);font-weight:400;font-size:13px">L\'anteprima della frase apparirà qui</span>'
+    list.innerHTML=""
+  }
+}
+window.addPhraseChunk=()=>{
+  const text=document.getElementById("chunkText").value.trim()
+  const color=document.getElementById("chunkColor").value
+  if(!text){alert("Scrivi il testo del pezzo");return}
+  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color})
+  document.getElementById("chunkText").value=""
+  renderPhraseChunks()
+}
+window.removePhraseChunk=(i)=>{_phraseChunks.splice(i,1);renderPhraseChunks()}
+window.clearPhraseChunks=()=>{_phraseChunks=[];renderPhraseChunks()}
+window.saveHeroPhraseFromChunks=async()=>{
+  if(!_phraseChunks.length){alert("Aggiungi almeno un pezzo di testo");return}
+  const fullText=_phraseChunks.map(c=>c.text).join("").trim()
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:null,p_text:fullText,p_color:_phraseChunks[0].color,p_order_index:_heroPhrases.length,p_is_active:true,p_segments:_phraseChunks})
   if(error){alert("Errore: "+error.message);return}
-  document.getElementById("newPhraseText").value=""
+  clearPhraseChunks()
   await loadHeroPhrases()
 }
 window.toggleHeroPhrase=async(id,active)=>{
   const p=_heroPhrases.find(x=>x.id===id);if(!p)return
-  await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:id,p_text:p.text,p_color:p.color,p_order_index:p.order_index,p_is_active:active})
+  await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:id,p_text:p.text,p_color:p.color,p_order_index:p.order_index,p_is_active:active,p_segments:p.segments||null})
   await loadHeroPhrases()
 }
 window.deleteHeroPhrase=async(id)=>{
@@ -819,8 +859,8 @@ window.moveHeroPhrase=async(idx,dir)=>{
   const j=idx+dir;if(j<0||j>=_heroPhrases.length)return
   const a=_heroPhrases[idx],b=_heroPhrases[j]
   await Promise.all([
-    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:a.id,p_text:a.text,p_color:a.color,p_order_index:j,p_is_active:a.is_active}),
-    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:b.id,p_text:b.text,p_color:b.color,p_order_index:idx,p_is_active:b.is_active})
+    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:a.id,p_text:a.text,p_color:a.color,p_order_index:j,p_is_active:a.is_active,p_segments:a.segments||null}),
+    supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:b.id,p_text:b.text,p_color:b.color,p_order_index:idx,p_is_active:b.is_active,p_segments:b.segments||null})
   ])
   await loadHeroPhrases()
 }
@@ -1532,5 +1572,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607201547"></script></body>
+<script src="shell-ui.js?v=202607201556"></script></body>
 </html>
