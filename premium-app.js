@@ -230,7 +230,7 @@ function analysisOverview(p){
  const freeIndicators=Array.isArray(d.free)?d.free.includes('indicators'):false;
  const unlocked=Boolean(p&&p.has_access);
  const gate=(key,html)=>{
-  if(key==='indicators')return(unlocked||freeIndicators)?html:`<section class="panel locked-section"><h3>Indicatori chiave</h3>${lockedCta()}</section>`;
+  if(key==='indicators')return(unlocked||freeIndicators)?html:`<section class="panel locked-section"><h3>Indicatori chiave</h3><div class="locked-preview"><span>Contenuto disponibile secondo il pacchetto acquistato</span><a href="pricing.html" class="btn purple">Vedi i pacchetti</a></div></section>`;
   return toolUnlocked(key)?html:`<section class="panel locked-section"><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
