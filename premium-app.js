@@ -81,7 +81,7 @@ function updateShell(){
    }).catch(()=>{});
    if(statusEl)statusEl.textContent=`${n} crediti analisi · ${pdfN} crediti PDF${plan?' · Piano '+plan:''}`;
   }else{
-   nameEl.textContent='Accedi o registrati';
+   nameEl.textContent='Accedi | Registrati';
    if(statusEl)statusEl.textContent='Tocca per entrare nel tuo account';
   }
  }
