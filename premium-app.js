@@ -364,6 +364,10 @@ window.downloadReport=async slug=>{
     modal('Rapporto bloccato',`<p>${esc(result.message||'Questo rapporto non è disponibile per il tuo account')}</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
   }
   const url=await BizScanData.signedAttachmentUrl(pdf);window.open(url,'_blank','noopener');
+  if(!result.is_free){
+   toast('✓ PDF sbloccato — credito utilizzato');
+   try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  }
   await refreshReportAccess(slug)
  }catch(e){modal('Impossibile aprire il report',`<p>${esc(e.message||'Controlla la configurazione PDF in Supabase')}</p>`,'<a class="btn gold full" href="account.html">Controlla il mio account</a>')}
  finally{if(btn){btn.disabled=false}}
