@@ -224,14 +224,14 @@ window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
 function scenarioChart(){const groups=[[280,430,650],[18,45,80],[8,20,33]],max=650;return `<div class="scenario-chart">${groups.map((g,gi)=>`<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/max*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`).join('')}</div>`}
 function costLegend(){return `<div class="cost-layout"><div class="cost-donut"><div><small>Totale</small><b>200.000 €</b></div></div><div class="cost-list"><span><i class="c1"></i>Attrezzature <b>38% · 76.000 €</b></span><span><i class="c2"></i>Ristrutturazione <b>22% · 44.000 €</b></span><span><i class="c3"></i>Arredi <b>15% · 30.000 €</b></span><span><i class="c4"></i>Licenze e permessi <b>10% · 20.000 €</b></span><span><i class="c5"></i>Marketing iniziale <b>8% · 16.000 €</b></span><span><i class="c6"></i>Altro <b>7% · 14.000 €</b></span></div></div>`}
-function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div><section class="premium-lock"><div><h3><span class="premium-lock-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="15.3" r="1.6" fill="#1a0f38"/></svg></span>Contenuto premium</h3><p>Sblocca l'analisi completa per prendere decisioni con dati approfonditi</p><div class="lock-list"><span>Analisi dettagliata dei rischi</span><span>Piano operativo dettagliato</span><span>Cash-flow mensile completo</span><span>Analisi della concorrenza locale</span><span>Test di stress finanziario</span><span>Strategie di crescita</span></div></div><div class="premium-cta"><small>Sblocca con Pro</small><a class="btn gold" href="pricing.html">Vedi i pacchetti</a></div></section></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
+function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
 function analysisOverview(p){
  const d=(p&&p.display)||{};
  const freeIndicators=Array.isArray(d.free)?d.free.includes('indicators'):false;
  const unlocked=Boolean(p&&p.has_access);
  const gate=(key,html)=>{
   if(key==='indicators')return(unlocked||freeIndicators)?html:`<section class="panel locked-section"><h3>Indicatori chiave</h3>${lockedCta()}</section>`;
-  return(unlocked&&toolUnlocked(key))?html:`<section class="panel locked-section"><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
+  return toolUnlocked(key)?html:`<section class="panel locked-section"><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
@@ -247,34 +247,39 @@ function analysisOverview(p){
  const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="green">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta')}">${I('domanda','Alta')}</b></div><div><i>▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media')}">${I('concorrenza','Media')}</b></div><div><i>⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media')}">${I('scalabilita','Media')}</b></div><div><i>⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media')}">${I('gestione','Media')}</b></div></div></section>`;
  return `${hasCustom?'':'<div class="tools-note">I valori mostrati in questa panoramica sono esempi dimostrativi e non riflettono ancora i dati specifici di questa attività</div>'}<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend()}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
-function toolUnlocked(key){return(access.unlocked_tools||[]).includes(key)}
+function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
 function toolBlock(key,title,fallback,realHtml){
- const p=findCurrent();
- const has=Boolean(p&&p.has_access)&&toolUnlocked(key);
+ const has=toolUnlocked(key);
  const body=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
  return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
 }
 function lockedCta(toolKey){
- const p=findCurrent();
- const minPlan=toolKey?TOOL_MIN_PLAN[toolKey]:null;
- if(p&&!p.has_access){
-  const n=access.available_credits??access.credits??0;
-  if(access.authenticated&&n>0){
-   return `<div class="locked-preview"><span>Hai ${n} credit${n===1?'o':'i'} di analisi disponibil${n===1?'e':'i'}</span><button class="btn gold" type="button" onclick="unlockCurrentAnalysis()">Sblocca con 1 credito</button></div>`;
-  }
-  return `<div class="locked-preview"><span>Contenuto disponibile secondo il pacchetto acquistato</span><a href="pricing.html" class="btn purple">Vedi i pacchetti</a></div>`;
+ const n=access.available_credits??access.credits??0;
+ if(access.authenticated&&n>0){
+  return `<div class="locked-preview"><span>Hai ${n} credit${n===1?'o':'i'} di analisi disponibil${n===1?'e':'i'}</span><button class="btn gold" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button></div>`;
  }
- return `<div class="locked-preview"><span>${minPlan?`Disponibile dal piano ${esc(minPlan)}`:'Contenuto disponibile secondo il pacchetto acquistato'}</span><a href="pricing.html" class="btn purple">Vedi i pacchetti</a></div>`;
+ if(access.authenticated){
+  return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
+ }
+ return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
 }
-window.unlockCurrentAnalysis=async()=>{
+window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
- if(!access.authenticated){toast('Accedi per sbloccare');setTimeout(()=>{location.href='account.html'},650);return}
+ if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html">Accedi</a>');return}
  try{
-  await BizScanData.unlockWithCredit(p.id);
-  p.has_access=true;
+  const c=await BizScanData.getSupabaseClient();
+  const{data,error}=await c.rpc('unlock_tool_with_credit',{p_analysis_id:p.id,p_tool_key:toolKey});
+  if(error)throw error;
+  if(!data?.success){
+   if(data?.reason==='no_credits'){modal('Crediti esauriti','<p>Non hai più crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
+   toast('Non è stato possibile sbloccare lo strumento');
+   return;
+  }
+  if(!Array.isArray(p.unlocked_tool_keys))p.unlocked_tool_keys=[];
+  if(!p.unlocked_tool_keys.includes(toolKey))p.unlocked_tool_keys.push(toolKey);
   if(typeof access.available_credits==='number')access.available_credits=Math.max(0,access.available_credits-1);
   if(typeof access.credits==='number')access.credits=Math.max(0,access.credits-1);
-  toast('Analisi sbloccata con successo');
+  toast('Strumento sbloccato con successo');
   updateShell();
   renderAnalysis();
  }catch(e){
