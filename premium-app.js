@@ -253,15 +253,27 @@ function toolBlock(key,title,fallback,realHtml){
  const body=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
  return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
 }
+const TOOL_MIN_PLAN_LABEL={scenario:'Starter',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function lockedCta(toolKey){
+ if(!access.authenticated){
+  return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
+ }
+ const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
+ const userPlan=access.plan||'free';
+ const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
+ const minPlanKey=toolKey?Object.keys(TOOL_MIN_PLAN_LABEL).includes(toolKey)?
+  (['starter','smart','pro','advanced','business','max'][['scenario','break_even','benchmark','distribuzione_costi','cash_flow','costi_fissi_variabili','personale','fornitori','concorrenza_locale','stagionalita','matrice_rischi','strategie_crescita'].indexOf(toolKey)]||'starter')
+  :null:null;
+ const userPlanIdx=planOrder.indexOf(userPlan);
+ const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
+ if(minPlanKey&&userPlanIdx<minPlanIdx){
+  return `<div class="locked-preview plan-locked"><span>Disponibile dal piano <b>${minPlan}</b></span><a href="pricing.html" class="btn gold">Upgrade a ${minPlan}</a></div>`;
+ }
  const n=access.available_credits??access.credits??0;
- if(access.authenticated&&n>0){
-  return `<div class="locked-preview"><span>Hai ${n} credit${n===1?'o':'i'} di analisi disponibil${n===1?'e':'i'}</span><button class="btn gold" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button></div>`;
+ if(n>0){
+  return `<div class="locked-preview"><span>Hai ${n} credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</span><button class="btn gold" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button></div>`;
  }
- if(access.authenticated){
-  return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
- }
- return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
+ return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
 }
 window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
@@ -272,6 +284,11 @@ window.unlockTool=async(toolKey)=>{
   if(error)throw error;
   if(!data?.success){
    if(data?.reason==='no_credits'){modal('Crediti esauriti','<p>Non hai più crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
+   if(data?.reason==='plan_too_low'){
+    const tool=toolKey?({scenario:'Scenari di profitto',break_even:'Break-even',benchmark:'Confronto categoria',distribuzione_costi:'Distribuzione costi',cash_flow:'Cash-flow 12 mesi',costi_fissi_variabili:'Costi fissi/variabili',personale:'Fabbisogno personale',fornitori:'Fornitori e autorizzazioni',concorrenza_locale:'Concorrenza locale',stagionalita:'Stagionalità',matrice_rischi:'Matrice dei rischi',strategie_crescita:'Strategie di crescita'}[toolKey]||toolKey):'questo strumento';
+    const minPlan=TOOL_MIN_PLAN_LABEL[toolKey]||'superiore';
+    modal('Piano insufficiente',`<p>Lo strumento <b>${esc(tool)}</b> richiede almeno il piano <b>${esc(minPlan)}</b>.</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
+   }
    toast('Non è stato possibile sbloccare lo strumento');
    return;
   }
