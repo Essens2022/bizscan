@@ -18,6 +18,7 @@ function packageValue(p){
  return {analysisValue,indicatorValue,pdfValue,comparisonValue,total,saving:Math.max(0,total-p.price),resources:p.analyses+p.indicatorCount+p.pdfCredits+(COMPARISON_UNITS[p.compare]||0)}
 };
 let analyses=[],favorites=[],compare=[],access={authenticated:false,credits:0};
+let heroMedia=[],heroPhrases=[];
 let homeFilter='recommended';
 let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -50,10 +51,12 @@ function applyDbPlans(rows){
 }
 async function load(){
  compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
- const [ra,rs,rp]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans()]);
+ const [ra,rs,rp,rhm,rhp]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases()]);
  if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
  if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
  if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
+ heroMedia=rhm.status==='fulfilled'?rhm.value:[];
+ heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
  // I preferiti sono dati personali dell'account: l'unica fonte di verità è il server.
  // Un ospite non autenticato non ha una lista di preferiti locale che poi "eredita" al login.
  if(access.authenticated){
@@ -150,6 +153,32 @@ function filterHomeAnalyses(items,filter){
  return arr.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))
 }
 window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
+let _heroMediaTimer=null,_heroPhraseTimer=null,_heroPhraseIdx=0,_heroMediaIdx=0;
+function initHeroRotation(){
+ clearInterval(_heroMediaTimer);clearInterval(_heroPhraseTimer);
+ _heroMediaIdx=0;_heroPhraseIdx=0;
+ if(heroMedia.length>1){
+  const slides=$$('.hero-media-slide'),dots=$$('.hero-media-dots span');
+  _heroMediaTimer=setInterval(()=>{
+   slides[_heroMediaIdx]?.classList.remove('active');dots[_heroMediaIdx]?.classList.remove('active');
+   _heroMediaIdx=(_heroMediaIdx+1)%slides.length;
+   slides[_heroMediaIdx]?.classList.add('active');dots[_heroMediaIdx]?.classList.add('active');
+  },5000);
+ }
+ if(heroPhrases.length>1){
+  const h1=$('#heroRotatingHeadline');
+  _heroPhraseTimer=setInterval(()=>{
+   if(!h1)return;
+   h1.classList.add('fading');
+   setTimeout(()=>{
+    _heroPhraseIdx=(_heroPhraseIdx+1)%heroPhrases.length;
+    const ph=heroPhrases[_heroPhraseIdx];
+    h1.innerHTML=`<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
+    h1.classList.remove('fading');
+   },700);
+  },4500);
+ }
+}
 function renderHome(){
  const host=$('#homeContent');if(!host)return
  const allFeatured=analyses.slice(0,12)
@@ -162,10 +191,13 @@ function renderHome(){
  const metric=(label,value)=>`<div class="home18-metric"><small>${label}</small><b>${esc(value||'—')}</b></div>`
  host.innerHTML=`<div class="home18">
   <section class="home18-hero">
-   <span class="home18-kicker">ANALIZZA PRIMA DI INVESTIRE</span>
-   <h1>Trova l’attività giusta <span>prima di rischiare capitale</span></h1>
-   <p>Confronta investimento rischio profitto e tempi di recupero in un’unica piattaforma</p>
+   ${heroMedia.length?`<div class="hero-media-carousel" id="heroMediaCarousel">${heroMedia.map((m,i)=>{
+     const inner=m.media_type==='video'?`<video src="${esc(m.url)}" autoplay muted loop playsinline></video>`:`<img src="${esc(m.url)}" alt="" loading="${i===0?'eager':'lazy'}">`;
+     return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
+   }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div>`:''}
+   <h1 class="hero-rotating-h1" id="heroRotatingHeadline"><span style="color:${esc(heroPhrases[0].color||'#ffffff')}">${esc(heroPhrases[0].text)}</span></h1>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
+   <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
    <div class="home18-trust"><span>Fonti verificabili</span><span>Dati confrontabili</span><span>Pagamento unico</span></div>
   </section>
 
@@ -228,6 +260,7 @@ function renderHome(){
    <div class="home18-faq-list"><details open><summary>Che cosa include un’analisi BizScan?<span>+</span></summary><p>Una panoramica strutturata di investimento iniziale costi ricavi profitto potenziale rischio ROI tempo di recupero e indicatori disponibili per il livello acquistato</p></details><details><summary>Devo pagare un abbonamento?<span>+</span></summary><p>No I pacchetti prevedono un pagamento unico e le analisi sbloccate restano disponibili nel tuo account</p></details><details><summary>Qual è la differenza tra analisi interattiva e report PDF?<span>+</span></summary><p>L’analisi interattiva serve per esplorare dati e confronti Il PDF è il dossier completo da conservare e consultare offline</p></details><details><summary>Posso confrontare due attività?<span>+</span></summary><p>Sì Puoi confrontare punteggio investimento profitto ROI recupero e rischio</p></details><details><summary>I dati sostituiscono una consulenza professionale?<span>+</span></summary><p>No BizScan è uno strumento informativo Prima di investire verifica dati locali contratti fiscalità autorizzazioni e condizioni specifiche con professionisti qualificati</p></details></div>
   </section>
  </div>`
+ initHeroRotation()
 }
 window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.html?q='+encodeURIComponent(q)};
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
