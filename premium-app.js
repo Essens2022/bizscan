@@ -281,7 +281,13 @@ window.unlockTool=async(toolKey)=>{
   if(typeof access.credits==='number')access.credits=Math.max(0,access.credits-1);
   toast('Strumento sbloccato con successo');
   updateShell();
-  renderAnalysis();
+  const activeTabBtn=document.querySelector('.tabs button.active');
+  const content=document.getElementById('analysisTabContent');
+  if(activeTabBtn&&content){
+   content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+  }else{
+   renderAnalysis();
+  }
  }catch(e){
   console.error('unlock error',e);
   toast(e?.message||'Errore, riprova');
