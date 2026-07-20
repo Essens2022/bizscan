@@ -123,6 +123,7 @@
         '<a href="library.html?view=reports"><span>▤</span><b>I miei report</b></a>'+
         '<a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b></a>'+
         '<a href="account.html"><span>€</span><b>Crediti e pacchetti</b></a>'+
+        '<a href="account.html#billingHistoryCard"><span>🧾</span><b>Fatturazione</b></a>'+
         '</nav>');
       profileTrigger.onclick=function(e){e.preventDefault();e.stopPropagation();togglePopover(profile,profileTrigger)};
     }

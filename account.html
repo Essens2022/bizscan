@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607202148"><link rel="stylesheet" href="premium.css?v=202607202148"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607202153"><link rel="stylesheet" href="premium.css?v=202607202153"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -13,7 +13,9 @@
 
 <section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
 
-<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div></section>
+<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div>
+<div id="billingHistoryCard" class="card" style="display:block;margin-top:14px"><div class="card-body"><h3>Storico acquisti</h3><div id="billingHistoryList"><p style="color:#8d99aa;font-size:12px">Caricamento…</p></div></div></div>
+</section>
 
   <section class="section" id="authSection">
   <div class="card" style="display:block;max-width:520px">
@@ -92,8 +94,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607202148"></script>
-<script src="app.js?v=202607202148"></script>
+<script src="supabase-data.js?v=202607202153"></script>
+<script src="app.js?v=202607202153"></script>
 
 <script>
 async function waitForSupabase() {
@@ -227,6 +229,24 @@ if(logged){
     const fn=user.user_metadata?.first_name||'';const ln=user.user_metadata?.last_name||'';const fullName=(fn+' '+ln).trim();
     document.getElementById("accountSummary").innerHTML=`<div class="card-body">${fullName?`<h3>${fn} ${ln}</h3><p style="opacity:.75;margin-top:-6px">${user.email}</p>`:`<h3>${user.email}</h3>`}<p style="margin-top:14px">Piano attivo: <strong>${planLabel}</strong></p><p>Crediti analisi disponibili: <strong>${summary.available_credits??0}</strong></p><p>Crediti report PDF disponibili: <strong>${summary.available_pdf_credits??0}</strong></p><p>Analisi sbloccate: <strong>${summary.unlocked_analyses??0}</strong></p></div>`
   }catch(e){console.error(e)}
+  try{
+    const orders=await BizScanData.fetchMyOrders()
+    const list=document.getElementById("billingHistoryList")
+    if(!orders.length){
+      list.innerHTML='<p style="color:#8d99aa;font-size:12px">Nessun acquisto ancora effettuato</p>'
+    }else{
+      list.innerHTML=orders.map(o=>{
+        const d=new Date(o.created_at)
+        const dateStr=d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'})
+        const timeStr=d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})
+        const amount=Number(o.amount||0).toFixed(2).replace('.',',')
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #232f42">
+          <div><b style="display:block;font-size:14px">${o.plan_name||'Acquisto BizScan'}</b><small style="color:#8d99aa">${dateStr} · ${timeStr}</small></div>
+          <div style="text-align:right"><b style="font-size:15px;color:#7ef2c9">${amount} €</b><br><small style="color:#8d99aa">Pagato</small></div>
+        </div>`
+      }).join('')
+    }
+  }catch(e){console.error(e)}
 }
 }
 
@@ -280,5 +300,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607202148CACHEV"></script></body>
+<script src="shell-ui.js?v=202607202153CACHEV"></script></body>
 </html>
