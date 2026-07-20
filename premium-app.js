@@ -153,9 +153,10 @@ function filterHomeAnalyses(items,filter){
  return arr.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))
 }
 window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
+const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28};
 function renderPhraseHtml(ph){
  if(Array.isArray(ph.segments)&&ph.segments.length){
-  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')}">${esc(s.text||'')}</span>`).join('');
+  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em">${esc(s.text||'')}</span>`).join('');
  }
  return `<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
 }
