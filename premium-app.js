@@ -200,7 +200,16 @@ function renderHome(){
   </section>`}
 
   <section class="home18-locked">
-   <div class="home18-locked-content"><small>PREMIUM</small><h2>Dati che cambiano la decisione</h2><div class="home18-blur-chart"><i style="height:42%"></i><i style="height:69%"></i><i style="height:55%"></i><i style="height:86%"></i><i style="height:64%"></i></div></div>
+   <div class="home18-locked-content"><small>PREMIUM</small><h2>Dati che cambiano la decisione</h2>
+    <div class="home18-blur-chart">${(()=>{
+      const sc=lead?.display?.scenario;
+      const nums=sc?['prudente','realistico','ottimistico'].map(k=>parseFloat(String(sc[k]?.roi||'').replace(/[^\d.]/g,''))||0):null;
+      const bars=(nums&&nums.some(n=>n>0))?nums:[42,69,55,86,64];
+      const max=Math.max(...bars,1);
+      return bars.map(v=>`<i style="height:${Math.max(18,Math.round(v/max*100))}%"></i>`).join('');
+    })()}</div>
+   </div>
+   <div class="home18-lock-badge"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="15.3" r="1.6" fill="#1a0f38"/></svg></div>
    <a href="pricing.html">Scopri i dati premium con BizScan Plus</a>
   </section>
 
