@@ -569,17 +569,19 @@ function renderPricing(){
   if(p.key==='max')items.push('Tutte le funzioni BizScan')
   return items.slice(0,5)
  }
+ const PRICE_CARD_COLOR={single:'#9aa5b1',starter:'#35d49a',smart:'#5b8cff',pro:'#ff9d3d',advanced:'#e05fc9',business:'#2fd8d8',max:'#ffb703'}
  const cards=PACKAGES.map(p=>{
   const v=packageValue(p)
   const saving=v.saving>.01
+  const color=PRICE_CARD_COLOR[p.key]||'#9aa5b1'
   const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='max'?'is-max':''].filter(Boolean).join(' ')
-  return `<article class="${classes}" data-plan="${p.key}">
+  return `<article class="${classes}" data-plan="${p.key}" style="border-top:3px solid ${color}">
    ${p.badge?`<span class="price-badge">${p.badge}</span>`:''}
-   <div class="price-card-head"><div><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small><h3>${p.name}</h3></div><div class="price-amount">${euro(p.price)}</div></div>
+   <div class="price-card-head"><div><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small><h3 style="color:${color}">${p.name}</h3></div><div class="price-amount">${euro(p.price)}</div></div>
    <p class="price-purpose">${purpose[p.key]}</p>
    <ul class="price-benefits">${benefits(p).map(x=>`<li>${x}</li>`).join('')}</ul>
    ${saving?`<div class="price-proof"><span><small>Valore acquistato separatamente</small><del>${euro(v.total)}</del></span><span><small>Risparmio incluso</small><strong>${euro(v.saving)}</strong></span></div>`:'<div class="price-proof"><span><small>Prezzo diretto</small><strong>'+euro(p.price)+'</strong></span></div>'}
-   <button class="btn ${p.key==='max'?'purple':'gold'} full" onclick="choosePackage('${p.key}')">Scegli ${p.name}</button>
+   <button class="btn full" style="background:${color};color:#0c1420;font-weight:900;border:none" onclick="choosePackage('${p.key}')">Scegli ${p.name}</button>
   </article>`
  }).join('')
  host.innerHTML=`<div class="pricing-page">
