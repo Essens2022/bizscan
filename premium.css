@@ -565,3 +565,8 @@
 .transition-slide .hero-media-slide.active{transform:translateX(0)}
 .transition-zoom .hero-media-slide.active img,.transition-zoom .hero-media-slide.active video{animation:hero-kenburns 5s ease-out forwards}
 @keyframes hero-kenburns{from{transform:scale(1)}to{transform:scale(1.09)}}
+#billingHistoryList{scrollbar-width:thin;scrollbar-color:#3a4a63 transparent}
+#billingHistoryList::-webkit-scrollbar{width:5px}
+#billingHistoryList::-webkit-scrollbar-thumb{background:#3a4a63;border-radius:10px}
+#billingHistoryList::-webkit-scrollbar-track{background:transparent}
+#billingHistoryList>div:last-child{border-bottom:none!important}
