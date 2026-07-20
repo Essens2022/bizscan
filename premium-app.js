@@ -311,7 +311,8 @@ function analysisOverview(p){
  const d=(p&&p.display)||{};
  const gate=(key,html)=>{
   if(key==='indicators')return html;
-  return toolUnlocked(key)?html:`<section class="panel locked-section"><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
+  const color=toolMinPlanColor(key);
+  return toolUnlocked(key)?html:`<section class="panel locked-section"${color?` style="border-left:4px solid ${color}"`:''}><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
@@ -328,14 +329,19 @@ function analysisOverview(p){
  return `${hasCustom?'':'<div class="tools-note">I valori mostrati in questa panoramica sono esempi dimostrativi e non riflettono ancora i dati specifici di questa attività</div>'}<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend()}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
-function toolBlock(key,title,fallback,realHtml){
- const has=toolUnlocked(key);
- const body=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
- return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
-}
 const TOOL_MIN_PLAN_LABEL={scenario:'Starter',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const PLAN_TIER_COLOR={single:'#94a3b8',starter:'#22c55e',smart:'#3b82f6',pro:'#06b6d4',advanced:'#ec4899',business:'#a855f7',max:'#ffb703'};
 const PLAN_BADGE_COLOR={Starter:PLAN_TIER_COLOR.starter,Smart:PLAN_TIER_COLOR.smart,Pro:PLAN_TIER_COLOR.pro,Advanced:PLAN_TIER_COLOR.advanced,Business:PLAN_TIER_COLOR.business,Max:PLAN_TIER_COLOR.max};
+function toolMinPlanColor(key){
+ const label=TOOL_MIN_PLAN_LABEL[key];
+ return label?(PLAN_BADGE_COLOR[label]||'#ffb703'):null;
+}
+function toolBlock(key,title,fallback,realHtml){
+ const has=toolUnlocked(key);
+ const body=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
+ const color=has?null:toolMinPlanColor(key);
+ return `<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${esc(title)}</h3>${body}</section>`;
+}
 function lockedCta(toolKey){
  if(!access.authenticated){
   return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
