@@ -667,8 +667,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607202123"></script>
-<script src="app.js?v=202607202123"></script>
+ <script src="supabase-data.js?v=202607202138"></script>
+<script src="app.js?v=202607202138"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -842,6 +842,7 @@ function renderHeroMediaList(){
         <button class="btn ghost" type="button" onclick="moveHeroMedia(${i},1)" ${i===_heroMedia.length-1?"disabled":""} style="flex:1;padding:6px">↓</button>
       </div>
       <label class="check" style="margin:0 0 8px;font-size:11px"><input type="checkbox" ${m.is_active?"checked":""} onchange="toggleHeroMedia('${m.id}',this.checked)">Attivo</label>
+      <input value="${esc(m.link_url||"")}" placeholder="Link al click (opzionale)" style="font-size:11px;padding:6px 8px;margin-bottom:6px" onchange="updateHeroMediaLink('${m.id}',this.value)">
       <label class="btn dark full" style="font-size:11px;padding:8px;cursor:pointer">Sostituisci<input type="file" accept="image/*,video/*" style="display:none" onchange="replaceHeroMediaFile('${m.id}',this)"></label>
       <button class="btn danger full" type="button" onclick="deleteHeroMedia('${m.id}')" style="font-size:11px;padding:8px;margin-top:6px">Elimina</button>
     </div>`).join("")}</div>`
@@ -903,6 +904,12 @@ window.replaceHeroMediaFile=async(id,input)=>{
 window.toggleHeroMedia=async(id,active)=>{
   const m=_heroMedia.find(x=>x.id===id);if(!m)return
   await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:m.link_url,p_order_index:m.order_index,p_is_active:active})
+  await loadHeroMedia()
+}
+window.updateHeroMediaLink=async(id,newLink)=>{
+  const m=_heroMedia.find(x=>x.id===id);if(!m)return
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:newLink.trim()||null,p_order_index:m.order_index,p_is_active:m.is_active})
+  if(error){alert("Errore: "+error.message);return}
   await loadHeroMedia()
 }
 window.deleteHeroMedia=async(id)=>{
@@ -1704,5 +1711,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607202123"></script></body>
+<script src="shell-ui.js?v=202607202138"></script></body>
 </html>
