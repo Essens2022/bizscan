@@ -18,7 +18,7 @@ function packageValue(p){
  return {analysisValue,indicatorValue,pdfValue,comparisonValue,total,saving:Math.max(0,total-p.price),resources:p.analyses+p.indicatorCount+p.pdfCredits+(COMPARISON_UNITS[p.compare]||0)}
 };
 let analyses=[],favorites=[],compare=[],access={authenticated:false,credits:0};
-let heroMedia=[],heroPhrases=[],heroTransition='fade';
+let heroMedia=[],heroPhrases=[],heroTransition='fade',heroSeconds=5;
 let homeFilter='recommended';
 let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -58,6 +58,7 @@ async function load(){
  heroMedia=rhm.status==='fulfilled'?rhm.value:[];
  heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
  heroTransition=rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):'fade';
+ heroSeconds=rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):5;
  // I preferiti sono dati personali dell'account: l'unica fonte di verità è il server.
  // Un ospite non autenticato non ha una lista di preferiti locale che poi "eredita" al login.
  if(access.authenticated){
@@ -172,7 +173,7 @@ function initHeroRotation(){
    slides[_heroMediaIdx]?.classList.remove('active');dots[_heroMediaIdx]?.classList.remove('active');
    _heroMediaIdx=(_heroMediaIdx+1)%slides.length;
    slides[_heroMediaIdx]?.classList.add('active');dots[_heroMediaIdx]?.classList.add('active');
-  },5000);
+  },Math.max(3,Math.min(10,heroSeconds))*1000);
  }
  if(heroPhrases.length>1){
   const h1=$('#heroRotatingHeadline');
