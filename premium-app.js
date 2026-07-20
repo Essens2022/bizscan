@@ -569,7 +569,7 @@ function renderPricing(){
   if(p.key==='max')items.push('Tutte le funzioni BizScan')
   return items.slice(0,5)
  }
- const PRICE_CARD_COLOR={single:'#9aa5b1',starter:'#35d49a',smart:'#5b8cff',pro:'#ff9d3d',advanced:'#e05fc9',business:'#2fd8d8',max:'#ffb703'}
+ const PRICE_CARD_COLOR={single:'#9198a5',starter:'#7c93c4',smart:'#5478e6',pro:'#6f5fea',advanced:'#8850e6',business:'#9c3fdb',max:'#7c3aed'}
  const cards=PACKAGES.map(p=>{
   const v=packageValue(p)
   const saving=v.saving>.01
