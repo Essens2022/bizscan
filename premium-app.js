@@ -478,7 +478,42 @@ function renderPricing(){
 }
 function packageComparison(){return `<section class="pricing-section package-comparison"><div class="pricing-section-head"><small>CONFRONTO COMPLETO</small><h2>Confronta tutti i pacchetti</h2><p>Le funzioni aumentano progressivamente senza ripetizioni</p></div><div class="package-table-wrap"><table class="package-table"><thead><tr><th>Incluso</th>${PACKAGES.map(p=>`<th>${p.name}</th>`).join('')}</tr></thead><tbody><tr><th>Analisi interattive</th>${PACKAGES.map(p=>`<td>${p.analyses}</td>`).join('')}</tr><tr><th>Indicatori premium</th>${PACKAGES.map(p=>`<td>${p.indicatorCount||'—'}</td>`).join('')}</tr><tr><th>Crediti report PDF</th>${PACKAGES.map(p=>`<td>${p.pdfCredits||'—'}</td>`).join('')}</tr><tr><th>Confronto</th>${PACKAGES.map(p=>`<td>${p.compare}</td>`).join('')}</tr><tr><th>Accesso alle analisi sbloccate</th>${PACKAGES.map(()=>'<td class="best">Permanente</td>').join('')}</tr></tbody></table></div></section>`}
 function standaloneProducts(){const items=[{icon:'▣',title:'Analisi interattiva',text:'Apri una singola attività nella piattaforma',price:UNIT_PRICES.analysis,action:"chooseAddon('analysis')"},{icon:'◎',title:'Indicatore premium',text:'Sblocca un indicatore avanzato su un’analisi scelta',price:UNIT_PRICES.indicator,action:"chooseAddon('indicator')"},{icon:'PDF',title:'Report PDF completo',text:'Scarica il dossier approfondito di un’attività',price:UNIT_PRICES.pdf,action:"chooseAddon('pdf')"},{icon:'⇄',title:'Confronto avanzato',text:'Confronta due attività con metriche complete',price:UNIT_PRICES.comparison,action:"chooseAddon('comparison')"}];return `<section class="standalone-products section"><div class="section-head"><div><small>ACQUISTA SOLO CIÒ CHE TI SERVE</small><h2>Prezzi singoli trasparenti</h2><p>Questi prezzi formano il valore separato mostrato nei pacchetti</p></div></div><div class="standalone-grid">${items.map(x=>`<article class="panel standalone-card"><i>${x.icon}</i><div><h3>${x.title}</h3><p>${x.text}</p></div><strong>${euro(x.price)}</strong><button class="btn ghost full" onclick="${x.action}">Acquista singolarmente</button></article>`).join('')}</div></section>`}
-window.chooseAddon=type=>{const map={analysis:['Analisi interattiva',UNIT_PRICES.analysis],indicator:['Indicatore premium',UNIT_PRICES.indicator],pdf:['Report PDF completo',UNIT_PRICES.pdf],comparison:['Confronto avanzato',UNIT_PRICES.comparison]};const item=map[type];modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Il checkout reale verrà attivato quando Stripe sarà collegato al catalogo prodotti</p>`,'<a class="btn gold full" href="account.html">Accedi per continuare</a>')}
+window.chooseAddon=async type=>{
+ const map={analysis:['Analisi interattiva',UNIT_PRICES.analysis],indicator:['Indicatore premium',UNIT_PRICES.indicator],pdf:['Report PDF completo',UNIT_PRICES.pdf],comparison:['Confronto avanzato',UNIT_PRICES.comparison]};
+ const item=map[type];if(!item)return;
+ if(type==='indicator'||type==='comparison'){
+  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Questo prodotto non è ancora disponibile singolarmente. Nel frattempo puoi trovarlo incluso nei pacchetti.</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');
+  return;
+ }
+ if(!access.authenticated){toast('Accedi per acquistare');setTimeout(()=>{location.href='account.html'},650);return}
+ modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  let{data:sessionData}=await c.auth.getSession();
+  let session=sessionData?.session;
+  if(!session?.access_token){
+   try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
+  }
+  if(!session?.access_token){
+   modal(item[0],'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html">Accedi</a>');
+   return;
+  }
+  const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
+   method:'POST',
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+   body:JSON.stringify({item_type:type})
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.url){
+   modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+   return;
+  }
+  location.href=data.url;
+ }catch(e){
+  console.error('checkout error',e);
+  modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+ }
+};
 function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
 window.choosePdfPack=(count,price)=>modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>I crediti restano nel conto finché non vengono utilizzati</p>`,`<button class="btn ghost full" onclick="closeModal()">Chiudi</button>`)
 window.choosePackage=async key=>{
