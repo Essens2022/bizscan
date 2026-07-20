@@ -49,4 +49,6 @@ async function savePdfAccessRule(attachmentId,isFree,allowedPlans){
   if(error)throw error;return data;
 }
 async function signedAttachmentUrl(att,expires=900){if(!att)return null;if(att.type!=="pdf"&&/^https?:/i.test(att.file_url||""))return att.file_url;const path=storagePath(att);if(!path)throw new Error("Percorso allegato non valido");const c=await getSupabaseClient();const{data,error}=await c.storage.from(att.type==="pdf"?"bizscan-private":"bizscan-public").createSignedUrl(path,expires);if(error)throw error;return data.signedUrl}
-window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl};
+async function fetchHeroMedia(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_hero_media");if(error)throw error;return data||[]}
+async function fetchHeroPhrases(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_hero_phrases");if(error)throw error;return data||[]}
+window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases};
