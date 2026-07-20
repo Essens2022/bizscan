@@ -546,3 +546,4 @@
 .auth-tabs{display:flex;gap:4px;background:#0b1420;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
 .auth-tab{flex:1;padding:10px;border:none;background:transparent;color:#8d99aa;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer}
 .auth-tab.active{background:linear-gradient(135deg,#ffb703,#ff8a00);color:#111}
+.home18-lock-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#ffb703,#ff8a00);display:flex;align-items:center;justify-content:center;color:#1a0f38;box-shadow:0 12px 34px rgba(255,183,3,.4),0 0 0 6px rgba(255,183,3,.12);z-index:2}
