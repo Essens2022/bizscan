@@ -590,10 +590,15 @@ textarea{min-height:92px;resize:vertical}
       <div id="heroMediaList" style="display:grid;gap:10px;margin-bottom:16px"></div>
       <div class="three">
         <label>Tipo<select id="newMediaType"><option value="image">Immagine</option><option value="gif">GIF</option><option value="video">Video</option></select></label>
-        <label>URL del file<input id="newMediaUrl" placeholder="https://..."></label>
+        <label>Carica un file<input id="newMediaFile" type="file" accept="image/*,video/*" onchange="uploadHeroMediaFile(this)"></label>
         <label>Link opzionale (dove porta al click)<input id="newMediaLink" placeholder="https://..."></label>
       </div>
-      <button class="btn gold" onclick="addHeroMedia()">+ Aggiungi al carosello</button>
+      <p id="newMediaUploadStatus" style="color:var(--muted);font-size:12px;margin:4px 0 0"></p>
+      <p style="color:var(--muted);font-size:11px;margin:10px 0 4px">Oppure incolla un link diretto a un file già online:</p>
+      <div class="two">
+        <label>URL del file<input id="newMediaUrl" placeholder="https://..."></label>
+        <button class="btn dark" type="button" onclick="addHeroMediaFromUrl()" style="align-self:end;height:44px">+ Aggiungi da URL</button>
+      </div>
     </div>
 
     <div class="card" style="margin-top:18px">
@@ -603,16 +608,18 @@ textarea{min-height:92px;resize:vertical}
 
       <div class="card" style="background:#0d1420;border:1px solid var(--line)">
         <h3 style="margin-top:0">Crea una nuova frase</h3>
-        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli il colore, premi "+". Ripeti per ogni pezzo con colore diverso.</p>
-        <div id="phraseChunkPreview" style="font-size:20px;font-weight:900;padding:16px;background:#050914;border-radius:12px;margin:10px 0;min-height:28px">
+        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli colore e dimensione, premi "+". Ripeti per ogni pezzo diverso.</p>
+        <p style="color:var(--muted);font-size:11px;margin-bottom:4px">Anteprima reale (come apparirà sul sito):</p>
+        <div id="phraseChunkPreview" style="font-size:32px;line-height:1.15;font-weight:900;text-align:center;padding:28px 16px;background:#050914;border-radius:14px;margin:6px 0 14px;min-height:40px;font-family:Arial,Helvetica,sans-serif">
           <span style="color:var(--muted);font-weight:400;font-size:13px">L'anteprima della frase apparirà qui</span>
         </div>
         <div id="phraseChunksList" style="display:grid;gap:6px;margin-bottom:12px"></div>
         <div class="three">
           <label>Testo del pezzo<input id="chunkText" placeholder="giusta"></label>
           <label>Colore<input id="chunkColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
-          <button class="btn dark" type="button" onclick="addPhraseChunk()" style="align-self:end;height:44px">+ Aggiungi pezzo</button>
+          <label>Dimensione<select id="chunkSize"><option value="small">Piccolo</option><option value="medium" selected>Normale</option><option value="large">Grande</option></select></label>
         </div>
+        <button class="btn dark full" type="button" onclick="addPhraseChunk()" style="margin-top:10px">+ Aggiungi pezzo</button>
         <div style="display:flex;gap:10px;margin-top:14px">
           <button class="btn gold" type="button" onclick="saveHeroPhraseFromChunks()">Salva frase</button>
           <button class="btn ghost" type="button" onclick="clearPhraseChunks()">Ricomincia</button>
@@ -621,8 +628,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607201556"></script>
-<script src="app.js?v=202607201556"></script>
+ <script src="supabase-data.js?v=202607201603"></script>
+<script src="app.js?v=202607201603"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -762,15 +769,41 @@ function renderHeroMediaList(){
     <button class="btn danger" type="button" onclick="deleteHeroMedia('${m.id}')">Elimina</button>
   </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessun media aggiunto - il carosello non verrà mostrato sul sito</p>'
 }
-window.addHeroMedia=async()=>{
+async function saveHeroMediaEntry(media_type,url,link_url){
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:link_url,p_order_index:_heroMedia.length,p_is_active:true})
+  if(error){alert("Errore: "+error.message);return false}
+  await loadHeroMedia()
+  return true
+}
+window.addHeroMediaFromUrl=async()=>{
   const media_type=document.getElementById("newMediaType").value
   const url=document.getElementById("newMediaUrl").value.trim()
   const link_url=document.getElementById("newMediaLink").value.trim()||null
   if(!url){alert("Inserisci l'URL del file");return}
-  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:link_url,p_order_index:_heroMedia.length,p_is_active:true})
-  if(error){alert("Errore: "+error.message);return}
-  document.getElementById("newMediaUrl").value="";document.getElementById("newMediaLink").value=""
-  await loadHeroMedia()
+  if(await saveHeroMediaEntry(media_type,url,link_url)){
+    document.getElementById("newMediaUrl").value=""
+    document.getElementById("newMediaLink").value=""
+  }
+}
+window.uploadHeroMediaFile=async(input)=>{
+  const file=input.files[0];if(!file)return
+  const status=document.getElementById("newMediaUploadStatus")
+  const link_url=document.getElementById("newMediaLink").value.trim()||null
+  const media_type=file.type.startsWith("video")?"video":(file.type==="image/gif"?"gif":"image")
+  document.getElementById("newMediaType").value=media_type
+  status.textContent="Caricamento in corso…"
+  try{
+    const path=`hero/${Date.now()}-${safeFileName(file.name)}`
+    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,file,{upsert:false,contentType:file.type})
+    if(uploadError)throw uploadError
+    const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
+    const ok=await saveHeroMediaEntry(media_type,data.publicUrl,link_url)
+    status.textContent=ok?"✓ Caricato e aggiunto al carosello":""
+    if(ok){input.value="";document.getElementById("newMediaLink").value=""}
+  }catch(e){
+    console.error(e)
+    status.textContent="Errore nel caricamento: "+(e.message||"riprova")
+  }
 }
 window.toggleHeroMedia=async(id,active)=>{
   const m=_heroMedia.find(x=>x.id===id);if(!m)return
@@ -801,7 +834,7 @@ async function loadHeroPhrases(){
 function renderHeroPhraseList(){
   const host=document.getElementById("heroPhraseList");if(!host)return
   const preview=p=>Array.isArray(p.segments)&&p.segments.length
-    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')}">${esc(s.text)}</span>`).join("")
+    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em">${esc(s.text)}</span>`).join("")
     :`<span style="color:${esc(p.color)}">${esc(p.text)}</span>`
   host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
     <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
@@ -812,14 +845,15 @@ function renderHeroPhraseList(){
   </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessuna frase - verrà usato il titolo predefinito</p>'
 }
 let _phraseChunks=[]
+const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28}
 function renderPhraseChunks(){
   const preview=document.getElementById("phraseChunkPreview")
   const list=document.getElementById("phraseChunksList")
   if(_phraseChunks.length){
-    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)}">${esc(c.text)}</span>`).join(" ")
+    preview.innerHTML=_phraseChunks.map(c=>`<span style="color:${esc(c.color)};font-size:${SEGMENT_SIZE_EM[c.size]||1}em">${esc(c.text)}</span>`).join("")
     list.innerHTML=_phraseChunks.map((c,i)=>`<div class="panel" style="padding:8px 12px;display:flex;align-items:center;gap:10px">
       <span style="width:16px;height:16px;border-radius:4px;background:${esc(c.color)};border:1px solid #333;flex-shrink:0"></span>
-      <span style="flex:1;font-size:13px">${esc(c.text)}</span>
+      <span style="flex:1;font-size:13px">${esc(c.text)} <small style="color:var(--muted)">(${c.size==='small'?'piccolo':c.size==='large'?'grande':'normale'})</small></span>
       <button class="btn danger" type="button" onclick="removePhraseChunk(${i})">Rimuovi</button>
     </div>`).join("")
   }else{
@@ -830,8 +864,9 @@ function renderPhraseChunks(){
 window.addPhraseChunk=()=>{
   const text=document.getElementById("chunkText").value.trim()
   const color=document.getElementById("chunkColor").value
+  const size=document.getElementById("chunkSize").value
   if(!text){alert("Scrivi il testo del pezzo");return}
-  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color})
+  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color,size})
   document.getElementById("chunkText").value=""
   renderPhraseChunks()
 }
@@ -1572,5 +1607,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607201556"></script></body>
+<script src="shell-ui.js?v=202607201603"></script></body>
 </html>
