@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607200314"><link rel="stylesheet" href="premium.css?v=202607200314"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607200327"><link rel="stylesheet" href="premium.css?v=202607200327"><script async src="https://www.googletagmanager.com/gtag/js?id=G-ND8Y8Q272W"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-ND8Y8Q272W");</script></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -11,13 +11,21 @@
   </div>
 </header><div class="page-back-row"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='/'}">←</button></div>
 
-<section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti, acquisti e preferiti in un unico spazio ordinato.</p></section>
+<section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
+
+<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div></section>
 
   <section class="section" id="authSection">
   <div class="card" style="display:block;max-width:520px">
     <div class="card-body">
       <h3>Accesso</h3>
       <p>Accedi al tuo account BizScan</p>
+
+      <input id="authFirstName" type="text" placeholder="Nome"
+             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
+
+      <input id="authLastName" type="text" placeholder="Cognome"
+             style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
 
       <input id="authEmail" type="email" placeholder="Email"
              style="width:100%;padding:14px;margin:8px 0;border-radius:12px;display:none">
@@ -42,7 +50,7 @@
         Esci
       </button>
 
-      <button id="deleteAccountBtn" class="btn full" style="display:none;margin-top:10px;background:transparent;border:1px solid #5a2530;color:#ff8a8a"
+      <button id="deleteAccountBtn" class="btn full" style="display:none;margin-top:24px;background:transparent;border:1px solid #5a2530;color:#ff8a8a"
               onclick="confirmDeleteAccountStep1()">
         Elimina il mio account
       </button>
@@ -61,10 +69,6 @@
     </div>
   </div>
 </section>
-<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block;margin-bottom:14px"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div><div class="grid">
-<div class="card" style="display:block"><div class="card-body"><h3>Preferiti</h3><p>Salva le attività che vuoi controllare più tardi</p><a class="btn dark full" href="search.html">Apri ricerca</a></div></div>
-<div class="card" style="display:block"><div class="card-body"><h3>Libreria</h3><p>Apri le analisi già sbloccate</p><a class="btn primary full" href="library.html">Apri libreria</a></div></div>
-</div></section>
 </div>
 <nav class="bottom-nav">
   <a href="/"><span>⌂</span><span>Home</span></a>
@@ -76,8 +80,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607200314"></script>
-<script src="app.js?v=202607200314"></script>
+<script src="supabase-data.js?v=202607200327"></script>
+<script src="app.js?v=202607200327"></script>
 
 <script>
 async function waitForSupabase() {
@@ -115,9 +119,16 @@ if(isAdmin){ location.href="admin.html"; return }
 async function signupSupabase() {
   await waitForSupabase()
 
+  const firstName = document.getElementById("authFirstName").value.trim()
+  const lastName = document.getElementById("authLastName").value.trim()
   const email = document.getElementById("authEmail").value.trim()
   const password = document.getElementById("authPassword").value
   const message = document.getElementById("authMessage")
+
+  if (!firstName || !lastName) {
+    message.textContent = "Inserisci nome e cognome"
+    return
+  }
 
   if (!email || !password) {
     message.textContent = "Inserisci email e password"
@@ -133,7 +144,8 @@ async function signupSupabase() {
   email,
   password,
   options: {
-    emailRedirectTo: "https://bizscan.it/index.html"
+    emailRedirectTo: "https://bizscan.it/index.html",
+    data: { first_name: firstName, last_name: lastName }
   }
 })
 
@@ -169,6 +181,12 @@ document.getElementById("accountContent").style.display =
 document.getElementById("deleteAccountBtn").style.display =
   logged ? "block" : "none"
 
+document.getElementById("authFirstName").style.display =
+  logged ? "none" : "block"
+
+document.getElementById("authLastName").style.display =
+  logged ? "none" : "block"
+
 document.getElementById("authEmail").style.display =
   logged ? "none" : "block"
 
@@ -183,7 +201,8 @@ if(logged){
   try{
     const summary=await BizScanData.accessSummary(); const user=data.session.user;
     const planLabel=summary.plan&&summary.plan!=='free'?String(summary.plan).charAt(0).toUpperCase()+String(summary.plan).slice(1):'Nessuno'
-    document.getElementById("accountSummary").innerHTML=`<div class="card-body"><h3>${user.email}</h3><p>Crediti analisi disponibili: <strong>${summary.available_credits??0}</strong></p><p>Crediti report PDF disponibili: <strong>${summary.available_pdf_credits??0}</strong></p><p>Piano attivo: <strong>${planLabel}</strong></p><p>Analisi sbloccate: <strong>${summary.unlocked_analyses??0}</strong></p></div>`
+    const fn=user.user_metadata?.first_name||'';const ln=user.user_metadata?.last_name||'';const fullName=(fn+' '+ln).trim();
+    document.getElementById("accountSummary").innerHTML=`<div class="card-body">${fullName?`<h3>${fn} ${ln}</h3><p style="opacity:.75;margin-top:-6px">${user.email}</p>`:`<h3>${user.email}</h3>`}<p style="margin-top:14px">Piano attivo: <strong>${planLabel}</strong></p><p>Crediti analisi disponibili: <strong>${summary.available_credits??0}</strong></p><p>Crediti report PDF disponibili: <strong>${summary.available_pdf_credits??0}</strong></p><p>Analisi sbloccate: <strong>${summary.unlocked_analyses??0}</strong></p></div>`
   }catch(e){console.error(e)}
 }
 }
@@ -238,5 +257,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607200314CACHEV"></script></body>
+<script src="shell-ui.js?v=202607200327CACHEV"></script></body>
 </html>

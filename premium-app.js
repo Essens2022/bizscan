@@ -74,11 +74,15 @@ function updateShell(){
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
  if(nameEl){
   if(access.authenticated){
-   BizScanData.currentUser().then(u=>{if(u?.email)nameEl.textContent=u.email}).catch(()=>{});
+   BizScanData.currentUser().then(u=>{
+    if(!u)return;
+    const fn=u.user_metadata?.first_name,ln=u.user_metadata?.last_name;
+    nameEl.textContent=(fn&&ln)?`${fn} ${ln}`:(u.email||'Account BizScan');
+   }).catch(()=>{});
    if(statusEl)statusEl.textContent=`${n} crediti analisi · ${pdfN} crediti PDF${plan?' · Piano '+plan:''}`;
   }else{
-   nameEl.innerHTML='<span class="guest-auth-links"><a class="btn gold" href="account.html">Accedi</a><a class="btn ghost" href="account.html">Registrati</a></span>';
-   if(statusEl)statusEl.textContent='';
+   nameEl.textContent='Accedi o registrati';
+   if(statusEl)statusEl.textContent='Tocca per entrare nel tuo account';
   }
  }
 }
