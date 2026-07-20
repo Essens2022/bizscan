@@ -1,6 +1,46 @@
 (function(){
   'use strict';
 
+  function initLoadingBar(){
+    if(document.getElementById('page-progress'))return;
+    var bar=document.createElement('div');
+    bar.id='page-progress';
+    var fill=document.createElement('i');
+    bar.appendChild(fill);
+    document.body.prepend(bar);
+    var pct=8;
+    fill.style.width=pct+'%';
+    bar.classList.add('active');
+    var timer=setInterval(function(){
+      pct=Math.min(pct+(90-pct)*0.08,90);
+      fill.style.width=pct+'%';
+    },180);
+    window.__pageLoadingDone=function(){
+      clearInterval(timer);
+      fill.style.width='100%';
+      setTimeout(function(){
+        bar.classList.remove('active');
+        setTimeout(function(){fill.style.width='0%'},260);
+      },220);
+    };
+    // Give immediate feedback on any same-page navigation click, even before the browser unloads.
+    document.addEventListener('click',function(e){
+      var a=e.target.closest('a[href]');
+      if(!a)return;
+      var href=a.getAttribute('href')||'';
+      if(!href||href.startsWith('#')||href.startsWith('javascript:')||a.target==='_blank')return;
+      if(/^https?:\/\//i.test(href)&&!href.includes(location.hostname))return;
+      pct=Math.max(pct,20);
+      fill.style.width=pct+'%';
+      bar.classList.add('active');
+    },true);
+  }
+  initLoadingBar();
+})();
+
+(function(){
+  'use strict';
+
   function closePanels(){
     document.querySelectorAll('.shell-popover.is-open').forEach(function(el){el.classList.remove('is-open')});
     document.querySelectorAll('[aria-expanded="true"]').forEach(function(el){el.setAttribute('aria-expanded','false')});
