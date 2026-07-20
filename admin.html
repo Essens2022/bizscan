@@ -587,12 +587,22 @@ textarea{min-height:92px;resize:vertical}
   <section id="homepagePanel" class="panel">
     <div class="card">
       <h2>Stile di transizione del carosello</h2>
-      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Come passa da un'immagine/video all'altro.</p>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Come passa da un'immagine/video all'altro, e ogni quanto tempo cambia.</p>
       <div class="three">
         <label>Transizione<select id="carouselTransition" onchange="saveCarouselTransition()">
           <option value="fade">Dissolvenza - sfuma dolcemente</option>
           <option value="slide">Scorrimento - scivola da destra</option>
           <option value="zoom">Zoom - effetto cinematico lento</option>
+        </select></label>
+        <label>Cambia ogni<select id="carouselSeconds" onchange="saveCarouselTransition()">
+          <option value="3">3 secondi</option>
+          <option value="4">4 secondi</option>
+          <option value="5">5 secondi</option>
+          <option value="6">6 secondi</option>
+          <option value="7">7 secondi</option>
+          <option value="8">8 secondi</option>
+          <option value="9">9 secondi</option>
+          <option value="10">10 secondi</option>
         </select></label>
       </div>
     </div>
@@ -649,8 +659,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607201615"></script>
-<script src="app.js?v=202607201615"></script>
+ <script src="supabase-data.js?v=202607201621"></script>
+<script src="app.js?v=202607201621"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -777,10 +787,12 @@ async function loadCarouselTransition(){
   const{data,error}=await supabaseClient.rpc("public_get_hero_settings")
   if(error){console.error(error);return}
   document.getElementById("carouselTransition").value=(data&&data.carousel_transition)||"fade"
+  document.getElementById("carouselSeconds").value=String((data&&data.carousel_seconds)||5)
 }
 window.saveCarouselTransition=async()=>{
   const val=document.getElementById("carouselTransition").value
-  const{error}=await supabaseClient.rpc("admin_set_hero_settings",{p_carousel_transition:val})
+  const secs=Number(document.getElementById("carouselSeconds").value)
+  const{error}=await supabaseClient.rpc("admin_set_hero_settings",{p_carousel_transition:val,p_carousel_seconds:secs})
   if(error)alert("Errore: "+error.message)
 }
 async function loadHeroMedia(){
@@ -1668,5 +1680,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607201615"></script></body>
+<script src="shell-ui.js?v=202607201621"></script></body>
 </html>
