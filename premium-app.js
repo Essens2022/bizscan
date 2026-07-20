@@ -485,7 +485,7 @@ window.chooseAddon=async type=>{
   modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Questo prodotto non è ancora disponibile singolarmente. Nel frattempo puoi trovarlo incluso nei pacchetti.</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');
   return;
  }
- if(!access.authenticated){toast('Accedi per acquistare');setTimeout(()=>{location.href='account.html'},650);return}
+ if(!access.authenticated){modal(item[0],'<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
@@ -516,7 +516,7 @@ window.chooseAddon=async type=>{
 };
 function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
 window.choosePdfPack=async(count,price)=>{
- if(!access.authenticated){toast('Accedi per acquistare');setTimeout(()=>{location.href='account.html'},650);return}
+ if(!access.authenticated){modal('Crediti PDF','<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
  modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
@@ -547,7 +547,7 @@ window.choosePdfPack=async(count,price)=>{
 };
 window.choosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
- if(!access.authenticated){toast('Accedi per acquistare un pacchetto');setTimeout(()=>{location.href='account.html?next='+encodeURIComponent(location.pathname+location.search)},650);return}
+ if(!access.authenticated){modal(p.name,'<p>Devi accedere al tuo account per acquistare un pacchetto.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi o registrati</a>');return}
  modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
