@@ -164,6 +164,10 @@ function sizeToEm(size){
 const SEGMENT_FONT_FAMILY={system:'Arial,Helvetica,sans-serif',poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"};
 function renderPhraseHtml(ph){
  if(Array.isArray(ph.segments)&&ph.segments.length){
+  const hasPositions=ph.segments[0].x!=null;
+  if(hasPositions){
+   return ph.segments.map(s=>`<span style="position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);white-space:nowrap;color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text||'')}</span>`).join('');
+  }
   return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text||'')}</span>`).join('');
  }
  return `<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
@@ -219,6 +223,7 @@ function initHeroRotation(){
     _heroPhraseIdx=(_heroPhraseIdx+1)%heroPhrases.length;
     const ph=heroPhrases[_heroPhraseIdx];
     h1.innerHTML=renderPhraseHtml(ph);
+    h1.classList.toggle('hero-rotating-h1-canvas',Array.isArray(ph.segments)&&ph.segments.length&&ph.segments[0].x!=null);
     h1.classList.remove('fading');
    },700);
   },4500);
@@ -240,7 +245,7 @@ function renderHome(){
      const inner=m.media_type==='video'?`<video src="${esc(m.url)}" autoplay muted loop playsinline></video>`:`<img src="${esc(m.url)}" alt="" loading="${i===0?'eager':'lazy'}">`;
      return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
    }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div>`:''}
-   <h1 class="hero-rotating-h1" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
+   <h1 class="hero-rotating-h1${heroPhrases[0]&&Array.isArray(heroPhrases[0].segments)&&heroPhrases[0].segments.length&&heroPhrases[0].segments[0].x!=null?' hero-rotating-h1-canvas':''}" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
    <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
    <div class="home18-trust"><span>Fonti verificabili</span><span>Dati confrontabili</span><span>Pagamento unico</span></div>
