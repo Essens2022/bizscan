@@ -362,9 +362,23 @@ function lockedCta(toolKey){
  }
  return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
 }
+function confirmWithdrawalWaiver(priceLabel,onConfirm){
+ modal('Conferma acquisto',
+  `<p style="margin-bottom:14px">Stai per sbloccare un contenuto digitale${priceLabel?` (<b>${esc(priceLabel)}</b>)`:''}, fornito immediatamente.</p>
+   <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:11px;line-height:1.4;color:#8f9bad;font-weight:400">
+    <input type="checkbox" id="withdrawalWaiverCheck" style="margin-top:2px;flex-shrink:0" onchange="document.getElementById('withdrawalConfirmBtn').disabled=!this.checked">
+    <span>Rinuncio al diritto di recesso di 14 giorni per la fornitura immediata di contenuto digitale (Art. 59, comma 1, lett. o, Codice del Consumo)</span>
+   </label>`,
+  `<button class="btn gold full" id="withdrawalConfirmBtn" disabled style="margin-top:14px" onclick="closeModal();(${onConfirm})()">Conferma e continua</button>`
+ );
+}
 window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
  if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html">Accedi</a>');return}
+ confirmWithdrawalWaiver('',new Function(`window._doUnlockTool(${JSON.stringify(toolKey)})`));
+}
+window._doUnlockTool=async(toolKey)=>{
+ const p=findCurrent();if(!p?.id)return;
  try{
   const c=await BizScanData.getSupabaseClient();
   const{data,error}=await c.rpc('unlock_tool_with_credit',{p_analysis_id:p.id,p_tool_key:toolKey});
@@ -670,6 +684,10 @@ window.choosePdfPack=async(count,price)=>{
 window.choosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
  if(!access.authenticated){modal(p.name,'<p>Devi accedere al tuo account per acquistare un pacchetto.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi o registrati</a>');return}
+ confirmWithdrawalWaiver(euro(p.price),new Function(`window._doChoosePackage(${JSON.stringify(key)})`));
+}
+window._doChoosePackage=async key=>{
+ const p=PACKAGES.find(x=>x.key===key);if(!p)return;
  modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
