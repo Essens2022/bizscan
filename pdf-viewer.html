@@ -6,19 +6,21 @@ body{display:flex;flex-direction:column;height:100dvh}
 .pdf-bar{flex:0 0 auto;height:56px;background:#0d131d;border-bottom:1px solid #232f42;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .pdf-back{display:flex;align-items:center;gap:8px;color:#f5f7fb;text-decoration:none;font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,#ffb400,#ff8a00);color:#0c1420}
 .pdf-title{color:#8f9bad;font-size:12px;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pdf-frame-wrap{flex:1 1 auto;min-height:0;position:relative;-webkit-overflow-scrolling:touch}
-.pdf-frame-wrap iframe{width:100%;height:100%;border:0;background:#fff;display:block}
+.pdf-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 0 40px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.pdf-page-canvas{max-width:calc(100% - 20px);height:auto;box-shadow:0 6px 24px rgba(0,0,0,.4);background:#fff;border-radius:4px}
 .pdf-fallback{flex:1 1 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;color:#c7d0dd}
 .pdf-fallback a{background:linear-gradient(135deg,#ffb400,#ff8a00);color:#0c1420;font-weight:800;padding:12px 22px;border-radius:12px;text-decoration:none}
+.pdf-loading{color:#8f9bad;font-size:13px;padding:40px 20px;text-align:center}
 </style>
 </head><body>
 <div class="pdf-bar">
   <a class="pdf-back" id="backBtn" href="index.html">← Torna a BizScan</a>
   <span class="pdf-title" id="pdfTitleLabel"></span>
 </div>
-<div class="pdf-frame-wrap">
-  <iframe id="pdfFrame" title="Report PDF BizScan"></iframe>
+<div class="pdf-scroll" id="pdfScroll">
+  <div class="pdf-loading" id="pdfLoading">Caricamento del report…</div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 (function(){
   var params=new URLSearchParams(location.search);
@@ -31,11 +33,43 @@ body{display:flex;flex-direction:column;height:100dvh}
     backBtn.textContent='← Torna al prodotto';
   }
   if(title)document.getElementById('pdfTitleLabel').textContent=title;
-  if(pdfUrl){
-    document.getElementById('pdfFrame').src=pdfUrl;
-    document.title=(title?title+' - ':'')+'Report PDF | BizScan';
+
+  var scrollHost=document.getElementById('pdfScroll');
+  var loadingEl=document.getElementById('pdfLoading');
+
+  function showFallback(){
+    scrollHost.outerHTML='<div class="pdf-fallback"><p>Non è stato possibile visualizzare il report qui.</p><a href="'+(pdfUrl||'#')+'" target="_blank" rel="noopener">Apri il PDF direttamente</a></div>';
+  }
+
+  if(!pdfUrl){showFallback();return}
+  if(title)document.title=title+' - Report PDF | BizScan';
+
+  if(window['pdfjsLib']){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf){
+      loadingEl.remove();
+      var renderScale=Math.min(2.2, (window.devicePixelRatio||1)*1.4);
+      var pagePromise=Promise.resolve();
+      var _loop=function(pageNum){
+        pagePromise=pagePromise.then(function(){
+          return pdf.getPage(pageNum).then(function(page){
+            var viewport=page.getViewport({scale:renderScale});
+            var canvas=document.createElement('canvas');
+            canvas.className='pdf-page-canvas';
+            canvas.width=viewport.width;
+            canvas.height=viewport.height;
+            scrollHost.appendChild(canvas);
+            return page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+          });
+        });
+      };
+      for(var i=1;i<=pdf.numPages;i++)_loop(i);
+    }).catch(function(err){
+      console.error('PDF.js error',err);
+      showFallback();
+    });
   }else{
-    document.querySelector('.pdf-frame-wrap').outerHTML='<div class="pdf-fallback"><p>Nessun report da mostrare.</p><a href="index.html">Torna a BizScan</a></div>';
+    showFallback();
   }
 })();
 </script>
