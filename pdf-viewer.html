@@ -5,7 +5,8 @@ html,body{margin:0;padding:0;height:100%;background:#0b1119;font-family:Inter,ui
 body{display:flex;flex-direction:column;height:100dvh}
 .pdf-bar{flex:0 0 auto;height:56px;background:#0d131d;border-bottom:1px solid #232f42;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .pdf-back{display:flex;align-items:center;gap:8px;color:#f5f7fb;text-decoration:none;font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,#ffb400,#ff8a00);color:#0c1420}
-.pdf-title{color:#8f9bad;font-size:12px;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdf-title{color:#8f9bad;font-size:12px;max-width:32vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdf-download{display:flex;align-items:center;gap:6px;color:#f5f7fb;text-decoration:none;font-weight:800;font-size:13px;padding:8px 12px;border-radius:10px;background:#151d2b;border:1px solid #2b394e;flex-shrink:0}
 .pdf-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 0 40px;display:flex;flex-direction:column;align-items:center;gap:14px}
 .pdf-page-canvas{max-width:calc(100% - 20px);height:auto;box-shadow:0 6px 24px rgba(0,0,0,.4);background:#fff;border-radius:4px}
 .pdf-fallback{flex:1 1 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;color:#c7d0dd}
@@ -16,6 +17,7 @@ body{display:flex;flex-direction:column;height:100dvh}
 <div class="pdf-bar">
   <a class="pdf-back" id="backBtn" href="index.html">← Torna a BizScan</a>
   <span class="pdf-title" id="pdfTitleLabel"></span>
+  <a class="pdf-download" id="downloadBtn" download>⬇ Scarica</a>
 </div>
 <div class="pdf-scroll" id="pdfScroll">
   <div class="pdf-loading" id="pdfLoading">Caricamento del report…</div>
@@ -33,6 +35,23 @@ body{display:flex;flex-direction:column;height:100dvh}
     backBtn.textContent='← Torna al prodotto';
   }
   if(title)document.getElementById('pdfTitleLabel').textContent=title;
+  var downloadBtn=document.getElementById('downloadBtn');
+  if(pdfUrl&&downloadBtn){
+    var safeName=(title||'report-bizscan').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'report-bizscan';
+    downloadBtn.href=pdfUrl;
+    downloadBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      fetch(pdfUrl).then(function(r){return r.blob()}).then(function(blob){
+        var blobUrl=URL.createObjectURL(blob);
+        var a=document.createElement('a');
+        a.href=blobUrl;a.download=safeName+'.pdf';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(function(){URL.revokeObjectURL(blobUrl)},4000);
+      }).catch(function(){window.open(pdfUrl,'_blank','noopener')});
+    });
+  }else if(downloadBtn){
+    downloadBtn.remove();
+  }
 
   var scrollHost=document.getElementById('pdfScroll');
   var loadingEl=document.getElementById('pdfLoading');
