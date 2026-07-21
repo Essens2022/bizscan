@@ -706,6 +706,7 @@ function searchSuggestions(query,limit=6){
  for(const p of analyses){
   const title=String(p.title||'').toLowerCase();
   const cat=String(p.category||'').toLowerCase();
+  const summary=String(p.summary||'').toLowerCase();
   const tags=(Array.isArray(p.tags)?p.tags:[]).map(t=>String(t).toLowerCase());
   let score=0;
   if(title===q)score=100;
@@ -714,6 +715,7 @@ function searchSuggestions(query,limit=6){
   else if(tags.some(t=>t===q))score=50;
   else if(tags.some(t=>t.includes(q)))score=35;
   else if(cat.includes(q))score=20;
+  else if(summary.includes(q))score=12;
   if(score>0)scored.push({p,score});
  }
  scored.sort((a,b)=>b.score-a.score||(a.p.title||'').localeCompare(b.p.title||''));
@@ -737,11 +739,6 @@ function attachSearchSuggestions(input,{onPick}={}){
  input.addEventListener('blur',()=>setTimeout(()=>{box.hidden=true},150));
 }
 function bindShellEvents(){
- const topInput=$('.top-search input')
- if(topInput){
-  topInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=topInput.value.trim();location.href='search.html?q='+encodeURIComponent(q)}})
-  attachSearchSuggestions(topInput)
- }
  const homeInput=$('#homeSearch')
  if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()});attachSearchSuggestions(homeInput)}
 }
