@@ -124,6 +124,7 @@
         '<a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b></a>'+
         '<a href="account.html"><span>€</span><b>Crediti e pacchetti</b></a>'+
         '<a href="account.html#billingHistoryCard"><span>🧾</span><b>Fatturazione</b></a>'+
+        '<a href="#" onclick="event.preventDefault();if(window.openCookiePreferences)window.openCookiePreferences()"><span>🍪</span><b>Preferenze cookie</b></a>'+
         '</nav>');
       profileTrigger.onclick=function(e){e.preventDefault();e.stopPropagation();togglePopover(profile,profileTrigger)};
     }
@@ -149,7 +150,7 @@
       +'<div class="footer-nav">'
       +'<div class="footer-col"><h4>Piattaforma</h4><a href="/">Dashboard</a><a href="search.html">Esplora</a><a href="compare.html">Confronta</a><a href="library.html">Preferiti</a><a href="pricing.html">Pacchetti</a></div>'
       +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html?view=reports">I miei report</a><a href="account.html">Assistenza</a></div>'
-      +'<div class="footer-col"><h4>Legale</h4><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="termini.html">Termini e Condizioni</a></div>'
+      +'<div class="footer-col"><h4>Legale</h4><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="termini.html">Termini e Condizioni</a><a href="#" onclick="event.preventDefault();if(window.openCookiePreferences)window.openCookiePreferences()">Gestisci preferenze cookie</a></div>'
       +'</div>'
       +'<div class="footer-trust">'
       +'<div class="footer-trust-head"><svg class="footer-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" fill="currentColor" opacity=".16"/><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 12.2l2.1 2.1 4.3-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Pagamenti sicuri</strong></div>'
