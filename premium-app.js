@@ -490,7 +490,9 @@ window._doDownloadReport=async slug=>{
     if(result.reason==='no_credits'){modal('Crediti PDF esauriti','<p>Hai già utilizzato tutti i crediti PDF disponibili. I rapporti già sbloccati restano accessibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti PDF</a>');return}
     modal('Rapporto bloccato',`<p>${esc(result.message||'Questo rapporto non è disponibile per il tuo account')}</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
   }
-  const url=await BizScanData.signedAttachmentUrl(pdf);window.open(url,'_blank','noopener');
+  const url=await BizScanData.signedAttachmentUrl(pdf);
+  const viewerUrl='pdf-viewer.html?url='+encodeURIComponent(url)+'&slug='+encodeURIComponent(slug)+'&title='+encodeURIComponent(p?.title||'');
+  window.open(viewerUrl,'_blank','noopener');
   if(!result.is_free){
    toast('✓ PDF sbloccato — credito utilizzato');
    try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
