@@ -633,12 +633,11 @@ textarea{min-height:92px;resize:vertical}
 
       <div class="card" style="background:#0d1420;border:1px solid var(--line)">
         <h3 id="phraseEditorHeading" style="margin-top:0">Nuova frase</h3>
-        <p style="color:var(--muted);font-size:12px">Scrivi la frase normalmente qui sotto. Poi, con il mouse, seleziona una parola o una parte di testo e scegli colore/dimensione/font per quella selezione qui accanto, premendo "Applica alla selezione".</p>
-        <div id="phraseEditor" contenteditable="true" spellcheck="false" oninput="renderAdminLivePreview()" style="font-size:30px;font-weight:900;padding:20px;background:#050914;border-radius:12px;min-height:70px;line-height:1.25;color:#ffffff;outline:none;margin:10px 0"></div>
-        <div class="three">
-          <label>Colore selezione<input id="styleColor" type="color" value="#ffffff"></label>
-          <label>Dimensione selezione<select id="styleSize"><option value="small">Piccolo</option><option value="medium" selected>Normale</option><option value="large">Grande</option></select></label>
-          <label>Font selezione<select id="styleFont">
+        <p style="color:var(--muted);font-size:12px">Scrivi la frase, poi seleziona una parola o una parte di testo con il mouse: ogni modifica qui sotto (colore, dimensione, font, grassetto) si applica <b>subito</b> alla selezione, senza bisogno di premere nulla.</p>
+        <div id="phraseEditor" contenteditable="true" spellcheck="false" oninput="renderAdminLivePreview()" onmouseup="savePhraseSelection()" onkeyup="savePhraseSelection()" style="font-size:30px;font-weight:900;padding:20px;background:#050914;border-radius:12px;min-height:70px;line-height:1.25;color:#ffffff;outline:none;margin:10px 0"></div>
+        <div class="two">
+          <label>Colore selezione<input id="styleColor" type="color" value="#ffffff" oninput="applyPhraseStyle()"></label>
+          <label>Font selezione<select id="styleFont" onchange="applyPhraseStyle()">
             <option value="system" selected>Sistema</option>
             <option value="poppins">Poppins</option>
             <option value="playfair">Playfair Display</option>
@@ -647,7 +646,8 @@ textarea{min-height:92px;resize:vertical}
             <option value="merriweather">Merriweather</option>
           </select></label>
         </div>
-        <button class="btn dark full" type="button" onclick="applyPhraseStyle()" style="margin-top:6px">Applica alla selezione</button>
+        <label>Dimensione selezione <span id="styleSizeLabel">1×</span><input id="styleSize" type="range" min="0.4" max="3.2" step="0.05" value="1" style="width:100%" oninput="applyPhraseStyle()"></label>
+        <label class="check" style="margin-top:6px"><input id="styleBold" type="checkbox" checked onchange="applyPhraseStyle()"> Grassetto</label>
         <div style="display:flex;gap:10px;margin-top:14px">
           <button class="btn gold" type="button" id="savePhraseBtn" onclick="savePhraseFromEditor()">Salva frase</button>
           <button class="btn ghost" type="button" onclick="clearPhraseEditor()">Nuova frase (svuota)</button>
@@ -665,8 +665,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607212047"></script>
-<script src="app.js?v=202607212047"></script>
+ <script src="supabase-data.js?v=202607212106"></script>
+<script src="app.js?v=202607212106"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -802,7 +802,7 @@ function renderAdminLivePreview(){
     </div>`:''
   const chunks=editorSegments.length?editorSegments:(_heroPhrases[0]?.segments||(_heroPhrases[0]?[{text:_heroPhrases[0].text,color:_heroPhrases[0].color}]:null))
   const titleHtml=chunks&&chunks.length
-    ?`<h3 style="position:relative;z-index:2;font-size:26px;font-weight:900;line-height:1.15;margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5)">${chunks.map(c=>`<span style="color:${esc(c.color||'#fff')};font-size:${SEGMENT_SIZE_EM[c.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system}">${esc(c.text)}</span>`).join('')}</h3>`
+    ?`<h3 style="position:relative;z-index:2;font-size:26px;font-weight:900;line-height:1.15;margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5)">${chunks.map(c=>`<span style="color:${esc(c.color||'#fff')};font-size:${sizeToEm(c.size)}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system};font-weight:${c.bold===false?400:900}">${esc(c.text)}</span>`).join('')}</h3>`
     :'<p style="color:var(--muted);font-size:12px;margin:0">Nessuna frase ancora - qui apparirà il titolo</p>'
   host.innerHTML=(mediaHtml||'')+titleHtml+(!activeMedia.length&&!chunks?'<p style="color:var(--muted);font-size:11px;margin-top:10px">Aggiungi media o una frase per vedere l\'anteprima</p>':'')
 }
@@ -942,7 +942,7 @@ async function loadHeroPhrases(){
 function renderHeroPhraseList(){
   const host=document.getElementById("heroPhraseList");if(!host)return
   const preview=p=>Array.isArray(p.segments)&&p.segments.length
-    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[s.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system}">${esc(s.text)}</span>`).join("")
+    ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text)}</span>`).join("")
     :`<span style="color:${esc(p.color)}">${esc(p.text)}</span>`
   host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
     <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
@@ -954,33 +954,55 @@ function renderHeroPhraseList(){
   </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessuna frase - verrà usato il titolo predefinito</p>'
 }
 let _editingPhraseId=null
+let _savedPhraseRange=null
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28}
-const SEGMENT_SIZE_BY_EM={0.72:"small",1:"medium",1.28:"large"}
 const SEGMENT_FONT_FAMILY={system:"Arial,Helvetica,sans-serif",poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"}
-const SEGMENT_FAMILY_BY_KEY=Object.fromEntries(Object.entries(SEGMENT_FONT_FAMILY).map(([k,v])=>[v,k]))
 const SEGMENT_FONT_LABEL={system:"sistema",poppins:"Poppins",playfair:"Playfair",montserrat:"Montserrat",oswald:"Oswald",merriweather:"Merriweather"}
+function sizeToEm(size){
+  if(typeof size==="number")return size
+  if(typeof size==="string"&&SEGMENT_SIZE_EM[size]!=null)return SEGMENT_SIZE_EM[size]
+  const n=parseFloat(size);return isNaN(n)?1:n
+}
 
-window.applyPhraseStyle=()=>{
+window.savePhraseSelection=()=>{
   const editor=document.getElementById("phraseEditor")
   const sel=window.getSelection()
-  if(!sel||sel.rangeCount===0||sel.isCollapsed){alert("Seleziona prima una parola o una parte di testo nella frase");return}
+  if(!sel||sel.rangeCount===0||sel.isCollapsed)return
   const range=sel.getRangeAt(0)
-  if(!editor.contains(range.commonAncestorContainer)){alert("Seleziona del testo dentro la casella della frase");return}
+  if(!editor.contains(range.commonAncestorContainer))return
+  _savedPhraseRange=range.cloneRange()
+  const sizeSlider=document.getElementById("styleSize")
+  document.getElementById("styleSizeLabel").textContent=parseFloat(sizeSlider.value).toFixed(2)+"×"
+}
+
+window.applyPhraseStyle=()=>{
+  if(!_savedPhraseRange){return}
+  const sel=window.getSelection()
+  sel.removeAllRanges()
+  const range=_savedPhraseRange.cloneRange()
+  sel.addRange(range)
   const color=document.getElementById("styleColor").value
-  const size=document.getElementById("styleSize").value
+  const size=parseFloat(document.getElementById("styleSize").value)||1
   const font=document.getElementById("styleFont").value
+  const bold=document.getElementById("styleBold").checked
+  document.getElementById("styleSizeLabel").textContent=size.toFixed(2)+"×"
   const span=document.createElement("span")
   span.style.color=color
-  span.style.fontSize=(SEGMENT_SIZE_EM[size]||1)+"em"
+  span.style.fontSize=size+"em"
   span.style.fontFamily=SEGMENT_FONT_FAMILY[font]||SEGMENT_FONT_FAMILY.system
-  span.dataset.color=color;span.dataset.size=size;span.dataset.font=font
+  span.style.fontWeight=bold?"900":"400"
+  span.dataset.color=color;span.dataset.size=size;span.dataset.font=font;span.dataset.bold=bold?"1":"0"
   try{
     const content=range.extractContents()
     span.appendChild(content)
     range.insertNode(span)
+    const newRange=document.createRange()
+    newRange.selectNodeContents(span)
     sel.removeAllRanges()
+    sel.addRange(newRange)
+    _savedPhraseRange=newRange.cloneRange()
     renderAdminLivePreview()
-  }catch(e){console.error(e);alert("Non è stato possibile applicare lo stile a questa selezione")}
+  }catch(e){console.error(e)}
 }
 
 function editorToSegments(){
@@ -988,14 +1010,14 @@ function editorToSegments(){
   const segments=[]
   editor.childNodes.forEach(node=>{
     if(node.nodeType===Node.TEXT_NODE){
-      if(node.textContent)segments.push({text:node.textContent,color:"#ffffff",size:"medium",font:"system"})
+      if(node.textContent)segments.push({text:node.textContent,color:"#ffffff",size:1,font:"system",bold:true})
     }else if(node.nodeType===Node.ELEMENT_NODE){
       const text=node.textContent||""
       if(!text)return
       if(node.dataset&&node.dataset.color){
-        segments.push({text,color:node.dataset.color,size:node.dataset.size||"medium",font:node.dataset.font||"system"})
+        segments.push({text,color:node.dataset.color,size:sizeToEm(node.dataset.size),font:node.dataset.font||"system",bold:node.dataset.bold!=="0"})
       }else{
-        segments.push({text,color:"#ffffff",size:"medium",font:"system"})
+        segments.push({text,color:"#ffffff",size:1,font:"system",bold:true})
       }
     }
   })
@@ -1004,8 +1026,8 @@ function editorToSegments(){
 
 function segmentsToEditorHtml(segments){
   return (segments||[]).map(s=>{
-    const size=s.size||"medium",font=s.font||"system"
-    return `<span data-color="${esc(s.color||'#ffffff')}" data-size="${size}" data-font="${font}" style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[size]||1}em;font-family:${SEGMENT_FONT_FAMILY[font]||SEGMENT_FONT_FAMILY.system}">${esc(s.text)}</span>`
+    const em=sizeToEm(s.size),font=s.font||"system",bold=s.bold!==false
+    return `<span data-color="${esc(s.color||'#ffffff')}" data-size="${em}" data-font="${font}" data-bold="${bold?1:0}" style="color:${esc(s.color||'#ffffff')};font-size:${em}em;font-family:${SEGMENT_FONT_FAMILY[font]||SEGMENT_FONT_FAMILY.system};font-weight:${bold?900:400}">${esc(s.text)}</span>`
   }).join("")
 }
 
@@ -1769,5 +1791,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607212047"></script></body>
+<script src="shell-ui.js?v=202607212106"></script></body>
 </html>
