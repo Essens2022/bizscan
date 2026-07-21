@@ -614,10 +614,9 @@ textarea{min-height:92px;resize:vertical}
       <h2>Carosello media (in alto nella pagina principale)</h2>
       <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Immagini, GIF o brevi video mostrati a rotazione sopra il titolo. Lascia vuoto per non mostrare nulla.</p>
       <div id="heroMediaList" style="display:grid;gap:10px;margin-bottom:16px"></div>
-      <div class="three">
+      <div class="two">
         <label>Tipo<select id="newMediaType"><option value="image">Immagine</option><option value="gif">GIF</option><option value="video">Video</option></select></label>
         <label>Carica un file<input id="newMediaFile" type="file" accept="image/*,video/*" onchange="uploadHeroMediaFile(this)"></label>
-        <label>Link opzionale (dove porta al click)<input id="newMediaLink" placeholder="https://..."></label>
       </div>
       <p id="newMediaUploadStatus" style="color:var(--muted);font-size:12px;margin:4px 0 0"></p>
       <p style="color:var(--muted);font-size:11px;margin:10px 0 4px">Oppure incolla un link diretto a un file già online:</p>
@@ -629,30 +628,29 @@ textarea{min-height:92px;resize:vertical}
 
     <div class="card" style="margin-top:18px">
       <h2>Frasi del titolo (rotazione automatica)</h2>
-      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Il titolo principale cambia lentamente tra queste frasi, ognuna può avere più colori al suo interno. Con una sola frase attiva, non ruota.</p>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Il titolo principale cambia lentamente tra queste frasi. Con una sola frase attiva, non ruota.</p>
       <div id="heroPhraseList" style="display:grid;gap:10px;margin-bottom:16px"></div>
 
       <div class="card" style="background:#0d1420;border:1px solid var(--line)">
-        <h3 style="margin-top:0">Crea una nuova frase</h3>
-        <p style="color:var(--muted);font-size:12px">Aggiungi la frase a pezzi: scrivi una parola o un gruppo di parole, scegli colore e dimensione, premi "+". Ripeti per ogni pezzo diverso. Guarda l'anteprima a destra.</p>
-        <div id="phraseChunksList" style="display:grid;gap:6px;margin-bottom:12px"></div>
+        <h3 id="phraseEditorHeading" style="margin-top:0">Nuova frase</h3>
+        <p style="color:var(--muted);font-size:12px">Scrivi la frase normalmente qui sotto. Poi, con il mouse, seleziona una parola o una parte di testo e scegli colore/dimensione/font per quella selezione qui accanto, premendo "Applica alla selezione".</p>
+        <div id="phraseEditor" contenteditable="true" spellcheck="false" oninput="renderAdminLivePreview()" style="font-size:30px;font-weight:900;padding:20px;background:#050914;border-radius:12px;min-height:70px;line-height:1.25;color:#ffffff;outline:none;margin:10px 0"></div>
         <div class="three">
-          <label>Testo del pezzo<input id="chunkText" placeholder="giusta"></label>
-          <label>Colore<input id="chunkColor" type="color" value="#ffffff" style="height:44px;padding:4px"></label>
-          <label>Dimensione<select id="chunkSize"><option value="small">Piccolo</option><option value="medium" selected>Normale</option><option value="large">Grande</option></select></label>
+          <label>Colore selezione<input id="styleColor" type="color" value="#ffffff"></label>
+          <label>Dimensione selezione<select id="styleSize"><option value="small">Piccolo</option><option value="medium" selected>Normale</option><option value="large">Grande</option></select></label>
+          <label>Font selezione<select id="styleFont">
+            <option value="system" selected>Sistema</option>
+            <option value="poppins">Poppins</option>
+            <option value="playfair">Playfair Display</option>
+            <option value="montserrat">Montserrat</option>
+            <option value="oswald">Oswald</option>
+            <option value="merriweather">Merriweather</option>
+          </select></label>
         </div>
-        <label>Font<select id="chunkFont">
-          <option value="system" selected>Sistema (predefinito)</option>
-          <option value="poppins" style="font-family:'Poppins'">Poppins - moderno</option>
-          <option value="playfair" style="font-family:'Playfair Display'">Playfair Display - elegante</option>
-          <option value="montserrat" style="font-family:'Montserrat'">Montserrat - pulito</option>
-          <option value="oswald" style="font-family:'Oswald'">Oswald - deciso</option>
-          <option value="merriweather" style="font-family:'Merriweather'">Merriweather - classico</option>
-        </select></label>
-        <button class="btn dark full" type="button" onclick="addPhraseChunk()" style="margin-top:10px">+ Aggiungi pezzo</button>
+        <button class="btn dark full" type="button" onclick="applyPhraseStyle()" style="margin-top:6px">Applica alla selezione</button>
         <div style="display:flex;gap:10px;margin-top:14px">
-          <button class="btn gold" type="button" onclick="saveHeroPhraseFromChunks()">Salva frase</button>
-          <button class="btn ghost" type="button" onclick="clearPhraseChunks()">Ricomincia</button>
+          <button class="btn gold" type="button" id="savePhraseBtn" onclick="savePhraseFromEditor()">Salva frase</button>
+          <button class="btn ghost" type="button" onclick="clearPhraseEditor()">Nuova frase (svuota)</button>
         </div>
       </div>
     </div>
@@ -667,8 +665,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607212023"></script>
-<script src="app.js?v=202607212023"></script>
+ <script src="supabase-data.js?v=202607212047"></script>
+<script src="app.js?v=202607212047"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -794,14 +792,15 @@ let _heroMedia=[],_heroPhrases=[]
 function renderAdminLivePreview(){
   const host=document.getElementById("adminLivePreview");if(!host)return
   const activeMedia=_heroMedia.filter(m=>m.is_active)
-  const mediaHtml=activeMedia.length?`<div style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:${activeMedia.length||_phraseChunks.length||_heroPhrases.length?'-30px':'0'}">
+  const editorSegments=document.getElementById("phraseEditor")?editorToSegments():[]
+  const mediaHtml=activeMedia.length?`<div style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:${activeMedia.length||editorSegments.length||_heroPhrases.length?'-30px':'0'}">
       ${activeMedia[0].media_type==="video"
         ?`<video src="${esc(activeMedia[0].url)}" muted autoplay loop style="width:100%;height:100%;object-fit:cover"></video>`
         :`<img src="${esc(activeMedia[0].url)}" style="width:100%;height:100%;object-fit:cover" alt="">`}
       <div style="position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(to top,rgba(5,9,20,.92),rgba(5,9,20,0))"></div>
       ${activeMedia.length>1?`<span style="position:absolute;bottom:8px;right:10px;color:#fff;font-size:10px;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:6px">1/${activeMedia.length}</span>`:''}
     </div>`:''
-  const chunks=_phraseChunks.length?_phraseChunks:(_heroPhrases[0]?.segments||(_heroPhrases[0]?[{text:_heroPhrases[0].text,color:_heroPhrases[0].color}]:null))
+  const chunks=editorSegments.length?editorSegments:(_heroPhrases[0]?.segments||(_heroPhrases[0]?[{text:_heroPhrases[0].text,color:_heroPhrases[0].color}]:null))
   const titleHtml=chunks&&chunks.length
     ?`<h3 style="position:relative;z-index:2;font-size:26px;font-weight:900;line-height:1.15;margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5)">${chunks.map(c=>`<span style="color:${esc(c.color||'#fff')};font-size:${SEGMENT_SIZE_EM[c.size]||1}em;font-family:${SEGMENT_FONT_FAMILY[c.font]||SEGMENT_FONT_FAMILY.system}">${esc(c.text)}</span>`).join('')}</h3>`
     :'<p style="color:var(--muted);font-size:12px;margin:0">Nessuna frase ancora - qui apparirà il titolo</p>'
@@ -847,14 +846,13 @@ function renderHeroMediaList(){
         <button class="btn ghost" type="button" onclick="moveHeroMedia(${i},1)" ${i===_heroMedia.length-1?"disabled":""} style="flex:1;padding:6px">↓</button>
       </div>
       <label class="check" style="margin:0 0 8px;font-size:11px"><input type="checkbox" ${m.is_active?"checked":""} onchange="toggleHeroMedia('${m.id}',this.checked)">Attivo</label>
-      <input value="${esc(m.link_url||"")}" placeholder="Link al click (opzionale)" style="font-size:11px;padding:6px 8px;margin-bottom:6px" onchange="updateHeroMediaLink('${m.id}',this.value)">
       <label class="btn dark full" style="font-size:11px;padding:8px;cursor:pointer">Sostituisci<input type="file" accept="image/*,video/*" style="display:none" onchange="replaceHeroMediaFile('${m.id}',this)"></label>
-      <button class="btn danger full" type="button" onclick="deleteHeroMedia('${m.id}')" style="font-size:11px;padding:8px;margin-top:6px">Elimina</button>
+      <button class="btn danger full" type="button" onclick="deleteHeroMedia('${m.id}')" style="font-size:11px;padding:8px;margin-top:6px;font-weight:800">✕ Elimina</button>
     </div>`).join("")}</div>`
     :'<p style="color:var(--muted);font-size:12px">Nessun media aggiunto - il carosello non verrà mostrato sul sito</p>'
 }
-async function saveHeroMediaEntry(media_type,url,link_url){
-  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:link_url,p_order_index:_heroMedia.length,p_is_active:true})
+async function saveHeroMediaEntry(media_type,url){
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:null,p_order_index:_heroMedia.length,p_is_active:true})
   if(error){alert("Errore: "+error.message);return false}
   await loadHeroMedia()
   return true
@@ -862,17 +860,14 @@ async function saveHeroMediaEntry(media_type,url,link_url){
 window.addHeroMediaFromUrl=async()=>{
   const media_type=document.getElementById("newMediaType").value
   const url=document.getElementById("newMediaUrl").value.trim()
-  const link_url=document.getElementById("newMediaLink").value.trim()||null
   if(!url){alert("Inserisci l'URL del file");return}
-  if(await saveHeroMediaEntry(media_type,url,link_url)){
+  if(await saveHeroMediaEntry(media_type,url)){
     document.getElementById("newMediaUrl").value=""
-    document.getElementById("newMediaLink").value=""
   }
 }
 window.uploadHeroMediaFile=async(input)=>{
   const file=input.files[0];if(!file)return
   const status=document.getElementById("newMediaUploadStatus")
-  const link_url=document.getElementById("newMediaLink").value.trim()||null
   const media_type=file.type.startsWith("video")?"video":(file.type==="image/gif"?"gif":"image")
   document.getElementById("newMediaType").value=media_type
   status.textContent="Caricamento in corso…"
@@ -881,9 +876,9 @@ window.uploadHeroMediaFile=async(input)=>{
     const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,file,{upsert:false,contentType:file.type})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
-    const ok=await saveHeroMediaEntry(media_type,data.publicUrl,link_url)
+    const ok=await saveHeroMediaEntry(media_type,data.publicUrl)
     status.textContent=ok?"✓ Caricato e aggiunto al carosello":""
-    if(ok){input.value="";document.getElementById("newMediaLink").value=""}
+    if(ok){input.value=""}
   }catch(e){
     console.error(e)
     status.textContent="Errore nel caricamento: "+(e.message||"riprova")
@@ -898,7 +893,7 @@ window.replaceHeroMediaFile=async(id,input)=>{
     const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,file,{upsert:false,contentType:file.type})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
-    const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:media_type,p_url:data.publicUrl,p_link_url:m.link_url,p_order_index:m.order_index,p_is_active:m.is_active})
+    const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:media_type,p_url:data.publicUrl,p_link_url:null,p_order_index:m.order_index,p_is_active:m.is_active})
     if(error){alert("Errore: "+error.message);return}
     await loadHeroMedia()
   }catch(e){
@@ -909,18 +904,10 @@ window.replaceHeroMediaFile=async(id,input)=>{
 window.toggleHeroMedia=async(id,active)=>{
   try{
     const m=_heroMedia.find(x=>x.id===id);if(!m){console.error("❌ toggleHeroMedia: media non trovato",id);return}
-    const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:m.link_url,p_order_index:m.order_index,p_is_active:active})
+    const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:null,p_order_index:m.order_index,p_is_active:active})
     if(error){console.error("❌ ERRORE toggleHeroMedia:",error);alert("Errore: "+error.message);return}
     await loadHeroMedia()
   }catch(e){console.error("❌ ERRORE CRITICO toggleHeroMedia:",e);alert("Errore: "+(e.message||e))}
-}
-window.updateHeroMediaLink=async(id,newLink)=>{
-  try{
-    const m=_heroMedia.find(x=>x.id===id);if(!m){console.error("❌ updateHeroMediaLink: media non trovato",id);return}
-    const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:newLink.trim()||null,p_order_index:m.order_index,p_is_active:m.is_active})
-    if(error){console.error("❌ ERRORE updateHeroMediaLink:",error);alert("Errore: "+error.message);return}
-    await loadHeroMedia()
-  }catch(e){console.error("❌ ERRORE CRITICO updateHeroMediaLink:",e);alert("Errore: "+(e.message||e))}
 }
 window.deleteHeroMedia=async(id)=>{
   try{
@@ -936,8 +923,8 @@ window.moveHeroMedia=async(idx,dir)=>{
     const j=idx+dir;if(j<0||j>=_heroMedia.length)return
     const a=_heroMedia[idx],b=_heroMedia[j]
     const results=await Promise.all([
-      supabaseClient.rpc("admin_upsert_hero_media",{p_id:a.id,p_media_type:a.media_type,p_url:a.url,p_link_url:a.link_url,p_order_index:j,p_is_active:a.is_active}),
-      supabaseClient.rpc("admin_upsert_hero_media",{p_id:b.id,p_media_type:b.media_type,p_url:b.url,p_link_url:b.link_url,p_order_index:idx,p_is_active:b.is_active})
+      supabaseClient.rpc("admin_upsert_hero_media",{p_id:a.id,p_media_type:a.media_type,p_url:a.url,p_link_url:null,p_order_index:j,p_is_active:a.is_active}),
+      supabaseClient.rpc("admin_upsert_hero_media",{p_id:b.id,p_media_type:b.media_type,p_url:b.url,p_link_url:null,p_order_index:idx,p_is_active:b.is_active})
     ])
     const err=results.find(r=>r.error)
     if(err){console.error("❌ ERRORE moveHeroMedia:",err.error);alert("Errore: "+err.error.message);return}
@@ -960,46 +947,94 @@ function renderHeroPhraseList(){
   host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
     <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
     <label class="check" style="margin:0"><input type="checkbox" ${p.is_active?"checked":""} onchange="toggleHeroPhrase('${p.id}',this.checked)">Attiva</label>
+    <button class="btn dark" type="button" onclick="editHeroPhrase('${p.id}')">✎ Modifica</button>
     <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},-1)" ${i===0?"disabled":""}>↑</button>
     <button class="btn ghost" type="button" onclick="moveHeroPhrase(${i},1)" ${i===_heroPhrases.length-1?"disabled":""}>↓</button>
     <button class="btn danger" type="button" onclick="deleteHeroPhrase('${p.id}')">Elimina</button>
   </div>`).join(""):'<p style="color:var(--muted);font-size:12px">Nessuna frase - verrà usato il titolo predefinito</p>'
 }
-let _phraseChunks=[]
+let _editingPhraseId=null
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28}
+const SEGMENT_SIZE_BY_EM={0.72:"small",1:"medium",1.28:"large"}
 const SEGMENT_FONT_FAMILY={system:"Arial,Helvetica,sans-serif",poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"}
+const SEGMENT_FAMILY_BY_KEY=Object.fromEntries(Object.entries(SEGMENT_FONT_FAMILY).map(([k,v])=>[v,k]))
 const SEGMENT_FONT_LABEL={system:"sistema",poppins:"Poppins",playfair:"Playfair",montserrat:"Montserrat",oswald:"Oswald",merriweather:"Merriweather"}
-function renderPhraseChunks(){
-  const list=document.getElementById("phraseChunksList")
-  if(_phraseChunks.length){
-    list.innerHTML=_phraseChunks.map((c,i)=>`<div class="panel" style="padding:8px 12px;display:flex;align-items:center;gap:10px">
-      <span style="width:16px;height:16px;border-radius:4px;background:${esc(c.color)};border:1px solid #333;flex-shrink:0"></span>
-      <span style="flex:1;font-size:13px">${esc(c.text)} <small style="color:var(--muted)">(${c.size==='small'?'piccolo':c.size==='large'?'grande':'normale'} · ${SEGMENT_FONT_LABEL[c.font]||'sistema'})</small></span>
-      <button class="btn danger" type="button" onclick="removePhraseChunk(${i})">Rimuovi</button>
-    </div>`).join("")
-  }else{
-    list.innerHTML=""
-  }
-  renderAdminLivePreview()
+
+window.applyPhraseStyle=()=>{
+  const editor=document.getElementById("phraseEditor")
+  const sel=window.getSelection()
+  if(!sel||sel.rangeCount===0||sel.isCollapsed){alert("Seleziona prima una parola o una parte di testo nella frase");return}
+  const range=sel.getRangeAt(0)
+  if(!editor.contains(range.commonAncestorContainer)){alert("Seleziona del testo dentro la casella della frase");return}
+  const color=document.getElementById("styleColor").value
+  const size=document.getElementById("styleSize").value
+  const font=document.getElementById("styleFont").value
+  const span=document.createElement("span")
+  span.style.color=color
+  span.style.fontSize=(SEGMENT_SIZE_EM[size]||1)+"em"
+  span.style.fontFamily=SEGMENT_FONT_FAMILY[font]||SEGMENT_FONT_FAMILY.system
+  span.dataset.color=color;span.dataset.size=size;span.dataset.font=font
+  try{
+    const content=range.extractContents()
+    span.appendChild(content)
+    range.insertNode(span)
+    sel.removeAllRanges()
+    renderAdminLivePreview()
+  }catch(e){console.error(e);alert("Non è stato possibile applicare lo stile a questa selezione")}
 }
-window.addPhraseChunk=()=>{
-  const text=document.getElementById("chunkText").value.trim()
-  const color=document.getElementById("chunkColor").value
-  const size=document.getElementById("chunkSize").value
-  const font=document.getElementById("chunkFont").value
-  if(!text){alert("Scrivi il testo del pezzo");return}
-  _phraseChunks.push({text:(_phraseChunks.length?" ":"")+text,color,size,font})
-  document.getElementById("chunkText").value=""
-  renderPhraseChunks()
+
+function editorToSegments(){
+  const editor=document.getElementById("phraseEditor")
+  const segments=[]
+  editor.childNodes.forEach(node=>{
+    if(node.nodeType===Node.TEXT_NODE){
+      if(node.textContent)segments.push({text:node.textContent,color:"#ffffff",size:"medium",font:"system"})
+    }else if(node.nodeType===Node.ELEMENT_NODE){
+      const text=node.textContent||""
+      if(!text)return
+      if(node.dataset&&node.dataset.color){
+        segments.push({text,color:node.dataset.color,size:node.dataset.size||"medium",font:node.dataset.font||"system"})
+      }else{
+        segments.push({text,color:"#ffffff",size:"medium",font:"system"})
+      }
+    }
+  })
+  return segments
 }
-window.removePhraseChunk=(i)=>{_phraseChunks.splice(i,1);renderPhraseChunks()}
-window.clearPhraseChunks=()=>{_phraseChunks=[];renderPhraseChunks()}
-window.saveHeroPhraseFromChunks=async()=>{
-  if(!_phraseChunks.length){alert("Aggiungi almeno un pezzo di testo");return}
-  const fullText=_phraseChunks.map(c=>c.text).join("").trim()
-  const{error}=await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:null,p_text:fullText,p_color:_phraseChunks[0].color,p_order_index:_heroPhrases.length,p_is_active:true,p_segments:_phraseChunks})
+
+function segmentsToEditorHtml(segments){
+  return (segments||[]).map(s=>{
+    const size=s.size||"medium",font=s.font||"system"
+    return `<span data-color="${esc(s.color||'#ffffff')}" data-size="${size}" data-font="${font}" style="color:${esc(s.color||'#ffffff')};font-size:${SEGMENT_SIZE_EM[size]||1}em;font-family:${SEGMENT_FONT_FAMILY[font]||SEGMENT_FONT_FAMILY.system}">${esc(s.text)}</span>`
+  }).join("")
+}
+
+window.clearPhraseEditor=()=>{
+  _editingPhraseId=null
+  document.getElementById("phraseEditor").innerHTML=""
+  document.getElementById("phraseEditorHeading").textContent="Nuova frase"
+  document.getElementById("savePhraseBtn").textContent="Salva frase"
+}
+
+window.editHeroPhrase=(id)=>{
+  const p=_heroPhrases.find(x=>x.id===id);if(!p)return
+  _editingPhraseId=id
+  const segments=Array.isArray(p.segments)&&p.segments.length?p.segments:[{text:p.text,color:p.color||"#ffffff",size:"medium",font:"system"}]
+  document.getElementById("phraseEditor").innerHTML=segmentsToEditorHtml(segments)
+  document.getElementById("phraseEditorHeading").textContent="Modifica frase"
+  document.getElementById("savePhraseBtn").textContent="Salva modifiche"
+  document.getElementById("phraseEditor").scrollIntoView({behavior:"smooth",block:"center"})
+}
+
+window.savePhraseFromEditor=async()=>{
+  const segments=editorToSegments()
+  if(!segments.length){alert("Scrivi il testo della frase prima di salvare");return}
+  const fullText=segments.map(s=>s.text).join("").trim()
+  const orderIndex=_editingPhraseId?(_heroPhrases.find(x=>x.id===_editingPhraseId)?.order_index??_heroPhrases.length):_heroPhrases.length
+  const isActive=_editingPhraseId?(_heroPhrases.find(x=>x.id===_editingPhraseId)?.is_active??true):true
+  const{error}=await supabaseClient.rpc("admin_upsert_hero_phrase",{p_id:_editingPhraseId,p_text:fullText,p_color:segments[0].color,p_order_index:orderIndex,p_is_active:isActive,p_segments:segments})
   if(error){alert("Errore: "+error.message);return}
-  clearPhraseChunks()
+  clearPhraseEditor()
   await loadHeroPhrases()
 }
 window.toggleHeroPhrase=async(id,active)=>{
@@ -1734,5 +1769,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607212023"></script></body>
+<script src="shell-ui.js?v=202607212047"></script></body>
 </html>
