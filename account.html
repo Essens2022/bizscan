@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607211837"><link rel="stylesheet" href="premium.css?v=202607211837"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607211840"><link rel="stylesheet" href="premium.css?v=202607211840"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -97,8 +97,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607211837"></script>
-<script src="app.js?v=202607211837"></script>
+<script src="supabase-data.js?v=202607211840"></script>
+<script src="app.js?v=202607211840"></script>
 
 <script>
 async function waitForSupabase() {
@@ -207,6 +207,32 @@ async function signupSupabase() {
   document.getElementById("loginPanel").style.display = "none"
   document.getElementById("signupPanel").style.display = "none"
   document.getElementById("authTabs").style.display = "none"
+  setMailButtonForEmail(email)
+}
+
+function setMailButtonForEmail(emailAddr){
+  const domain=(emailAddr.split("@")[1]||"").toLowerCase()
+  const webmailByDomain={
+    "gmail.com":"https://mail.google.com",
+    "googlemail.com":"https://mail.google.com",
+    "icloud.com":"https://www.icloud.com/mail",
+    "me.com":"https://www.icloud.com/mail",
+    "mac.com":"https://www.icloud.com/mail",
+    "outlook.com":"https://outlook.live.com/mail",
+    "hotmail.com":"https://outlook.live.com/mail",
+    "hotmail.it":"https://outlook.live.com/mail",
+    "live.com":"https://outlook.live.com/mail",
+    "yahoo.com":"https://mail.yahoo.com",
+    "yahoo.it":"https://mail.yahoo.com",
+    "libero.it":"https://mail.libero.it",
+    "virgilio.it":"https://mail.virgilio.it",
+    "tiscali.it":"https://webmail.tiscali.it"
+  }
+  const btn=document.getElementById("openMailBtn")
+  if(!btn)return
+  const url=webmailByDomain[domain]
+  if(url){btn.href=url;btn.target="_blank";btn.rel="noopener"}
+  else{btn.href="mailto:";btn.removeAttribute("target")}
 }
   
   
@@ -324,5 +350,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607211837CACHEV"></script><script src="cookie-consent.js?v=202607211837"></script></body>
+<script src="shell-ui.js?v=202607211840CACHEV"></script><script src="cookie-consent.js?v=202607211840"></script></body>
 </html>
