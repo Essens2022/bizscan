@@ -556,7 +556,7 @@
 .hero-media-dots span.active{background:#ffb703;width:18px;border-radius:4px}
 .hero-rotating-h1{position:relative;z-index:2;font-size:44px;font-weight:900;text-align:left;margin:20px 0 24px;line-height:1.2;letter-spacing:.03em;padding:0 20px;max-width:850px}
 .hero-media-carousel+.hero-rotating-h1{position:relative;z-index:2;margin-top:-14px;background:#0d131d;border-radius:18px 18px 0 0;padding:30px 20px 4px;box-shadow:0 -10px 30px rgba(0,0,0,.28),0 -2px 18px rgba(255,183,3,.1);max-width:none}
-.hero-media-carousel+.hero-rotating-h1::after{content:'';position:absolute;z-index:-1;top:-40px;left:10%;right:10%;height:140px;background:radial-gradient(ellipse 60% 100% at 30% 50%,rgba(255,183,3,.35),transparent 70%),radial-gradient(ellipse 60% 100% at 75% 60%,rgba(140,60,220,.32),transparent 70%);filter:blur(38px);pointer-events:none}
+.hero-media-carousel+.hero-rotating-h1::after{content:'';position:absolute;z-index:-1;top:-26px;left:0;right:0;height:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'%3E%3Cpath d='M0,30 C300,0 900,60 1200,30 L1200,60 L0,60 Z' fill='%23ffb400' fill-opacity='0.14'/%3E%3C/svg%3E");background-size:100% 100%;background-repeat:no-repeat;pointer-events:none}
 .hero-media-carousel+.hero-rotating-h1::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:44px;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
 .hero-rotating-h1 span{transition:opacity .7s ease}
 .hero-rotating-h1.fading span{opacity:0}
