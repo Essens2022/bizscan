@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607211933"><link rel="stylesheet" href="premium.css?v=202607211933"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607211943"><link rel="stylesheet" href="premium.css?v=202607211943"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -74,16 +74,6 @@
         <p style="color:#7f9a8f;font-size:11px;margin-top:10px">Non trovi l'email? Controlla anche nello spam.</p>
       </div>
     </div>
-
-    <div id="deleteAccountModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
-      <div style="background:#0d1420;border:1px solid #5a2530;border-radius:16px;padding:24px;max-width:380px;width:100%;max-height:86vh;overflow-y:auto;text-align:center">
-        <div style="font-size:30px">⚠️</div>
-        <h3 id="deleteModalTitle" style="margin:10px 0 6px;color:#ff8a8a">Eliminare il tuo account?</h3>
-        <p id="deleteModalText" style="color:#c7d0dd;font-size:13px;margin:0 0 18px">Questa azione è permanente: perderai crediti, preferiti e cronologia. Non può essere annullata.</p>
-        <button id="deleteModalConfirmBtn" class="btn full" style="background:#7a1f2b;border:none;color:#fff" onclick="deleteAccountNextStep()">Sì, elimina il mio account</button>
-        <button class="btn ghost full" style="margin-top:8px" onclick="closeDeleteAccountModal()">Annulla</button>
-      </div>
-    </div>
   </div>
 </section>
 </div>
@@ -97,8 +87,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607211933"></script>
-<script src="app.js?v=202607211933"></script>
+<script src="supabase-data.js?v=202607211943"></script>
+<script src="app.js?v=202607211943"></script>
 
 <script>
 async function waitForSupabase() {
@@ -303,14 +293,23 @@ if(logged){
 let _deleteStep=0
 function confirmDeleteAccountStep1(){
   _deleteStep=1
-  document.getElementById("deleteModalTitle").textContent="Eliminare il tuo account?"
-  document.getElementById("deleteModalText").textContent="Questa azione è permanente: perderai crediti, preferiti e cronologia. Non può essere annullata."
-  document.getElementById("deleteModalConfirmBtn").textContent="Sì, elimina il mio account"
-  document.getElementById("deleteAccountModal").style.display="flex"
+  const overlay=document.createElement("div")
+  overlay.id="deleteAccountModal"
+  overlay.style.cssText="position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px"
+  overlay.innerHTML=`<div style="background:#0d1420;border:1px solid #5a2530;border-radius:16px;padding:24px;max-width:380px;width:100%;max-height:86vh;overflow-y:auto;text-align:center">
+    <div style="font-size:30px">⚠️</div>
+    <h3 id="deleteModalTitle" style="margin:10px 0 6px;color:#ff8a8a">Eliminare il tuo account?</h3>
+    <p id="deleteModalText" style="color:#c7d0dd;font-size:13px;margin:0 0 18px">Questa azione è permanente: perderai crediti, preferiti e cronologia. Non può essere annullata.</p>
+    <button id="deleteModalConfirmBtn" class="btn full" style="background:#7a1f2b;border:none;color:#fff" onclick="deleteAccountNextStep()">Sì, elimina il mio account</button>
+    <button class="btn ghost full" style="margin-top:8px" onclick="closeDeleteAccountModal()">Annulla</button>
+  </div>`
+  overlay.addEventListener("click",e=>{if(e.target===overlay)closeDeleteAccountModal()})
+  document.body.appendChild(overlay)
 }
 function closeDeleteAccountModal(){
   _deleteStep=0
-  document.getElementById("deleteAccountModal").style.display="none"
+  const overlay=document.getElementById("deleteAccountModal")
+  if(overlay)overlay.remove()
 }
 async function deleteAccountNextStep(){
   if(_deleteStep===1){
@@ -350,5 +349,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607211933CACHEV"></script><script src="cookie-consent.js?v=202607211933"></script></body>
+<script src="shell-ui.js?v=202607211943CACHEV"></script><script src="cookie-consent.js?v=202607211943"></script></body>
 </html>
