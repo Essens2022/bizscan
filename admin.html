@@ -667,8 +667,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607211551"></script>
-<script src="app.js?v=202607211551"></script>
+ <script src="supabase-data.js?v=202607211600"></script>
+<script src="app.js?v=202607211600"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -828,7 +828,7 @@ async function loadHeroMedia(){
     renderHeroMediaList()
     renderAdminLivePreview()
   }catch(e){
-    console.error("❌ ERRORE CRITICO in loadHeroMedia:",e)
+    console.error("❌ ERRORE CRITICO in loadHeroMedia:",e);alert("Errore nel caricamento del carosello: "+(e.message||e))
   }
 }
 function renderHeroMediaList(){
@@ -912,7 +912,7 @@ window.toggleHeroMedia=async(id,active)=>{
     const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:m.link_url,p_order_index:m.order_index,p_is_active:active})
     if(error){console.error("❌ ERRORE toggleHeroMedia:",error);alert("Errore: "+error.message);return}
     await loadHeroMedia()
-  }catch(e){console.error("❌ ERRORE CRITICO toggleHeroMedia:",e)}
+  }catch(e){console.error("❌ ERRORE CRITICO toggleHeroMedia:",e);alert("Errore: "+(e.message||e))}
 }
 window.updateHeroMediaLink=async(id,newLink)=>{
   try{
@@ -920,7 +920,7 @@ window.updateHeroMediaLink=async(id,newLink)=>{
     const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:m.media_type,p_url:m.url,p_link_url:newLink.trim()||null,p_order_index:m.order_index,p_is_active:m.is_active})
     if(error){console.error("❌ ERRORE updateHeroMediaLink:",error);alert("Errore: "+error.message);return}
     await loadHeroMedia()
-  }catch(e){console.error("❌ ERRORE CRITICO updateHeroMediaLink:",e)}
+  }catch(e){console.error("❌ ERRORE CRITICO updateHeroMediaLink:",e);alert("Errore: "+(e.message||e))}
 }
 window.deleteHeroMedia=async(id)=>{
   try{
@@ -928,7 +928,8 @@ window.deleteHeroMedia=async(id)=>{
     const{error}=await supabaseClient.rpc("admin_delete_hero_media",{p_id:id})
     if(error){console.error("❌ ERRORE deleteHeroMedia:",error);alert("Errore: "+error.message);return}
     await loadHeroMedia()
-  }catch(e){console.error("❌ ERRORE CRITICO deleteHeroMedia:",e)}
+    console.log("✅ Media eliminato con successo")
+  }catch(e){console.error("❌ ERRORE CRITICO deleteHeroMedia:",e);alert("Errore: "+(e.message||e))}
 }
 window.moveHeroMedia=async(idx,dir)=>{
   try{
@@ -941,7 +942,7 @@ window.moveHeroMedia=async(idx,dir)=>{
     const err=results.find(r=>r.error)
     if(err){console.error("❌ ERRORE moveHeroMedia:",err.error);alert("Errore: "+err.error.message);return}
     await loadHeroMedia()
-  }catch(e){console.error("❌ ERRORE CRITICO moveHeroMedia:",e)}
+  }catch(e){console.error("❌ ERRORE CRITICO moveHeroMedia:",e);alert("Errore: "+(e.message||e))}
 }
 
 async function loadHeroPhrases(){
@@ -1728,5 +1729,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607211551"></script></body>
+<script src="shell-ui.js?v=202607211600"></script></body>
 </html>
