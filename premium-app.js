@@ -91,7 +91,7 @@ function updateShell(){
   }
  }
 }
-function toast(t){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.append(e)}e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1700)}
+function toast(t){if(navigator.vibrate)navigator.vibrate(25);let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.append(e)}e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1700)}
 function modal(title,body,actions=''){const m=$('#globalModal'),c=$('#globalModalContent');if(!m||!c)return;c.innerHTML=`<div class="modal-head"><h2>${esc(title)}</h2><button onclick="closeModal()">×</button></div>${body}${actions}`;m.classList.add('show')}
 window.closeModal=()=>$('#globalModal')?.classList.remove('show');
 window.toggleFavorite=async slug=>{
@@ -788,6 +788,7 @@ function bindShellEvents(){
  if(homeInput){homeInput.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()});attachSearchSuggestions(homeInput)}
 }
 function celebrateCheckoutSuccess(planName){
+ if(navigator.vibrate)navigator.vibrate(40);
  const colors=['#ffb703','#ff8a00','#2dd4a7','#3a86ff','#8357ff','#ffd053'];
  const box=document.createElement('div');
  box.className='confetti-box';
