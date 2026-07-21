@@ -234,7 +234,7 @@ function renderHome(){
    ${heroMedia.length?`<div class="hero-media-carousel transition-${esc(heroTransition)}" id="heroMediaCarousel">${heroMedia.map((m,i)=>{
      const inner=m.media_type==='video'?`<video src="${esc(m.url)}" autoplay muted loop playsinline></video>`:`<img src="${esc(m.url)}" alt="" loading="${i===0?'eager':'lazy'}">`;
      return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
-   }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div><div class="hero-wave"><svg viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0,30 C300,0 900,60 1200,30 L1200,60 L0,60 Z"></path></svg></div>`:''}
+   }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div><div class="hero-wave"><svg viewBox="0 0 1200 78" preserveAspectRatio="none"><defs><linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff8a00"/><stop offset="100%" stop-color="#ff5f1f"/></linearGradient></defs><path d="M0,32 C300,4 900,58 1200,32 L1200,78 L0,78 Z" fill="url(#waveGrad)"></path></svg></div>`:''}
    <h1 class="hero-rotating-h1" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
    <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
