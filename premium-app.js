@@ -433,6 +433,7 @@ window.refreshReportAccess=async slug=>{
   else if(st.reason==='auth_required'){note.className='report-access-note locked';note.textContent='Accedi per verificare il piano e i crediti PDF';btn.textContent='Accedi per continuare'}
   else if(st.reason==='plan_not_allowed'){note.className='report-access-note locked';note.textContent='Il tuo piano non include questo rapporto';btn.textContent='Vedi i pacchetti'}
   else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Crediti PDF esauriti';btn.textContent='Acquista crediti PDF'}
+  else if(st.reason==='can_unlock_with_credit'){note.className='report-access-note locked';note.textContent='Hai un credito PDF disponibile';btn.textContent='Sblocca con un credito PDF'}
   else{note.className='report-access-note locked';note.textContent='Rapporto disponibile secondo il piano acquistato';btn.textContent='Sblocca con un credito PDF'}
  }catch(e){note.className='report-access-note locked';note.textContent='Configura le regole PDF in Supabase';btn.textContent='Verifica accesso'}
 };
