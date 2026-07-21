@@ -362,20 +362,28 @@ function lockedCta(toolKey){
  }
  return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
 }
+window._pendingWithdrawalConfirm=null;
+window._runWithdrawalConfirm=function(){
+ const fn=window._pendingWithdrawalConfirm;
+ window._pendingWithdrawalConfirm=null;
+ closeModal();
+ if(typeof fn==='function')fn();
+};
 function confirmWithdrawalWaiver(priceLabel,onConfirm){
+ window._pendingWithdrawalConfirm=onConfirm;
  modal('Conferma acquisto',
   `<p style="margin-bottom:14px">Stai per sbloccare un contenuto digitale${priceLabel?` (<b>${esc(priceLabel)}</b>)`:''}, fornito immediatamente.</p>
    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:11px;line-height:1.4;color:#8f9bad;font-weight:400">
     <input type="checkbox" id="withdrawalWaiverCheck" style="margin-top:2px;flex-shrink:0" onchange="document.getElementById('withdrawalConfirmBtn').disabled=!this.checked">
     <span>Rinuncio al diritto di recesso di 14 giorni per la fornitura immediata di contenuto digitale (Art. 59, comma 1, lett. o, Codice del Consumo)</span>
    </label>`,
-  `<button class="btn gold full" id="withdrawalConfirmBtn" disabled style="margin-top:14px" onclick="closeModal();(${onConfirm})()">Conferma e continua</button>`
+  `<button class="btn gold full" id="withdrawalConfirmBtn" disabled style="margin-top:14px" onclick="window._runWithdrawalConfirm()">Conferma e continua</button>`
  );
 }
 window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
  if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html">Accedi</a>');return}
- confirmWithdrawalWaiver('',new Function(`window._doUnlockTool(${JSON.stringify(toolKey)})`));
+ confirmWithdrawalWaiver('',()=>window._doUnlockTool(toolKey));
 }
 window._doUnlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
@@ -702,7 +710,7 @@ window.choosePdfPack=async(count,price)=>{
 window.choosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
  if(!access.authenticated){modal(p.name,'<p>Devi accedere al tuo account per acquistare un pacchetto.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi o registrati</a>');return}
- confirmWithdrawalWaiver(euro(p.price),new Function(`window._doChoosePackage(${JSON.stringify(key)})`));
+ confirmWithdrawalWaiver(euro(p.price),()=>window._doChoosePackage(key));
 }
 window._doChoosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
