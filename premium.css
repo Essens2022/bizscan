@@ -557,7 +557,7 @@
 .hero-rotating-h1{position:relative;z-index:2;font-size:44px;font-weight:900;text-align:left;margin:20px 0 24px;line-height:1.2;letter-spacing:.03em;padding:0 20px;max-width:850px}
 
 
-.hero-media-carousel+.hero-rotating-h1::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:44px;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+
 .hero-rotating-h1 span{transition:opacity .7s ease}
 .hero-rotating-h1.fading span{opacity:0}
 .hero-subtitle-small{text-align:center;font-size:13px;color:#8d99aa;margin:14px 0 0;max-width:480px;margin-left:auto;margin-right:auto}
