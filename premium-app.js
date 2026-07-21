@@ -457,6 +457,24 @@ window.downloadReport=async slug=>{
   if(btn){btn.disabled=true;btn.textContent='Verifica accesso…'}
   if(!pdf){const fresh=await BizScanData.fetchAnalysisBySlug(slug);if(fresh){p=fresh;pdf=fresh.attachments?.find(a=>a.type==='pdf')}}
   if(!pdf&&p?.id){const atts=await BizScanData.fetchAttachments(p.id);pdf=atts.find(a=>a.type==='pdf')}
+  if(!pdf){modal('Report PDF non disponibile','<p>Il PDF non risulta collegato a questa analisi.</p>');if(btn)btn.disabled=false;return}
+  const st=await BizScanData.getPdfAccessStatus(pdf.id);
+  if(st.allowed){
+   await window._doDownloadReport(slug);
+  }else if(st.reason==='can_unlock_with_credit'){
+   if(btn)btn.disabled=false;
+   confirmWithdrawalWaiver('',()=>window._doDownloadReport(slug));
+  }else{
+   await window._doDownloadReport(slug);
+  }
+ }catch(e){modal('Impossibile aprire il report',`<p>${esc(e.message||'Controlla la configurazione PDF in Supabase')}</p>`,'<a class="btn gold full" href="account.html">Controlla il mio account</a>');if(btn)btn.disabled=false}
+};
+window._doDownloadReport=async slug=>{
+ let p=analyses.find(x=>x.slug===slug),pdf=p?.attachments?.find(a=>a.type==='pdf'),btn=document.getElementById('downloadReportBtn');
+ try{
+  if(btn){btn.disabled=true;btn.textContent='Verifica accesso…'}
+  if(!pdf){const fresh=await BizScanData.fetchAnalysisBySlug(slug);if(fresh){p=fresh;pdf=fresh.attachments?.find(a=>a.type==='pdf')}}
+  if(!pdf&&p?.id){const atts=await BizScanData.fetchAttachments(p.id);pdf=atts.find(a=>a.type==='pdf')}
   if(!pdf){modal('Report PDF non disponibile','<p>Il PDF non risulta collegato a questa analisi.</p>');return}
   const result=await BizScanData.requestPdfAccess(pdf.id);
   if(!result.allowed){
