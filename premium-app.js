@@ -389,7 +389,7 @@ const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distr
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
-const PLAN_TIER_COLOR={single:'#94a3b8',starter:'#22c55e',smart:'#3b82f6',pro:'#06b6d4',advanced:'#ec4899',business:'#a855f7',max:'#ffb703'};
+const PLAN_TIER_COLOR={single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'};
 function toolMinPlanColor(key){
  const planKey=TOOL_MIN_PLAN_KEY[key];
  return planKey?(PLAN_TIER_COLOR[planKey]||'#ffb703'):null;
@@ -434,9 +434,12 @@ function lockedCta(toolKey){
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
- return `<section class="panel tab-panel locked-tool-card" style="border-top:3px solid ${color};background:linear-gradient(180deg,#101a29,#09121e)">
-   <h3 style="color:${color}">${esc(title)}</h3>${descHtml}
-   <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${lockedCta(toolKey)}</div>
+ return `<section class="panel tab-panel locked-tool-card" style="position:relative;background:linear-gradient(180deg,#101a29,#09121e)">
+   <span class="locked-side-bar" style="background:${color}"></span>
+   <div class="locked-tool-inner">
+    <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${lockedCta(toolKey)}</div>
+   </div>
   </section>`;
 }
 function toolBlock(key,title,fallback,realHtml){
