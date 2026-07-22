@@ -361,8 +361,9 @@ function analysisOverview(p){
  const d=(p&&p.display)||{};
  const gate=(key,html)=>{
   if(key==='indicators')return html;
-  const color=toolMinPlanColor(key);
-  return toolUnlocked(key)?html:`<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
+  if(toolUnlocked(key))return html;
+  const titles={scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'};
+  return renderLockedToolCard(titles[key],null,key);
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
@@ -407,18 +408,9 @@ function toolVisual(key){
  };
  return visuals[key]||'';
 }
-function toolBlock(key,title,fallback,realHtml){
- const has=toolUnlocked(key);
- const visual=has?toolVisual(key):'';
- const body=has
-  ?(visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`))
-  :`<p>${esc(fallback)}</p>${lockedCta(key)}`;
- const color=has?null:toolMinPlanColor(key);
- return `<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${esc(title)}</h3>${body}</section>`;
-}
 function lockedCta(toolKey){
  if(!access.authenticated){
-  return `<div class="locked-preview"><span>Accedi per sbloccare questo strumento</span><a href="account.html" class="btn purple">Accedi</a></div>`;
+  return `<p class="locked-note">Accedi per sbloccare questo strumento</p><a href="account.html" class="btn purple locked-upgrade-btn">Accedi</a>`;
  }
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
@@ -428,13 +420,25 @@ function lockedCta(toolKey){
  const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
  if(minPlanKey&&userPlanIdx<minPlanIdx){
   const color=PLAN_TIER_COLOR[minPlanKey]||'#ffb703';
-  return `<div class="locked-preview plan-locked"><span class="plan-badge" style="background:${color}22;color:${color};border-color:${color}55">🔒 Richiede piano ${esc(minPlan)}</span><a href="pricing.html" class="btn" style="background:${color};color:#0c1420;font-weight:900">Upgrade a ${esc(minPlan)}</a></div>`;
+  return `<span class="locked-pill" style="border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span><a href="pricing.html" class="btn locked-upgrade-btn" style="background:${color};color:#0c1420">Upgrade a ${esc(minPlan)}</a>`;
  }
  const n=access.available_credits??access.credits??0;
  if(n>0){
-  return `<div class="locked-preview"><span>Hai ${n} credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</span><button class="btn gold" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button></div>`;
+  return `<p class="locked-note">Hai ${n} credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</p><button class="btn gold locked-upgrade-btn" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>`;
  }
- return `<div class="locked-preview"><span>Non hai crediti di analisi disponibili</span><a href="pricing.html" class="btn purple">Acquista crediti</a></div>`;
+ return `<p class="locked-note">Non hai crediti di analisi disponibili</p><a href="pricing.html" class="btn purple locked-upgrade-btn">Acquista crediti</a>`;
+}
+function renderLockedToolCard(title,description,toolKey){
+ const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
+ const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
+ return `<section class="panel tab-panel locked-tool-card" style="border-left:4px solid ${color}"><h3>${esc(title)}</h3>${descHtml}<div class="locked-cta-zone">${lockedCta(toolKey)}</div></section>`;
+}
+function toolBlock(key,title,fallback,realHtml){
+ const has=toolUnlocked(key);
+ if(!has)return renderLockedToolCard(title,fallback,key);
+ const visual=toolVisual(key);
+ const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
+ return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
 }
 window._pendingWithdrawalConfirm=null;
 window._runWithdrawalConfirm=function(){
