@@ -686,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607220734"></script>
-<script src="app.js?v=202607220734"></script>
+ <script src="supabase-data.js?v=202607220745"></script>
+<script src="app.js?v=202607220745"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1384,7 +1384,15 @@ async function loadPdfRule(attachmentId){
 
 async function saveAnalysis(){
   if(!val("title"))return alert("Inserisci il titolo")
+  if(!val("category"))return alert("Seleziona una categoria prima di salvare")
   const editId=val("editId")||null
+  if(editId){
+    const existing=analyses().find(a=>a.id===editId)
+    if(existing&&existing.category_id&&!val("category")){
+      alert("La categoria risulta vuota rispetto alla versione salvata - ricarica la pagina e riprova, per evitare di perdere dati.")
+      return
+    }
+  }
   const payload=buildAnalysisPayload(editId)
   const duplicate=analyses().find(a=>a.slug===payload.slug && a.id!==editId)
   if(duplicate){
@@ -1890,5 +1898,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607220734"></script></body>
+<script src="shell-ui.js?v=202607220745"></script></body>
 </html>
