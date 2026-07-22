@@ -314,8 +314,44 @@ function renderHome(){
 }
 window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.html?q='+encodeURIComponent(q)};
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
-function scenarioChart(){const groups=[[280,430,650],[18,45,80],[8,20,33]],max=650;return `<div class="scenario-chart">${groups.map((g,gi)=>`<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/max*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`).join('')}</div>`}
-function costLegend(){return `<div class="cost-layout"><div class="cost-donut"><div><small>Totale</small><b>200.000 €</b></div></div><div class="cost-list"><span><i class="c1"></i>Attrezzature <b>38% · 76.000 €</b></span><span><i class="c2"></i>Ristrutturazione <b>22% · 44.000 €</b></span><span><i class="c3"></i>Arredi <b>15% · 30.000 €</b></span><span><i class="c4"></i>Licenze e permessi <b>10% · 20.000 €</b></span><span><i class="c5"></i>Marketing iniziale <b>8% · 16.000 €</b></span><span><i class="c6"></i>Altro <b>7% · 14.000 €</b></span></div></div>`}
+function parseMoneyToNumber(str){
+ if(!str)return 0;
+ const s=String(str).toLowerCase().replace(/[€$,\s]/g,'');
+ const m=s.match(/^([\d.]+)\s*(k|m)?/);
+ if(!m)return 0;
+ let n=parseFloat(m[1])||0;
+ if(m[2]==='k')n*=1000;
+ if(m[2]==='m')n*=1000000;
+ return n;
+}
+function scenarioChart(sc){
+ sc=sc||{};
+ const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%'}};
+ const rows=['fatturato','utile','roi'].map(field=>['prudente','realistico','ottimistico'].map(k=>{
+   const raw=(sc[k]&&sc[k][field])||DS[k][field];
+   return parseMoneyToNumber(raw);
+ }));
+ const groups=rows;
+ const max=Math.max(1,...groups.flat());
+ return `<div class="scenario-chart">${groups.map((g,gi)=>`<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/max*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`).join('')}</div>`
+}
+function costLegend(items){
+ const DEFAULT=[{label:'Attrezzature',importo:76000},{label:'Ristrutturazione',importo:44000},{label:'Arredi',importo:30000},{label:'Licenze e permessi',importo:20000},{label:'Marketing iniziale',importo:16000},{label:'Altro',importo:14000}];
+ const data=(Array.isArray(items)&&items.length?items:DEFAULT).filter(x=>x&&x.importo>0).slice(0,6);
+ const total=data.reduce((s,x)=>s+Number(x.importo||0),0)||1;
+ const colors=['#ff8b36','#39c6df','#ffd77f','#7f4be8','#8bb4ce','#5ce0b0'];
+ let acc=0;
+ const stops=data.map((x,i)=>{
+   const from=acc/total*100;acc+=Number(x.importo||0);const to=acc/total*100;
+   return `${colors[i]} ${from.toFixed(2)}% ${to.toFixed(2)}%`;
+ }).join(',');
+ const totalLabel=total>=1000?(total/1000).toFixed(total%1000===0?0:1)+'K €':total+' €';
+ return `<div class="cost-layout"><div class="cost-donut" style="background:conic-gradient(${stops})"><div><small>Totale</small><b>${esc(totalLabel)}</b></div></div><div class="cost-list">${data.map((x,i)=>{
+   const pct=Math.round(Number(x.importo||0)/total*100);
+   const amtLabel=x.importo>=1000?(x.importo/1000).toFixed(x.importo%1000===0?0:1)+'K €':x.importo+' €';
+   return `<span><i class="c${i+1}"></i>${esc(x.label)} <b>${pct}% · ${esc(amtLabel)}</b></span>`;
+ }).join('')}</div></div>`;
+}
 function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
 function analysisOverview(p){
  const d=(p&&p.display)||{};
@@ -332,10 +368,10 @@ function analysisOverview(p){
  const MK=k=>(bm[k]?'':(DB[k].mk?` <mark>${DB[k].mk}</mark>`:''));
  const LV=v=>{const s=String(v||'').toLowerCase();return s.includes('alta')||s.includes('alto')?'risk-low':(s.includes('bass')?'risk-high':'risk-mid')};
  const I=(k,def)=>esc(ind[k]??def);
- const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span></span><b>Prudente</b><b>Realistico</b><b>Ottimistico</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart()}</section>`;
+ const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span></span><b>Prudente</b><b>Realistico</b><b>Ottimistico</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart(sc)}</section>`;
  const benchmarkHtml=`<section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Attività</b><b>Media</b><span>ROI medio</span><b>${B('roi','a')}</b><b>${B('roi','m')}${MK('roi')}</b><span>Margine netto</span><b>${B('margine','a')}</b><b>${B('margine','m')}${MK('margine')}</b><span>Tempo recupero</span><b>${B('recupero','a')}</b><b>${B('recupero','m')}${MK('recupero')}</b><span>Rischio</span><b>${B('rischio','a')}</b><b>${B('rischio','m')}</b></div></section>`;
  const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="green">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta')}">${I('domanda','Alta')}</b></div><div><i>▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media')}">${I('concorrenza','Media')}</b></div><div><i>⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media')}">${I('scalabilita','Media')}</b></div><div><i>⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media')}">${I('gestione','Media')}</b></div></div></section>`;
- return `<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend()}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
+ return `<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
