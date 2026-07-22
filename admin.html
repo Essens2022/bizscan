@@ -686,8 +686,13 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607220841"></script>
-<script src="app.js?v=202607220841"></script>
+<<<<<<< HEAD
+ <script src="supabase-data.js?v=202607220853"></script>
+<script src="app.js?v=202607220853"></script>
+=======
+ <script src="supabase-data.js?v=202607220853"></script>
+<script src="app.js?v=202607220853"></script>
+>>>>>>> origin/context-aware-indicator-colors
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -981,6 +986,7 @@ let _phraseObjects=[]
 let _selectedObjId=null
 let _nextObjId=1
 let _dragState=null
+let _editingObjId=null
 const SEGMENT_FONT_FAMILY={system:"Arial,Helvetica,sans-serif",poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"}
 const SEGMENT_FONT_LABEL={system:"sistema",poppins:"Poppins",playfair:"Playfair",montserrat:"Montserrat",oswald:"Oswald",merriweather:"Merriweather"}
 const LEGACY_SIZE_EM={small:0.72,medium:1,large:1.28}
@@ -997,9 +1003,30 @@ function renderPhraseCanvas(){
   const canvas=document.getElementById("phraseCanvas");if(!canvas)return
   canvas.innerHTML=_phraseObjects.map(o=>{
     const selected=o.id===_selectedObjId
-    return `<div class="phrase-obj" data-id="${o.id}" onmousedown="startDragPhraseObj(event,'${o.id}')" ondblclick="editPhraseObjText(event,'${o.id}')"
-      style="position:absolute;left:${o.x}%;top:${o.y}%;transform:translate(-50%,-50%);white-space:nowrap;cursor:move;padding:6px 8px;border-radius:6px;user-select:none;text-align:${o.align||'center'};${objStyleString(o)};${selected?'outline:2px dashed #ffb400;outline-offset:2px;background:rgba(255,180,0,.08)':''}">${esc(o.text)}${selected?'<span onmousedown="startResizePhraseObj(event,\''+o.id+'\')" title="Trascina per ridimensionare" style="position:absolute;right:-9px;bottom:-9px;width:16px;height:16px;background:#ffb400;border:2px solid #050914;border-radius:50%;cursor:nwse-resize"></span>':''}</div>`
+    const editing=o.id===_editingObjId
+    const handles=(selected&&!editing)?`
+      <button type="button" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();editPhraseObjText(event,'${o.id}')" title="Modifica testo" style="position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:26px;height:26px;background:#151d2b;border:2px solid #ffb400;border-radius:50%;cursor:pointer;color:#ffb400;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0">✎</button>
+      <span onmousedown="startDragPhraseObj(event,'${o.id}')" title="Trascina per spostare" style="position:absolute;right:-11px;bottom:-11px;width:22px;height:22px;background:#ffb400;border:2px solid #050914;border-radius:50%;cursor:move;display:flex;align-items:center;justify-content:center;font-size:11px">✥</span>`:''
+    return `<div class="phrase-obj" data-id="${o.id}" ${editing?`contenteditable="true" onblur="saveInlineTextEdit('${o.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"`:`onclick="event.stopPropagation();selectPhraseObject('${o.id}')"`}
+      style="position:absolute;left:${o.x}%;top:${o.y}%;transform:translate(-50%,-50%);white-space:${editing?'pre':'nowrap'};cursor:${editing?'text':'pointer'};padding:6px 8px;border-radius:6px;user-select:${editing?'text':'none'};outline:${editing?'2px solid #ffb400':(selected?'2px dashed #ffb400':'none')};outline-offset:2px;text-align:${o.align||'center'};${objStyleString(o)};${selected&&!editing?'background:rgba(255,180,0,.08)':''}">${esc(o.text)}${handles}</div>`
   }).join("")
+  if(_editingObjId){
+    const el=canvas.querySelector(`[data-id="${_editingObjId}"]`)
+    if(el){
+      el.focus()
+      const range=document.createRange();range.selectNodeContents(el)
+      const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)
+    }
+  }
+}
+
+window.saveInlineTextEdit=(id,el)=>{
+  const obj=_phraseObjects.find(o=>o.id===id);if(!obj)return
+  const newText=el.textContent.trim()
+  obj.text=newText||obj.text
+  _editingObjId=null
+  renderPhraseCanvas()
+  renderAdminLivePreview()
 }
 
 window.addPhraseTextObject=()=>{
@@ -1054,48 +1081,25 @@ window.deleteSelectedPhraseObject=()=>{
 
 window.editPhraseObjText=(e,id)=>{
   e.stopPropagation()
-  const obj=_phraseObjects.find(o=>o.id===id);if(!obj)return
-  const newText=prompt("Modifica il testo di questo blocco:",obj.text)
-  if(newText!==null&&newText.trim()){
-    obj.text=newText.trim()
-    renderPhraseCanvas()
-    renderAdminLivePreview()
-  }
+  _editingObjId=id
+  renderPhraseCanvas()
 }
 
 window.startDragPhraseObj=(e,id)=>{
-  if(e.target.tagName==="SPAN"&&e.target.onmousedown)return // il punto di ridimensionamento gestisce da sé
   e.preventDefault();e.stopPropagation()
-  selectPhraseObject(id)
   const obj=_phraseObjects.find(o=>o.id===id)
   const rect=document.getElementById("phraseCanvas").getBoundingClientRect()
   _dragState={id,mode:"move",startClientX:e.clientX,startClientY:e.clientY,startX:obj.x,startY:obj.y,canvasW:rect.width,canvasH:rect.height}
   document.addEventListener("mousemove",onDragPhraseObj)
   document.addEventListener("mouseup",endDragPhraseObj)
 }
-window.startResizePhraseObj=(e,id)=>{
-  e.preventDefault();e.stopPropagation()
-  const obj=_phraseObjects.find(o=>o.id===id);if(!obj)return
-  _dragState={id,mode:"resize",startClientX:e.clientX,startSize:obj.size}
-  document.addEventListener("mousemove",onDragPhraseObj)
-  document.addEventListener("mouseup",endDragPhraseObj)
-}
 function onDragPhraseObj(e){
   if(!_dragState)return
   const obj=_phraseObjects.find(o=>o.id===_dragState.id);if(!obj)return
-  if(_dragState.mode==="move"){
-    const dxPct=(e.clientX-_dragState.startClientX)/_dragState.canvasW*100
-    const dyPct=(e.clientY-_dragState.startClientY)/_dragState.canvasH*100
-    obj.x=Math.max(0,Math.min(100,_dragState.startX+dxPct))
-    obj.y=Math.max(0,Math.min(100,_dragState.startY+dyPct))
-  }else if(_dragState.mode==="resize"){
-    const dx=e.clientX-_dragState.startClientX
-    obj.size=Math.max(0.3,Math.min(4,_dragState.startSize+dx/150))
-    if(obj.id===_selectedObjId){
-      document.getElementById("styleSize").value=obj.size
-      document.getElementById("styleSizeLabel").textContent=obj.size.toFixed(2)+"×"
-    }
-  }
+  const dxPct=(e.clientX-_dragState.startClientX)/_dragState.canvasW*100
+  const dyPct=(e.clientY-_dragState.startClientY)/_dragState.canvasH*100
+  obj.x=Math.max(0,Math.min(100,_dragState.startX+dxPct))
+  obj.y=Math.max(0,Math.min(100,_dragState.startY+dyPct))
   renderPhraseCanvas()
 }
 function endDragPhraseObj(){
@@ -1233,9 +1237,15 @@ function renderHomeSectionChecks(selected=[]){
 function refreshSelects(){
   renderEmojiPicker()
   const cats=[..._supabaseCategories].sort((a,b)=>a.order_index-b.order_index)
-  document.getElementById("category").innerHTML=cats.map(c=>`<option value="${c.id}">${c.emoji||"📁"} ${c.name}</option>`).join("")
+  const categorySelect=document.getElementById("category")
+  const previousCategory=categorySelect.value
+  categorySelect.innerHTML=cats.map(c=>`<option value="${c.id}">${c.emoji||"📁"} ${c.name}</option>`).join("")
+  if(previousCategory)categorySelect.value=previousCategory
   document.getElementById("categoryFilter").innerHTML='<option value="all">Tutte le categorie</option>'+cats.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")
-  document.getElementById("planChecks").innerHTML=_supabasePlans.map(p=>`<label class="check"><input type="checkbox" value="${p.type}" class="plan">${p.title}</label>`).join("")
+  const planHost=document.getElementById("planChecks")
+  const previousPlans=[...planHost.querySelectorAll(".plan:checked")].map(c=>c.value)
+  planHost.innerHTML=_supabasePlans.map(p=>`<label class="check"><input type="checkbox" value="${p.type}" class="plan">${p.title}</label>`).join("")
+  if(previousPlans.length)planHost.querySelectorAll(".plan").forEach(c=>{if(previousPlans.includes(c.value))c.checked=true})
   renderHomeSectionChecks(placementValues().filter(v=>v!=="home"))
 }
 
@@ -1898,5 +1908,9 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607220841"></script></body>
+<<<<<<< HEAD
+<script src="shell-ui.js?v=202607220853"></script></body>
+=======
+<script src="shell-ui.js?v=202607220853"></script></body>
+>>>>>>> origin/context-aware-indicator-colors
 </html>
