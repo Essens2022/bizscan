@@ -409,18 +409,19 @@ function toolVisual(key){
  return visuals[key]||'';
 }
 function lockedCta(toolKey){
- if(!access.authenticated){
-  return `<p class="locked-note">Accedi per sbloccare questo strumento</p><a href="account.html" class="btn purple locked-upgrade-btn">Accedi</a>`;
- }
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
+ const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
+ const pill=minPlanKey?`<span class="locked-pill" style="border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span>`:'';
+ if(!access.authenticated){
+  return `${pill}<a href="account.html" class="btn locked-upgrade-btn" style="${color?`background:${color};color:#0c1420`:''}">Accedi per continuare</a>`;
+ }
  const userPlan=access.plan||'free';
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
  const userPlanIdx=planOrder.indexOf(userPlan);
  const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
  if(minPlanKey&&userPlanIdx<minPlanIdx){
-  const color=PLAN_TIER_COLOR[minPlanKey]||'#ffb703';
-  return `<span class="locked-pill" style="border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span><a href="pricing.html" class="btn locked-upgrade-btn" style="background:${color};color:#0c1420">Upgrade a ${esc(minPlan)}</a>`;
+  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="background:${color};color:#0c1420">Upgrade a ${esc(minPlan)}</a>`;
  }
  const n=access.available_credits??access.credits??0;
  if(n>0){
