@@ -370,11 +370,19 @@ function analysisOverview(p){
  const DB={roi:{a:'20%',m:'18%',mk:'+11%'},margine:{a:'15%',m:'12%',mk:'+25%'},recupero:{a:'24 mesi',m:'30 mesi',mk:'+20%'},rischio:{a:'Medio',m:'Medio-Alto',mk:''}};
  const B=(k,f)=>esc((bm[k]&&bm[k][f])??DB[k][f]);
  const MK=k=>(bm[k]?'':(DB[k].mk?` <mark>${DB[k].mk}</mark>`:''));
- const LV=v=>{const s=String(v||'').toLowerCase();return s.includes('alta')||s.includes('alto')?'risk-low':(s.includes('bass')?'risk-high':'risk-mid')};
+ const LV=(v,key)=>{
+   const s=String(v||'').toLowerCase();
+   const isHigh=s.includes('alta')||s.includes('alto');
+   const isLow=s.includes('bass');
+   const invert=key==='concorrenza'; // per la concorrenza, alta è negativo (rosso), bassa è positivo (verde)
+   if(isHigh)return invert?'risk-high':'risk-low';
+   if(isLow)return invert?'risk-low':'risk-high';
+   return 'risk-mid';
+ };
  const I=(k,def)=>esc(ind[k]??def);
  const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span></span><b>Prudente</b><b>Realistico</b><b>Ottimistico</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart(sc)}</section>`;
  const benchmarkHtml=`<section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Attività</b><b>Media</b><span>ROI medio</span><b>${B('roi','a')}</b><b>${B('roi','m')}${MK('roi')}</b><span>Margine netto</span><b>${B('margine','a')}</b><b>${B('margine','m')}${MK('margine')}</b><span>Tempo recupero</span><b>${B('recupero','a')}</b><b>${B('recupero','m')}${MK('recupero')}</b><span>Rischio</span><b>${B('rischio','a')}</b><b>${B('rischio','m')}</b></div></section>`;
- const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="green">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta')}">${I('domanda','Alta')}</b></div><div><i>▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media')}">${I('concorrenza','Media')}</b></div><div><i>⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media')}">${I('scalabilita','Media')}</b></div><div><i>⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media')}">${I('gestione','Media')}</b></div></div></section>`;
+ const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="${LV(ind.domanda??'Alta','domanda')}">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta','domanda')}">${I('domanda','Alta')}</b></div><div><i class="${LV(ind.concorrenza??'Media','concorrenza')}">▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media','concorrenza')}">${I('concorrenza','Media')}</b></div><div><i class="${LV(ind.scalabilita??'Media','scalabilita')}">⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media','scalabilita')}">${I('scalabilita','Media')}</b></div><div><i class="${LV(ind.gestione??'Media','gestione')}">⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media','gestione')}">${I('gestione','Media')}</b></div></div></section>`;
  return `<div class="dash-grid">${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}${gate('indicators',indicatorsHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
