@@ -409,18 +409,20 @@ function toolVisual(key){
  return visuals[key]||'';
 }
 function lockedCta(toolKey){
- if(!access.authenticated){
-  return `<p class="locked-note">Accedi per sbloccare questo strumento</p><a href="account.html" class="btn purple locked-upgrade-btn">Accedi</a>`;
- }
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
+ const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span>`:'';
+ const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
+ if(!access.authenticated){
+  return `${pill}<a href="account.html" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
+ }
  const userPlan=access.plan||'free';
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
  const userPlanIdx=planOrder.indexOf(userPlan);
  const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
  if(minPlanKey&&userPlanIdx<minPlanIdx){
-  const color=PLAN_TIER_COLOR[minPlanKey]||'#ffb703';
-  return `<span class="locked-pill" style="border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span><a href="pricing.html" class="btn locked-upgrade-btn" style="background:${color};color:#0c1420">Upgrade a ${esc(minPlan)}</a>`;
+  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Upgrade a ${esc(minPlan)}</a>`;
  }
  const n=access.available_credits??access.credits??0;
  if(n>0){
@@ -431,7 +433,10 @@ function lockedCta(toolKey){
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
- return `<section class="panel tab-panel locked-tool-card" style="border-left:4px solid ${color}"><h3>${esc(title)}</h3>${descHtml}<div class="locked-cta-zone">${lockedCta(toolKey)}</div></section>`;
+ return `<section class="panel tab-panel locked-tool-card" style="border-top:3px solid ${color};background:linear-gradient(180deg,#101a29,#09121e)">
+   <h3 style="color:${color}">${esc(title)}</h3>${descHtml}
+   <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${lockedCta(toolKey)}</div>
+  </section>`;
 }
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
