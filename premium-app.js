@@ -409,9 +409,10 @@ function toolVisual(key){
 }
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
- const visual=toolVisual(key);
- const textCol=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
- const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${textCol}</div><div class="tool-block-visual">${visual}</div></div>`:textCol;
+ const visual=has?toolVisual(key):'';
+ const body=has
+  ?(visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`))
+  :`<p>${esc(fallback)}</p>${lockedCta(key)}`;
  const color=has?null:toolMinPlanColor(key);
  return `<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${esc(title)}</h3>${body}</section>`;
 }
