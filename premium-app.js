@@ -362,7 +362,7 @@ function analysisOverview(p){
  const gate=(key,html)=>{
   if(key==='indicators')return html;
   const color=toolMinPlanColor(key);
-  return toolUnlocked(key)?html:`<section class="panel locked-section"${color?` style="border-left:4px solid ${color}"`:''}><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
+  return toolUnlocked(key)?html:`<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${({scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'})[key]}</h3>${lockedCta(key)}</section>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
