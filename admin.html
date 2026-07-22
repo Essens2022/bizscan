@@ -643,7 +643,7 @@ textarea{min-height:92px;resize:vertical}
       <div class="card" style="background:#0d1420;border:1px solid var(--line)">
         <h3 id="phraseEditorHeading" style="margin-top:0">Nuova frase</h3>
         <p style="color:var(--muted);font-size:12px">Premi "+ Aggiungi testo" per ogni blocco di testo che vuoi (una parola, più parole, una riga). Clicca un blocco per selezionarlo: trascinalo con il mouse dove vuoi, ridimensionalo dal punto dorato nell'angolo, cambia colore/font/grassetto qui sotto - ogni blocco è indipendente, spostarne o ingrandirne uno non muove gli altri. Doppio click per modificarne il testo.</p>
-        <div id="phraseCanvas" onclick="if(event.target===this)deselectPhraseObject()" style="position:relative;width:100%;aspect-ratio:1200/320;background:#050914;border-radius:12px;overflow:hidden;margin:10px 0"></div>
+        <div id="phraseCanvas" onclick="if(event.target===this)deselectPhraseObject()" style="position:relative;width:100%;aspect-ratio:1200/320;background:#050914;border-radius:12px;overflow:hidden;margin:10px 0;container-type:inline-size"></div>
         <button class="btn dark full" type="button" onclick="addPhraseTextObject()">+ Aggiungi testo</button>
         <div class="two" style="margin-top:12px">
           <label>Colore elemento selezionato<input id="styleColor" type="color" value="#ffffff" oninput="applyObjectStyle()"></label>
@@ -658,6 +658,16 @@ textarea{min-height:92px;resize:vertical}
         </div>
         <label>Dimensione elemento selezionato <span id="styleSizeLabel">1×</span><input id="styleSize" type="range" min="0.3" max="4" step="0.05" value="1" style="width:100%" oninput="applyObjectStyle()"></label>
         <label class="check" style="margin-top:6px"><input id="styleBold" type="checkbox" checked onchange="applyObjectStyle()"> Grassetto</label>
+        <div class="two" style="margin-top:6px">
+          <label class="check"><input id="styleItalic" type="checkbox" onchange="applyObjectStyle()"> Corsivo</label>
+          <label class="check"><input id="styleUnderline" type="checkbox" onchange="applyObjectStyle()"> Sottolineato</label>
+        </div>
+        <label>Spaziatura lettere <span id="styleLetterSpacingLabel">0</span><input id="styleLetterSpacing" type="range" min="-0.05" max="0.5" step="0.01" value="0" style="width:100%" oninput="applyObjectStyle()"></label>
+        <label>Allineamento<select id="styleAlign" onchange="applyObjectStyle()">
+          <option value="center" selected>Centro</option>
+          <option value="left">Sinistra</option>
+          <option value="right">Destra</option>
+        </select></label>
         <button class="btn danger full" type="button" onclick="deleteSelectedPhraseObject()" style="margin-top:10px">Elimina elemento selezionato</button>
         <div style="display:flex;gap:10px;margin-top:14px">
           <button class="btn gold" type="button" id="savePhraseBtn" onclick="savePhraseFromCanvas()">Salva frase</button>
@@ -676,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607220727"></script>
-<script src="app.js?v=202607220727"></script>
+ <script src="supabase-data.js?v=202607220734"></script>
+<script src="app.js?v=202607220734"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -814,7 +824,7 @@ function renderAdminLivePreview(){
   const hasPositions=segs&&segs.length&&segs[0].x!=null
   const titleHtml=segs&&segs.length
     ?(hasPositions
-      ?`<div style="position:relative;z-index:2;width:100%;aspect-ratio:1200/320;text-shadow:0 3px 14px rgba(0,0,0,.5)">${segs.map(s=>`<span style="position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);white-space:nowrap;color:${esc(s.color||'#fff')};font-size:${sizeToEm(s.size)*0.6}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text)}</span>`).join('')}</div>`
+      ?`<div style="position:relative;z-index:2;width:100%;aspect-ratio:1200/320;container-type:inline-size">${segs.map(s=>`<span style="position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);white-space:nowrap;text-align:${s.align||'center'};${objStyleString({...s,size:sizeToEm(s.size)})}">${esc(s.text)}</span>`).join('')}</div>`
       :`<h3 style="position:relative;z-index:2;font-size:26px;font-weight:900;line-height:1.15;margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5)">${segs.map(s=>`<span style="color:${esc(s.color||'#fff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text)}</span>`).join('')}</h3>`)
     :'<p style="color:var(--muted);font-size:12px;margin:0">Nessuna frase ancora - qui apparirà il titolo</p>'
   host.innerHTML=(mediaHtml||'')+titleHtml+(!activeMedia.length&&!segs?'<p style="color:var(--muted);font-size:11px;margin-top:10px">Aggiungi media o una frase per vedere l\'anteprima</p>':'')
@@ -980,18 +990,21 @@ function sizeToEm(size){
   const n=parseFloat(size);return isNaN(n)?1:n
 }
 
+function objStyleString(o){
+  return `font-size:calc(${o.size} * 4cqw);color:${esc(o.color)};font-family:${SEGMENT_FONT_FAMILY[o.font]||SEGMENT_FONT_FAMILY.system};font-weight:${o.bold?900:400};font-style:${o.italic?'italic':'normal'};text-decoration:${o.underline?'underline':'none'};letter-spacing:calc(${o.letterSpacing||0} * 1cqw)`
+}
 function renderPhraseCanvas(){
   const canvas=document.getElementById("phraseCanvas");if(!canvas)return
   canvas.innerHTML=_phraseObjects.map(o=>{
     const selected=o.id===_selectedObjId
     return `<div class="phrase-obj" data-id="${o.id}" onmousedown="startDragPhraseObj(event,'${o.id}')" ondblclick="editPhraseObjText(event,'${o.id}')"
-      style="position:absolute;left:${o.x}%;top:${o.y}%;transform:translate(-50%,-50%);font-size:${o.size}em;color:${esc(o.color)};font-family:${SEGMENT_FONT_FAMILY[o.font]||SEGMENT_FONT_FAMILY.system};font-weight:${o.bold?900:400};white-space:nowrap;cursor:move;padding:6px 8px;border-radius:6px;user-select:none;${selected?'outline:2px dashed #ffb400;outline-offset:2px;background:rgba(255,180,0,.08)':''}">${esc(o.text)}${selected?'<span onmousedown="startResizePhraseObj(event,\''+o.id+'\')" title="Trascina per ridimensionare" style="position:absolute;right:-9px;bottom:-9px;width:16px;height:16px;background:#ffb400;border:2px solid #050914;border-radius:50%;cursor:nwse-resize"></span>':''}</div>`
+      style="position:absolute;left:${o.x}%;top:${o.y}%;transform:translate(-50%,-50%);white-space:nowrap;cursor:move;padding:6px 8px;border-radius:6px;user-select:none;text-align:${o.align||'center'};${objStyleString(o)};${selected?'outline:2px dashed #ffb400;outline-offset:2px;background:rgba(255,180,0,.08)':''}">${esc(o.text)}${selected?'<span onmousedown="startResizePhraseObj(event,\''+o.id+'\')" title="Trascina per ridimensionare" style="position:absolute;right:-9px;bottom:-9px;width:16px;height:16px;background:#ffb400;border:2px solid #050914;border-radius:50%;cursor:nwse-resize"></span>':''}</div>`
   }).join("")
 }
 
 window.addPhraseTextObject=()=>{
   const id="obj"+(_nextObjId++)
-  _phraseObjects.push({id,text:"Nuovo testo",x:50,y:50,size:1,color:"#ffffff",font:"system",bold:true})
+  _phraseObjects.push({id,text:"Nuovo testo",x:50,y:50,size:1,color:"#ffffff",font:"system",bold:true,italic:false,underline:false,letterSpacing:0,align:"center"})
   selectPhraseObject(id)
   renderAdminLivePreview()
 }
@@ -1005,6 +1018,11 @@ function selectPhraseObject(id){
     document.getElementById("styleSize").value=obj.size
     document.getElementById("styleSizeLabel").textContent=obj.size.toFixed(2)+"×"
     document.getElementById("styleBold").checked=obj.bold
+    document.getElementById("styleItalic").checked=!!obj.italic
+    document.getElementById("styleUnderline").checked=!!obj.underline
+    document.getElementById("styleLetterSpacing").value=obj.letterSpacing||0
+    document.getElementById("styleLetterSpacingLabel").textContent=(obj.letterSpacing||0).toFixed(2)
+    document.getElementById("styleAlign").value=obj.align||"center"
   }
   renderPhraseCanvas()
 }
@@ -1016,7 +1034,12 @@ window.applyObjectStyle=()=>{
   obj.font=document.getElementById("styleFont").value
   obj.size=parseFloat(document.getElementById("styleSize").value)||1
   obj.bold=document.getElementById("styleBold").checked
+  obj.italic=document.getElementById("styleItalic").checked
+  obj.underline=document.getElementById("styleUnderline").checked
+  obj.letterSpacing=parseFloat(document.getElementById("styleLetterSpacing").value)||0
+  obj.align=document.getElementById("styleAlign").value
   document.getElementById("styleSizeLabel").textContent=obj.size.toFixed(2)+"×"
+  document.getElementById("styleLetterSpacingLabel").textContent=obj.letterSpacing.toFixed(2)
   renderPhraseCanvas()
   renderAdminLivePreview()
 }
@@ -1103,7 +1126,11 @@ window.editHeroPhrase=(id)=>{
     size:sizeToEm(s.size),
     color:s.color||"#ffffff",
     font:s.font||"system",
-    bold:s.bold!==false
+    bold:s.bold!==false,
+    italic:!!s.italic,
+    underline:!!s.underline,
+    letterSpacing:s.letterSpacing||0,
+    align:s.align||"center"
   }))
   _selectedObjId=null
   renderPhraseCanvas()
@@ -1115,7 +1142,7 @@ window.editHeroPhrase=(id)=>{
 
 window.savePhraseFromCanvas=async()=>{
   if(!_phraseObjects.length){alert("Aggiungi almeno un blocco di testo prima di salvare");return}
-  const segments=_phraseObjects.map(o=>({text:o.text,color:o.color,size:o.size,font:o.font,bold:o.bold,x:o.x,y:o.y}))
+  const segments=_phraseObjects.map(o=>({text:o.text,color:o.color,size:o.size,font:o.font,bold:o.bold,italic:o.italic,underline:o.underline,letterSpacing:o.letterSpacing,align:o.align,x:o.x,y:o.y}))
   const fullText=segments.map(s=>s.text).join(" ")
   const orderIndex=_editingPhraseId?(_heroPhrases.find(x=>x.id===_editingPhraseId)?.order_index??_heroPhrases.length):_heroPhrases.length
   const isActive=_editingPhraseId?(_heroPhrases.find(x=>x.id===_editingPhraseId)?.is_active??true):true
@@ -1863,5 +1890,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607220727"></script></body>
+<script src="shell-ui.js?v=202607220734"></script></body>
 </html>
