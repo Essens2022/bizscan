@@ -686,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607220745"></script>
-<script src="app.js?v=202607220745"></script>
+ <script src="supabase-data.js?v=202607220752"></script>
+<script src="app.js?v=202607220752"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1495,7 +1495,7 @@ async function saveAnalysis(){
 }
 async function editAnalysis(id){
   const x=analyses().find(a=>a.id===id);if(!x)return
-  refreshSelects()
+  showTab("new",document.querySelectorAll(".tab")[2])
   document.getElementById("title").value=x.title||""
   document.getElementById("slug").value=x.slug||""
   document.getElementById("category").value=x.category_id||""
@@ -1537,7 +1537,7 @@ async function editAnalysis(id){
   _sectionDrafts=(x.sections||[]).map(v=>({...v}));renderSectionsEditor()
   renderEmojiPicker();renderPositionPicker()
   document.getElementById("formTitle").textContent="Modifica analisi"
-  showTab("new",document.querySelectorAll(".tab")[2]);preview()
+  preview()
 }
 async function duplicateAnalysis(id){
   const x=analyses().find(a=>a.id===id);if(!x)return
@@ -1898,5 +1898,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607220745"></script></body>
+<script src="shell-ui.js?v=202607220752"></script></body>
 </html>
