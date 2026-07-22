@@ -162,13 +162,17 @@ function sizeToEm(size){
  const n=parseFloat(size);return isNaN(n)?1:n;
 }
 const SEGMENT_FONT_FAMILY={system:'Arial,Helvetica,sans-serif',poppins:"'Poppins',sans-serif",playfair:"'Playfair Display',serif",montserrat:"'Montserrat',sans-serif",oswald:"'Oswald',sans-serif",merriweather:"'Merriweather',serif"};
+function segmentStyle(s){
+ const size=sizeToEm(s.size);
+ return `color:${esc(s.color||'#ffffff')};font-size:calc(${size} * 4cqw);font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900};font-style:${s.italic?'italic':'normal'};text-decoration:${s.underline?'underline':'none'};letter-spacing:calc(${s.letterSpacing||0} * 1cqw)`;
+}
 function renderPhraseHtml(ph){
  if(Array.isArray(ph.segments)&&ph.segments.length){
   const hasPositions=ph.segments[0].x!=null;
   if(hasPositions){
-   return ph.segments.map(s=>`<span style="position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);white-space:nowrap;color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text||'')}</span>`).join('');
+   return ph.segments.map(s=>`<span style="position:absolute;left:${s.x}%;top:${s.y}%;transform:translate(-50%,-50%);white-space:nowrap;text-align:${s.align||'center'};${segmentStyle(s)}">${esc(s.text||'')}</span>`).join('');
   }
-  return ph.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text||'')}</span>`).join('');
+  return ph.segments.map(s=>`<span style="${segmentStyle(s)}">${esc(s.text||'')}</span>`).join('');
  }
  return `<span style="color:${esc(ph.color||'#ffffff')}">${esc(ph.text)}</span>`;
 }
