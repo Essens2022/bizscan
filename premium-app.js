@@ -793,7 +793,46 @@ window._doChoosePackage=async key=>{
   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
  }
 };
-function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score}</b><b>${arr[1].score}</b><span>Investimento</span><b>${esc(arr[0].investment)}</b><b>${esc(arr[1].investment)}</b><span>Profitto</span><b>${esc(arr[0].profit)}</b><b>${esc(arr[1].profit)}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback)}</b><b>${esc(arr[1].payback)}</b><span>Rischio</span><b>${esc(arr[0].riskLabel)}</b><b>${esc(arr[1].riskLabel)}</b></div></section>`}
+function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}
+ host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score??'—'}</b><b>${arr[1].score??'—'}</b><span>Investimento</span><b>${esc(arr[0].investment||'—')}</b><b>${esc(arr[1].investment||'—')}</b><span>Profitto</span><b>${esc(arr[0].profit||'—')}</b><b>${esc(arr[1].profit||'—')}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback||'—')}</b><b>${esc(arr[1].payback||'—')}</b><span>Rischio</span><b>${esc(arr[0].riskLabel||'—')}</b><b>${esc(arr[1].riskLabel||'—')}</b></div></section><section class="panel" id="compareAdviceSection"><h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Verifica accesso…</p></section>`;
+ refreshCompareAdvice(arr[0],arr[1]);
+}
+function computeCompareAdvice(a,b){
+ const sa=Number(a.score),sb=Number(b.score);
+ if(isNaN(sa)||isNaN(sb))return `Non ci sono abbastanza dati pubblici in comune tra <b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> per generare un consiglio affidabile in base al solo BizScan Score.`;
+ if(sa===sb)return `<b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> hanno lo stesso BizScan Score (${sa}/100): la scelta dipende soprattutto dalle tue priorità personali (capitale disponibile, tempo, tolleranza al rischio) più che dai numeri.`;
+ const winner=sa>sb?a:b,loser=sa>sb?b:a,wScore=Math.max(sa,sb),lScore=Math.min(sa,sb);
+ return `In base ai dati confrontati, <b>${esc(winner.title)}</b> risulta la scelta più equilibrata, con un BizScan Score di ${wScore}/100 contro ${lScore}/100 di <b>${esc(loser.title)}</b>. Questo non significa che ${esc(loser.title)} sia una cattiva opportunità - solo che, sui criteri qui confrontati, ${esc(winner.title)} presenta al momento un profilo complessivo più solido.`;
+}
+async function refreshCompareAdvice(a,b){
+ const section=document.getElementById('compareAdviceSection');if(!section)return;
+ try{
+  const status=await BizScanData.getCompareAdviceStatus(a.id,b.id);
+  if(status.allowed){
+   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="line-height:1.6;font-size:13px;color:#d3dae3">${computeCompareAdvice(a,b)}</p>`;
+  }else if(status.reason==='auth_required'){
+   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Accedi al tuo account per sbloccare il consiglio con un credito.</p><a class="btn gold" href="account.html">Accedi</a>`;
+  }else if(status.reason==='can_unlock_with_credit'){
+   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Sblocca il nostro consiglio su quale attività, tra queste due, presenta al momento il profilo più solido - usa 1 credito di analisi.</p><button class="btn gold" onclick="unlockCompareAdvice('${a.id}','${b.id}')">Sblocca con 1 credito</button>`;
+  }else{
+   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Crediti di analisi esauriti. Acquista un pacchetto per sbloccare il nostro consiglio su questo confronto.</p><a class="btn gold" href="pricing.html">Vedi i pacchetti</a>`;
+  }
+ }catch(e){console.error('compare advice status',e)}
+}
+window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
+ confirmWithdrawalWaiver('',async()=>{
+  const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);
+  const a=arr.find(x=>x.id===analysisIdA),b=arr.find(x=>x.id===analysisIdB);
+  const result=await BizScanData.unlockCompareAdvice(analysisIdA,analysisIdB);
+  if(!result.success){
+   if(result.reason==='no_credits'){modal('Crediti esauriti','<p>Hai già utilizzato tutti i crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
+   modal('Sblocco non riuscito',`<p>${esc(result.reason||'Errore sconosciuto')}</p>`);return
+  }
+  toast('✓ Consiglio sbloccato');
+  try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  await refreshCompareAdvice(a,b);
+ });
+}
 function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare()}
 function searchSuggestions(query,limit=6){
  const q=String(query||'').trim().toLowerCase();

@@ -43,6 +43,18 @@ async function getPdfAccessStatus(attachmentId){
   if(error)throw error;
   return Array.isArray(data)?data[0]:(data||{});
 }
+async function getCompareAdviceStatus(analysisIdA,analysisIdB){
+  const c=await getSupabaseClient();
+  const{data,error}=await c.rpc("get_compare_advice_status",{p_analysis_a:analysisIdA,p_analysis_b:analysisIdB});
+  if(error)throw error;
+  return Array.isArray(data)?data[0]:(data||{});
+}
+async function unlockCompareAdvice(analysisIdA,analysisIdB){
+  const c=await getSupabaseClient();
+  const{data,error}=await c.rpc("unlock_compare_advice",{p_analysis_a:analysisIdA,p_analysis_b:analysisIdB});
+  if(error)throw error;
+  return Array.isArray(data)?data[0]:(data||{});
+}
 async function savePdfAccessRule(attachmentId,isFree,allowedPlans){
   const c=await getSupabaseClient();
   const{data,error}=await c.rpc("admin_set_pdf_access_rule",{p_attachment_id:attachmentId,p_is_free:Boolean(isFree),p_allowed_plan_types:allowedPlans||[]});
@@ -53,4 +65,4 @@ async function fetchHeroMedia(){const c=await getSupabaseClient();const{data,err
 async function fetchHeroPhrases(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_hero_phrases");if(error)throw error;return data||[]}
 async function fetchHeroSettings(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_get_hero_settings");if(error)throw error;return data||{carousel_transition:'fade'}}
 async function fetchMyOrders(){const c=await getSupabaseClient();const{data,error}=await c.rpc("get_my_orders");if(error)throw error;return data||[]}
-window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders};
+window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders,getCompareAdviceStatus,unlockCompareAdvice};
