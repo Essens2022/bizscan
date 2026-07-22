@@ -412,7 +412,8 @@ function lockedCta(toolKey){
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
- const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">🔒 Richiede piano ${esc(minPlan)}</span>`:'';
+ const lockIcon='<svg width="12" height="14" viewBox="0 0 13 15" fill="none" style="flex-shrink:0"><path d="M3 6V4.5a3.5 3.5 0 0 1 7 0V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><rect x="1.5" y="6" width="10" height="7.5" rx="2.2" fill="currentColor"/></svg>';
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">${lockIcon} Richiede piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
   return `${pill}<a href="account.html" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
