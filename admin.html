@@ -404,6 +404,15 @@ textarea{min-height:92px;resize:vertical}
         <div class="three"><label>ROI<input id="scPrudRoi" placeholder="8%"></label><input id="scRealRoi" placeholder="20%"><input id="scOttiRoi" placeholder="33%"></div>
         <div class="three"><label>Recupero<input id="scPrudRec" placeholder="42 mesi"></label><input id="scRealRec" placeholder="26 mesi"><input id="scOttiRec" placeholder="16 mesi"></div>
 
+        <div style="margin-top:16px;font-weight:900">Distribuzione costi iniziali</div>
+        <p style="color:var(--muted);font-size:11px;margin:2px 0 8px">Fino a 6 categorie di costo. Lascia l'importo vuoto per non includere quella categoria. Le percentuali del grafico si calcolano da sole.</p>
+        <div class="three"><label>Categoria 1<input id="costLabel1" placeholder="Attrezzature"></label><label>Importo (€)<input id="costAmount1" type="number" placeholder="76000"></label></div>
+        <div class="three"><label>Categoria 2<input id="costLabel2" placeholder="Ristrutturazione"></label><label>Importo (€)<input id="costAmount2" type="number" placeholder="44000"></label></div>
+        <div class="three"><label>Categoria 3<input id="costLabel3" placeholder="Arredi"></label><label>Importo (€)<input id="costAmount3" type="number" placeholder="30000"></label></div>
+        <div class="three"><label>Categoria 4<input id="costLabel4" placeholder="Licenze e permessi"></label><label>Importo (€)<input id="costAmount4" type="number" placeholder="20000"></label></div>
+        <div class="three"><label>Categoria 5<input id="costLabel5" placeholder="Marketing iniziale"></label><label>Importo (€)<input id="costAmount5" type="number" placeholder="16000"></label></div>
+        <div class="three"><label>Categoria 6<input id="costLabel6" placeholder="Altro"></label><label>Importo (€)<input id="costAmount6" type="number" placeholder="14000"></label></div>
+
         <div style="margin-top:16px;font-weight:900">Confronto con la media categoria</div>
         <label class="check"><input type="checkbox" id="freeBenchmark">Gratuito (visibile senza acquisto)</label>
         <div class="three" style="margin-top:8px"><b></b><label>Attività (dato reale)</label><label>Media categoria</label></div>
@@ -667,8 +676,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607212153"></script>
-<script src="app.js?v=202607212153"></script>
+ <script src="supabase-data.js?v=202607220727"></script>
+<script src="app.js?v=202607220727"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1305,6 +1314,11 @@ function buildDisplayData(){
   const scen={};
   const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
   for(const k in cols){const[fatt,utile,roi,rec]=cols[k].map(v_);if(fatt||utile||roi||rec)scen[k]={fatturato:fatt,utile:utile,roi:roi,recupero:rec}}
+  const costi=[];
+  for(let i=1;i<=6;i++){
+    const label=v_('costLabel'+i),amount=parseFloat(document.getElementById('costAmount'+i)?.value);
+    if(label&&amount>0)costi.push({label:label,importo:amount});
+  }
   const bm={};
   const pairs=[['roi','bmRoiA','bmRoiM'],['margine','bmMargA','bmMargM'],['recupero','bmRecA','bmRecM'],['rischio','bmRiskA','bmRiskM']];
   for(const[k,a,m]of pairs){const av=v_(a),mv=v_(m);if(av||mv)bm[k]={a:av,m:mv}}
@@ -1316,13 +1330,15 @@ function buildDisplayData(){
   if(document.getElementById('freeIndicators')?.checked)free.push('indicators');
   const tools={};
   for(const[k,id]of[['break_even','toolBreakEven'],['cash_flow','toolCashFlow'],['costi_fissi_variabili','toolCostiFissiVar'],['concorrenza_locale','toolConcorrenzaLocale'],['stagionalita','toolStagionalita'],['matrice_rischi','toolMatriceRischi'],['personale','toolPersonale'],['fornitori','toolFornitori'],['strategie_crescita','toolStrategieCrescita']]){const val=v_(id);if(val)tools[k]=val}
-  return{scenario:Object.keys(scen).length?scen:undefined,benchmark:Object.keys(bm).length?bm:undefined,indicators:Object.keys(ind).length?ind:undefined,free,tools:Object.keys(tools).length?tools:undefined}
+  return{scenario:Object.keys(scen).length?scen:undefined,costi_iniziali:costi.length?costi:undefined,benchmark:Object.keys(bm).length?bm:undefined,indicators:Object.keys(ind).length?ind:undefined,free,tools:Object.keys(tools).length?tools:undefined}
 }
 function loadDisplayDataForm(d){
   d=d||{};const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{},free=d.free||[],tools=d.tools||{};
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''}
   const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
   for(const k in cols){const row=sc[k]||{};const[fatt,utile,roi,rec]=cols[k];set(fatt,row.fatturato);set(utile,row.utile);set(roi,row.roi);set(rec,row.recupero)}
+  const costi=Array.isArray(d.costi_iniziali)?d.costi_iniziali:[];
+  for(let i=1;i<=6;i++){const row=costi[i-1]||{};set('costLabel'+i,row.label);set('costAmount'+i,row.importo)}
   const pairs=[['roi','bmRoiA','bmRoiM'],['margine','bmMargA','bmMargM'],['recupero','bmRecA','bmRecM'],['rischio','bmRiskA','bmRiskM']];
   for(const[k,a,m]of pairs){const row=bm[k]||{};set(a,row.a);set(m,row.m)}
   for(const[k,id]of[['domanda','indDomanda'],['concorrenza','indConcorrenza'],['scalabilita','indScalabilita'],['gestione','indGestione']]){const el=document.getElementById(id);if(el)el.value=ind[k]||''}
@@ -1847,5 +1863,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607212153"></script></body>
+<script src="shell-ui.js?v=202607220727"></script></body>
 </html>
