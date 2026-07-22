@@ -385,9 +385,25 @@ function toolMinPlanColor(key){
  const planKey=TOOL_MIN_PLAN_KEY[key];
  return planKey?(PLAN_TIER_COLOR[planKey]||'#ffb703'):null;
 }
+function toolVisual(key){
+ const visuals={
+  break_even:'<div class="tool-lines"><i></i><i></i><b>Break-even</b></div>',
+  cash_flow:'<div class="tool-spark"><svg viewBox="0 0 220 80" aria-hidden="true"><polyline points="5,62 38,50 70,56 104,30 140,20 176,28 215,10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+  costi_fissi_variabili:'<div class="tool-bars"><i style="height:42%"></i><i style="height:66%"></i><i style="height:52%"></i><i style="height:82%"></i></div>',
+  concorrenza_locale:'<div class="mini-ring amber" style="--v:55"><b>Media</b></div>',
+  stagionalita:'<div class="tool-season">'+[38,45,52,60,72,88,95,90,70,55,42,36].map(h=>`<i style="height:${h}%"></i>`).join('')+'</div>',
+  matrice_rischi:'<div class="tool-riskmatrix">'+[3,2,1,2].map((v,i)=>`<i class="rm${v}"></i>`).join('')+'</div>',
+  personale:'<div class="tool-people">'+'●●●'.split('').map(()=>'<i>●</i>').join('')+'</div>',
+  fornitori:'<div class="tool-checklist"><i>✓</i><i>✓</i><i>○</i></div>',
+  strategie_crescita:'<div class="tool-spark green"><svg viewBox="0 0 220 80" aria-hidden="true"><polyline points="5,72 45,64 85,58 125,40 165,24 215,8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+ };
+ return visuals[key]||'';
+}
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
- const body=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
+ const visual=toolVisual(key);
+ const textCol=has?(realHtml||`<p>${esc(fallback)}</p>`):`<p>${esc(fallback)}</p>${lockedCta(key)}`;
+ const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${textCol}</div><div class="tool-block-visual">${visual}</div></div>`:textCol;
  const color=has?null:toolMinPlanColor(key);
  return `<section class="panel tab-panel"${color?` style="border-left:4px solid ${color}"`:''}><h3>${esc(title)}</h3>${body}</section>`;
 }
@@ -797,25 +813,76 @@ function renderCompare(){const host=$('#compareContent');if(!host)return;const a
  host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score??'—'}</b><b>${arr[1].score??'—'}</b><span>Investimento</span><b>${esc(arr[0].investment||'—')}</b><b>${esc(arr[1].investment||'—')}</b><span>Profitto</span><b>${esc(arr[0].profit||'—')}</b><b>${esc(arr[1].profit||'—')}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback||'—')}</b><b>${esc(arr[1].payback||'—')}</b><span>Rischio</span><b>${esc(arr[0].riskLabel||'—')}</b><b>${esc(arr[1].riskLabel||'—')}</b></div></section><section class="panel" id="compareAdviceSection"><h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Verifica accesso…</p></section>`;
  refreshCompareAdvice(arr[0],arr[1]);
 }
+function riskToNumber(label){
+ const s=String(label||'').toLowerCase();
+ if(s.includes('molto alto'))return 4;
+ if(s.includes('alto'))return 3;
+ if(s.includes('medio'))return 2;
+ if(s.includes('basso'))return 1;
+ return null;
+}
+function paybackToYears(text){
+ const s=String(text||'').replace(',','.');
+ const m=s.match(/([\d.]+)/);
+ return m?parseFloat(m[1]):null;
+}
 function computeCompareAdvice(a,b){
  const sa=Number(a.score),sb=Number(b.score);
- if(isNaN(sa)||isNaN(sb))return `Non ci sono abbastanza dati pubblici in comune tra <b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> per generare un consiglio affidabile in base al solo BizScan Score.`;
- if(sa===sb)return `<b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> hanno lo stesso BizScan Score (${sa}/100): la scelta dipende soprattutto dalle tue priorità personali (capitale disponibile, tempo, tolleranza al rischio) più che dai numeri.`;
- const winner=sa>sb?a:b,loser=sa>sb?b:a,wScore=Math.max(sa,sb),lScore=Math.min(sa,sb);
- return `In base ai dati confrontati, <b>${esc(winner.title)}</b> risulta la scelta più equilibrata, con un BizScan Score di ${wScore}/100 contro ${lScore}/100 di <b>${esc(loser.title)}</b>. Questo non significa che ${esc(loser.title)} sia una cattiva opportunità - solo che, sui criteri qui confrontati, ${esc(winner.title)} presenta al momento un profilo complessivo più solido.`;
+ const ra=riskToNumber(a.riskLabel),rb=riskToNumber(b.riskLabel);
+ const pa=paybackToYears(a.payback),pb=paybackToYears(b.payback);
+ const hasScore=!isNaN(sa)&&!isNaN(sb);
+ const hasRisk=ra!=null&&rb!=null;
+ const hasPayback=pa!=null&&pb!=null;
+ if(!hasScore&&!hasRisk&&!hasPayback){
+  return {text:`Non ci sono abbastanza dati pubblici in comune tra <b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> per costruire un consiglio affidabile.`,winner:null};
+ }
+ const scoreDiff=hasScore?Math.abs(sa-sb):0;
+ const riskDiff=hasRisk?Math.abs(ra-rb):0;
+ const paybackDiff=hasPayback?Math.abs(pa-pb):0;
+ const paybackRelDiff=hasPayback&&Math.max(pa,pb)>0?paybackDiff/Math.max(pa,pb):0;
+
+ // sceglie l'angolo con la differenza più significativa, non sempre lo stesso fattore
+ const angles=[];
+ if(hasRisk&&riskDiff>=2)angles.push({key:'risk',weight:riskDiff*3});
+ if(hasPayback&&paybackRelDiff>=0.35)angles.push({key:'payback',weight:paybackRelDiff*10});
+ if(hasScore&&scoreDiff>=8)angles.push({key:'score',weight:scoreDiff});
+ if(hasScore&&hasRisk&&scoreDiff<8&&riskDiff<=1)angles.push({key:'close',weight:1});
+ angles.sort((x,y)=>y.weight-x.weight);
+ const angle=angles[0]?.key||(hasScore?'score':(hasRisk?'risk':'payback'));
+
+ if(angle==='close'||(!angles.length&&hasScore&&scoreDiff<5)){
+  return {text:`<b>${esc(a.title)}</b> e <b>${esc(b.title)}</b> sono molto vicine su rischio e punteggio complessivo: qui la differenza la fa più il tuo profilo personale - capitale disponibile, tempo che puoi dedicare, e quanto rischio sei disposto ad accettare - che i numeri da soli.`,winner:null};
+ }
+ if(angle==='risk'){
+  const winner=ra<rb?a:b,loser=ra<rb?b:a;
+  return {text:`Guardando soprattutto il rischio, <b>${esc(winner.title)}</b> parte da una posizione più prudente rispetto a <b>${esc(loser.title)}</b>. Se preferisci dormire sonni tranquilli piuttosto che inseguire il rendimento più alto possibile, è l'opzione su cui ci sentiamo di puntare di più.`,winner:winner.title};
+ }
+ if(angle==='payback'){
+  const winner=pa<pb?a:b,loser=pa<pb?b:a;
+  return {text:`Il fattore che salta di più all'occhio qui è la velocità di rientro: <b>${esc(winner.title)}</b> recupera l'investimento in modo sensibilmente più rapido di <b>${esc(loser.title)}</b>. Se la priorità è liberare capitale prima per un prossimo progetto, questo pesa più del punteggio da solo.`,winner:winner.title};
+ }
+ // angolo predefinito: score
+ if(hasScore){
+  const winner=sa>sb?a:b,loser=sa>sb?b:a,wScore=Math.max(sa,sb),lScore=Math.min(sa,sb);
+  return {text:`Nel complesso, <b>${esc(winner.title)}</b> mostra un profilo più solido (${wScore}/100 contro ${lScore}/100), tenendo conto insieme di investimento, rischio e prospettive di rientro. Non significa che <b>${esc(loser.title)}</b> sia da scartare - solo che, con le informazioni pubbliche a disposizione, ci convince di più.`,winner:winner.title};
+ }
+ return {text:`I dati pubblici disponibili non permettono un confronto abbastanza solido tra <b>${esc(a.title)}</b> e <b>${esc(b.title)}</b>.`,winner:null};
 }
 async function refreshCompareAdvice(a,b){
  const section=document.getElementById('compareAdviceSection');if(!section)return;
  try{
   const status=await BizScanData.getCompareAdviceStatus(a.id,b.id);
   if(status.allowed){
-   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="line-height:1.6;font-size:13px;color:#d3dae3">${computeCompareAdvice(a,b)}</p>`;
+   const advice=computeCompareAdvice(a,b);
+   const winnerLetter=advice.winner===a.title?'A':(advice.winner===b.title?'B':null);
+   const visual=winnerLetter?`<div class="advice-vs"><span class="${winnerLetter==='A'?'win':''}">A</span><b>VS</b><span class="${winnerLetter==='B'?'win':''}">B</span></div>`:`<div class="advice-vs neutral"><span>A</span><b>≈</b><span>B</span></div>`;
+   section.innerHTML=`<div class="advice-card unlocked"><div class="advice-visual">${visual}</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>${advice.text}</p></div></div>`;
   }else if(status.reason==='auth_required'){
-   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Accedi al tuo account per sbloccare il consiglio con un credito.</p><a class="btn gold" href="account.html">Accedi</a>`;
+   section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Accedi al tuo account per sbloccare il nostro consiglio su questo confronto.</p><a class="btn purple" href="account.html">Accedi</a></div></div>`;
   }else if(status.reason==='can_unlock_with_credit'){
-   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Sblocca il nostro consiglio su quale attività, tra queste due, presenta al momento il profilo più solido - usa 1 credito di analisi.</p><button class="btn gold" onclick="unlockCompareAdvice('${a.id}','${b.id}')">Sblocca con 1 credito</button>`;
+   section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Qual è, tra queste due attività, la scelta su cui ci sentiamo di puntare di più? Sblocca il nostro consiglio con 1 credito di analisi.</p><button class="btn purple" onclick="unlockCompareAdvice('${a.id}','${b.id}')">Sblocca con 1 credito</button></div></div>`;
   }else{
-   section.innerHTML=`<h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Crediti di analisi esauriti. Acquista un pacchetto per sbloccare il nostro consiglio su questo confronto.</p><a class="btn gold" href="pricing.html">Vedi i pacchetti</a>`;
+   section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Crediti di analisi esauriti. Acquista un pacchetto per sbloccare il nostro consiglio su questo confronto.</p><a class="btn purple" href="pricing.html">Vedi i pacchetti</a></div></div>`;
   }
  }catch(e){console.error('compare advice status',e)}
 }
