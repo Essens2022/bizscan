@@ -94,7 +94,7 @@ function updateShell(){
  setTimeout(applyAccountIconColor,400);
 }
 function applyAccountIconColor(){
- document.querySelectorAll('.icon-btn').forEach(el=>{
+ document.querySelectorAll('.icon-btn,.home18-head-icon[aria-label="Profilo"]').forEach(el=>{
   el.classList.toggle('account-icon-active',!!access.authenticated);
  });
 }
