@@ -156,6 +156,7 @@
       +'<span class="pay-badge pay-paypal">Pay<b>Pal</b></span>'
       +'</div>'
       +'<small class="footer-stripe-note">Elaborazione pagamenti a cura di Stripe</small>'
+      +'<button type="button" class="footer-install-btn" onclick="if(window.__bizscanTriggerInstall)window.__bizscanTriggerInstall()">📲 Installa la nostra app (Android / iOS)</button>'
       +'</div>'
       +'<div class="footer-nav">'
       +'<div class="footer-col"><h4>Piattaforma</h4><a href="/">Dashboard</a><a href="search.html">Esplora</a><a href="compare.html">Confronta</a><a href="library.html">Preferiti</a><a href="pricing.html">Pacchetti</a></div>'
@@ -168,5 +169,81 @@
   }
   window.__bizscanSetupFooter=setupFooter;
 
+  // --- Installazione app (PWA) ---
   document.addEventListener('DOMContentLoaded',function(){setupHeader()});
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  }
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function dismissedThisSession(){
+    return sessionStorage.getItem('bizscan_install_dismissed')==='1';
+  }
+  function showInstallBar(html,onClickInstall){
+    if(document.getElementById('pwaInstallBar'))return;
+    var bar=document.createElement('div');
+    bar.id='pwaInstallBar';
+    bar.className='pwa-install-bar';
+    bar.innerHTML='<img src="/icon-192.png" alt="BizScan"><div class="pwa-install-text">'+html+'</div><button type="button" class="pwa-install-btn" id="pwaInstallBtn">Installa</button><button type="button" class="pwa-install-close" id="pwaInstallClose" aria-label="Chiudi">×</button>';
+    document.body.prepend(bar);
+    document.getElementById('pwaInstallClose').onclick=function(){
+      bar.remove();
+      sessionStorage.setItem('bizscan_install_dismissed','1');
+    };
+    if(onClickInstall){
+      document.getElementById('pwaInstallBtn').onclick=onClickInstall;
+    }else{
+      document.getElementById('pwaInstallBtn').style.display='none';
+    }
+  }
+
+  var deferredPrompt=null;
+  var promptFired=false;
+
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault();
+    deferredPrompt=e;
+    promptFired=true;
+    if(!isStandalone() && !dismissedThisSession()){
+      showInstallBar('<b>Installa BizScan</b><small>Accesso rapido, come app</small>',triggerInstall);
+    }
+  });
+  window.addEventListener('appinstalled',function(){
+    var bar=document.getElementById('pwaInstallBar');
+    if(bar)bar.remove();
+  });
+
+  function triggerInstall(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.finally(function(){
+        deferredPrompt=null;
+        var bar=document.getElementById('pwaInstallBar');
+        if(bar)bar.remove();
+      });
+    }else if(isIOS()){
+      alert('Per installare BizScan:\n\nSafari: tocca Condividi, poi "Aggiungi a Home".\n\nChrome: tocca il menu ⋮, poi "Aggiungi a Home".');
+    }else{
+      alert('Apri il menu del browser e cerca "Installa app" o "Aggiungi a schermata Home".');
+    }
+  }
+  window.__bizscanTriggerInstall=triggerInstall;
+
+  if(!isStandalone() && !dismissedThisSession() && isIOS()){
+    // Su iOS, alcune versioni recenti di Chrome supportano beforeinstallprompt come Android;
+    // altre (e Safari) no. Aspettiamo un momento per vedere se l'evento nativo arriva -
+    // altrimenti mostriamo le istruzioni manuali, che coprono sia Safari che Chrome.
+    setTimeout(function(){
+      if(!promptFired && !document.getElementById('pwaInstallBar')){
+        showInstallBar('<b>Installa BizScan</b><small>Safari: Condividi → Aggiungi a Home. Chrome: menu ⋮ → Aggiungi a Home</small>',null);
+      }
+    },1200);
+  }
 })();
