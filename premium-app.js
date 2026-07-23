@@ -750,11 +750,20 @@ function renderSearch(){
 }
 function pdfReportCard(r){
  const cover=r.coverUrl?`<img src="${esc(r.coverUrl)}" alt="" loading="lazy">`:`<div class="pdf-report-emoji">${r.emoji}</div>`;
- return `<article class="business-card pdf-report-card" onclick="window._doDownloadReport('${esc(r.slug)}')">
+ const clickAction=r.pdfUrl
+  ?`window.__openReportPdf('${esc(r.slug)}','${esc(r.title||'')}')`
+  :`window._doDownloadReport('${esc(r.slug)}')`;
+ return `<article class="business-card pdf-report-card" onclick="${clickAction}">
   <div class="business-cover">${cover}<span class="pdf-report-badge">📄 PDF</span></div>
   <div class="business-body"><h3>${esc(r.title)}</h3><small>Tocca per aprire il report PDF</small></div>
  </article>`;
 }
+window.__openReportPdf=(slug,title)=>{
+ const r=window.__myPdfReports?.find(x=>x.slug===slug);
+ if(!r||!r.pdfUrl){window._doDownloadReport(slug);return}
+ const viewerUrl='pdf-viewer.html?url='+encodeURIComponent(r.pdfUrl)+'&slug='+encodeURIComponent(slug)+'&title='+encodeURIComponent(title||'');
+ location.href=viewerUrl;
+};
 async function renderLibrary(){
  const host=$('#libraryContent');if(!host)return;
  const view=(new URLSearchParams(location.search).get('view')||'favorites');
@@ -771,6 +780,7 @@ async function renderLibrary(){
  const grid=host.querySelector('.business-grid');
  try{
   const pdfReports=await BizScanData.fetchMyPdfReports();
+  window.__myPdfReports=pdfReports;
   const pdfSlugs=new Set(pdfReports.map(r=>r.slug));
   const fullAccessOnly=analyses.filter(p=>p.has_access && !pdfSlugs.has(p.slug));
   const html=pdfReports.map(pdfReportCard).join('')+fullAccessOnly.map(card).join('');

@@ -35,14 +35,23 @@ async function fetchMyPdfReports(){
   const nowIso=new Date().toISOString();
   const{data,error}=await c.from("pdf_unlocks").select("created_at,expires_at,attachments(analysis_id,analyses(slug,title,emoji,attachments(type,file_url)))").eq("user_id",u.id).order("created_at",{ascending:false});
   if(error)throw error;
-  const seen=new Set();const out=[];
+  const seen=new Set();const pending=[];
   for(const row of(data||[])){
     if(row.expires_at && row.expires_at<nowIso)continue;
     const a=row.attachments?.analyses;if(!a||!a.slug||seen.has(a.slug))continue;
     seen.add(a.slug);
     const cover=(a.attachments||[]).find(x=>x&&x.type==="cover"&&x.file_url);
-    out.push({slug:a.slug,title:a.title,emoji:a.emoji||"📊",coverUrl:cover?.file_url||""});
+    const pdf=(a.attachments||[]).find(x=>x&&x.type==="pdf"&&x.file_url);
+    pending.push({slug:a.slug,title:a.title,emoji:a.emoji||"📊",coverUrl:cover?.file_url||"",pdf});
   }
+  // Pre-generiamo l'URL firmato del PDF per ognuno subito, cosi il click sulla card
+  // puo navigare in modo sincrono (nessuna attesa di rete tra il tocco e l'apertura) -
+  // essenziale su iOS standalone, dove una navigazione ritardata dopo un await viene bloccata.
+  const out=await Promise.all(pending.map(async r=>{
+    let pdfUrl="";
+    try{if(r.pdf)pdfUrl=await signedAttachmentUrl(r.pdf)}catch(_){}
+    return{slug:r.slug,title:r.title,emoji:r.emoji,coverUrl:r.coverUrl,pdfUrl};
+  }));
   return out;
 }
 async function setFavorite(analysisId,enabled){const c=await getSupabaseClient();const u=await currentUser();if(!u)throw new Error("AUTH_REQUIRED");if(enabled){const{error}=await c.from("favorites").upsert({user_id:u.id,analysis_id:analysisId},{onConflict:"user_id,analysis_id"});if(error)throw error}else{const{error}=await c.from("favorites").delete().eq("user_id",u.id).eq("analysis_id",analysisId);if(error)throw error}}
