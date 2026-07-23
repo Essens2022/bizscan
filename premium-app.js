@@ -818,6 +818,9 @@ window.chooseAddon=async type=>{
 function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
 window.choosePdfPack=async(count,price)=>{
  if(!access.authenticated){modal('Crediti PDF','<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
+ confirmWithdrawalWaiver(euro(price),()=>window._doChoosePdfPack(count,price));
+}
+window._doChoosePdfPack=async(count,price)=>{
  modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
