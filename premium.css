@@ -494,6 +494,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .pay-apple{background:#000;color:#fff;gap:5px}
 .apple-mark{width:13px;height:15px}
 .footer-stripe-note{display:block;margin-top:10px;color:#6b7686;font-size:10px}
+.footer-install-btn{display:inline-flex;align-items:center;gap:7px;margin-top:14px;border:1px solid var(--line2);border-radius:11px;padding:9px 16px;background:linear-gradient(135deg,#1a2740,#101a2c);color:#f5f7fb;font-size:12px;font-weight:700;cursor:pointer}
+.footer-install-btn:hover{border-color:var(--gold);color:var(--gold)}
 .pay-paypal{background:#ecf2fb;color:#003087}
 .pay-paypal b{color:#009cde}
 .footer-bottom{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:#6b7686;font-size:11px;width:100%;max-width:420px}
