@@ -90,6 +90,10 @@ function updateShell(){
    if(statusEl)statusEl.textContent='Tocca per entrare nel tuo account';
   }
  }
+ document.querySelectorAll('a[href="account.html"][aria-label="Profilo"],.bottom-nav a[href="account.html"]').forEach(el=>{
+  el.style.color=access.authenticated?'var(--gold)':'';
+  if(el.classList.contains('icon-btn'))el.style.borderColor=access.authenticated?'var(--gold)':'';
+ });
 }
 function toast(t){if(navigator.vibrate)navigator.vibrate(25);let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.append(e)}e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1700)}
 function modal(title,body,actions=''){const m=$('#globalModal'),c=$('#globalModalContent');if(!m||!c)return;c.innerHTML=`<div class="modal-head"><h2>${esc(title)}</h2><button onclick="closeModal()">×</button></div>${body}${actions}`;m.classList.add('show')}
@@ -815,25 +819,29 @@ window.chooseAddon=async type=>{
   modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
  }
 };
-function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div>${access.authenticated?'<button class="btn ghost" type="button" onclick="showPurchaseHistory()">🧾 Cronologia acquisti</button>':''}</div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
-window.showPurchaseHistory=async()=>{
- modal('Cronologia acquisti','<p style="color:var(--muted);font-size:12px">Caricamento…</p>');
+function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div>${access.authenticated?'<a class="btn ghost" href="invoices.html">🧾 Cronologia acquisti</a>':''}</div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
+function invoiceRowHtml(o){
+ const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
+ const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
+ const statusLabel=({completed:'Completato',paid:'Completato',pending:'In attesa',failed:'Fallito',refunded:'Rimborsato'})[o.status]||o.status;
+ return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right"><strong>${euro(o.amount)}</strong><span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+}
+async function renderInvoices(){
+ const host=$('#invoicesContent');if(!host)return;
+ if(!access.authenticated){
+  host.innerHTML='<div class="empty"><h1>Fatturazione</h1><p>Accedi al tuo account per vedere la cronologia dei tuoi acquisti.</p><a class="btn gold" href="account.html">Accedi</a></div>';
+  return;
+ }
+ host.innerHTML='<section class="page-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
+ const list=document.getElementById('invoicesList');
  try{
   const orders=await BizScanData.fetchMyOrders();
-  if(!orders.length){
-   modal('Cronologia acquisti','<div class="purchase-history-empty"><span>🧾</span><p>Non hai ancora effettuato acquisti.</p></div>');
-   return;
-  }
-  const rows=orders.map(o=>{
-   const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
-   const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
-   const statusLabel=({completed:'Completato',paid:'Completato',pending:'In attesa',failed:'Fallito',refunded:'Rimborsato'})[o.status]||o.status;
-   return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right"><strong>${euro(o.amount)}</strong><span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
-  }).join('');
-  modal('Cronologia acquisti',`<div class="purchase-history-list">${rows}</div>`);
+  list.innerHTML=orders.length
+   ?`<div class="purchase-history-list">${orders.map(invoiceRowHtml).join('')}</div>`
+   :'<div class="purchase-history-empty"><span>🧾</span><p>Non hai ancora effettuato acquisti.</p></div>';
  }catch(e){
-  console.error('purchase history error',e);
-  modal('Cronologia acquisti','<p style="color:#ff5a67;font-size:12px">Non è stato possibile caricare la cronologia. Riprova più tardi.</p>');
+  console.error('invoices error',e);
+  list.innerHTML='<p style="color:#ff5a67;font-size:12px">Non è stato possibile caricare la cronologia. Riprova più tardi.</p>';
  }
 }
 window.choosePdfPack=async(count,price)=>{
@@ -995,7 +1003,7 @@ window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
   await refreshCompareAdvice(a,b);
  });
 }
-function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare()}
+function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare();renderInvoices()}
 function searchSuggestions(query,limit=6){
  const q=String(query||'').trim().toLowerCase();
  if(q.length<2)return[];
