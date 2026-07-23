@@ -627,6 +627,7 @@ textarea{min-height:92px;resize:vertical}
         <label>Tipo<select id="newMediaType"><option value="image">Immagine</option><option value="gif">GIF</option><option value="video">Video</option></select></label>
         <label>Carica un file<input id="newMediaFile" type="file" accept="image/*,video/*" onchange="uploadHeroMediaFile(this)"></label>
       </div>
+      <p style="color:#ffb703;font-size:11px;margin:6px 0 0;font-weight:700">📐 Dimensione consigliata: 1600 × 1000 px — mantieni testo/loghi importanti nella fascia centrale di 700px (evita i primi/ultimi ~150px in alto e in basso)</p>
       <p id="newMediaUploadStatus" style="color:var(--muted);font-size:12px;margin:4px 0 0"></p>
       <p style="color:var(--muted);font-size:11px;margin:10px 0 4px">Oppure incolla un link diretto a un file già online:</p>
       <div class="two">
@@ -686,8 +687,13 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607231110"></script>
-<script src="app.js?v=202607231110"></script>
+<<<<<<< HEAD
+ <script src="supabase-data.js?v=202607231136"></script>
+<script src="app.js?v=202607231136"></script>
+=======
+ <script src="supabase-data.js?v=202607231136"></script>
+<script src="app.js?v=202607231136"></script>
+>>>>>>> origin/add-image-size-hint
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1920,5 +1926,9 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607231110"></script></body>
+<<<<<<< HEAD
+<script src="shell-ui.js?v=202607231136"></script></body>
+=======
+<script src="shell-ui.js?v=202607231136"></script></body>
+>>>>>>> origin/add-image-size-hint
 </html>
