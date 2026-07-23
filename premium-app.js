@@ -1,3 +1,10 @@
+try{
+ const cached=JSON.parse(localStorage.getItem('bizscan_last_credits')||'null');
+ if(cached){
+  const chipEl=document.querySelector('.top-actions .chip');
+  if(chipEl)chipEl.textContent=`Crediti: ${cached.n} · PDF: ${cached.pdfN}`;
+ }
+}catch(_){}
 let PACKAGES=[
  {key:'single',name:'Analisi Singola',price:1.99,analyses:1,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['1 analisi interattiva','Indicatori essenziali','Accesso permanente','Report PDF acquistabile separatamente']},
  {key:'starter',name:'Starter',price:4.99,analyses:3,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['3 analisi interattive','Indicatori essenziali','Libreria personale','Report PDF acquistabili separatamente']},
@@ -76,6 +83,7 @@ function updateShell(){
  const pdfN=access.available_pdf_credits??0;
  const plan=(access.plan&&access.plan!=='free')?String(access.plan).charAt(0).toUpperCase()+String(access.plan).slice(1):'';
  if(c)c.textContent=`Crediti: ${n} · PDF: ${pdfN}`;
+ try{localStorage.setItem('bizscan_last_credits',JSON.stringify({n,pdfN}))}catch(_){}
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
  if(nameEl){
   if(access.authenticated){
