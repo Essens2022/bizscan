@@ -432,9 +432,9 @@ function lockedCta(toolKey){
  }
  const n=access.available_credits??access.credits??0;
  if(n>0){
-  return `<p class="locked-note">Hai ${n} credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</p><button class="btn gold locked-upgrade-btn" type="button" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>`;
+  return `${pill}<button class="btn locked-upgrade-btn" type="button" style="${btnStyle}" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>`;
  }
- return `<p class="locked-note">Non hai crediti di analisi disponibili</p><a href="pricing.html" class="btn purple locked-upgrade-btn">Acquista crediti</a>`;
+ return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Acquista crediti</a>`;
 }
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
