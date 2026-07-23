@@ -90,9 +90,12 @@ function updateShell(){
    if(statusEl)statusEl.textContent='Tocca per entrare nel tuo account';
   }
  }
+ applyAccountIconColor();
+ setTimeout(applyAccountIconColor,400);
+}
+function applyAccountIconColor(){
  document.querySelectorAll('a[href="account.html"][aria-label="Profilo"],.bottom-nav a[href="account.html"]').forEach(el=>{
-  el.style.color=access.authenticated?'var(--gold)':'';
-  if(el.classList.contains('icon-btn'))el.style.borderColor=access.authenticated?'var(--gold)':'';
+  el.classList.toggle('account-icon-active',!!access.authenticated);
  });
 }
 function toast(t){if(navigator.vibrate)navigator.vibrate(25);let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.append(e)}e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1700)}
