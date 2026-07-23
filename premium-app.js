@@ -815,7 +815,27 @@ window.chooseAddon=async type=>{
   modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
  }
 };
-function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
+function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="section-head"><div><small class="pdf-topup-kicker"><i>📄</i>REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div>${access.authenticated?'<button class="btn ghost" type="button" onclick="showPurchaseHistory()">🧾 Cronologia acquisti</button>':''}</div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
+window.showPurchaseHistory=async()=>{
+ modal('Cronologia acquisti','<p style="color:var(--muted);font-size:12px">Caricamento…</p>');
+ try{
+  const orders=await BizScanData.fetchMyOrders();
+  if(!orders.length){
+   modal('Cronologia acquisti','<div class="purchase-history-empty"><span>🧾</span><p>Non hai ancora effettuato acquisti.</p></div>');
+   return;
+  }
+  const rows=orders.map(o=>{
+   const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
+   const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
+   const statusLabel=({completed:'Completato',paid:'Completato',pending:'In attesa',failed:'Fallito',refunded:'Rimborsato'})[o.status]||o.status;
+   return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right"><strong>${euro(o.amount)}</strong><span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+  }).join('');
+  modal('Cronologia acquisti',`<div class="purchase-history-list">${rows}</div>`);
+ }catch(e){
+  console.error('purchase history error',e);
+  modal('Cronologia acquisti','<p style="color:#ff5a67;font-size:12px">Non è stato possibile caricare la cronologia. Riprova più tardi.</p>');
+ }
+}
 window.choosePdfPack=async(count,price)=>{
  if(!access.authenticated){modal('Crediti PDF','<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
  confirmWithdrawalWaiver(euro(price),()=>window._doChoosePdfPack(count,price));

@@ -538,6 +538,16 @@ html,body{overflow-x:hidden;max-width:100%}
 #page-progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#ffb703,#ff8a00,#ffd053);box-shadow:0 0 8px rgba(255,183,3,.7);transition:width .25s ease-out;border-radius:0 3px 3px 0}
 #page-progress.active i{transition:width .3s ease-out}
 .pdf-topup-kicker{display:inline-flex;align-items:center;gap:6px}
+.purchase-history-list{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
+.purchase-history-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(180deg,#101a29,#0b1422)}
+.purchase-history-row b{display:block;font-size:13px;margin-bottom:3px}
+.purchase-history-row small{color:var(--muted);font-size:11px}
+.purchase-history-right{text-align:right}
+.purchase-history-right strong{display:block;font-size:14px;color:var(--gold)}
+.purchase-history-right span{font-size:10px;font-weight:700}
+.purchase-history-empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.purchase-history-empty span{font-size:40px;display:block;margin-bottom:8px;opacity:.7}
+.purchase-history-empty p{margin-top:10px;font-size:13px}
 .pdf-topup-kicker i{font-style:normal;font-size:13px}
 .premium-lock h3{display:flex;align-items:center;gap:8px}
 .premium-lock-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#ffb703,#ff8a00);color:#1a0f38;flex-shrink:0}
