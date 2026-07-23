@@ -686,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607231101"></script>
-<script src="app.js?v=202607231101"></script>
+ <script src="supabase-data.js?v=202607231110"></script>
+<script src="app.js?v=202607231110"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -869,7 +869,7 @@ function renderHeroMediaList(){
   try{
   const countLabel=`<p style="color:#8ff5c2;font-size:11px;margin:0 0 10px;font-weight:700">✓ ${_heroMedia.length} element${_heroMedia.length===1?'o':'i'} ricevut${_heroMedia.length===1?'o':'i'} dal server</p>`
   host.innerHTML=countLabel+(_heroMedia.length?`<div style="display:flex;flex-wrap:wrap;gap:12px">${_heroMedia.map((m,i)=>`
-    <div class="panel" style="padding:10px;position:relative;flex:1 1 180px;min-width:180px;max-width:260px">
+    <div class="media-card" style="padding:10px;position:relative;flex:1 1 180px;min-width:180px;max-width:260px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#0c1726,#08121e)">
       <div style="position:absolute;top:16px;left:16px;z-index:2;background:#ffb703;color:#111;font-weight:900;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center">${i+1}</div>
       <div style="position:relative;aspect-ratio:16/10;min-height:110px;border-radius:10px;overflow:hidden;background:#000;margin-bottom:8px">
         ${m.media_type==="video"
@@ -984,7 +984,7 @@ function renderHeroPhraseList(){
   const preview=p=>Array.isArray(p.segments)&&p.segments.length
     ?p.segments.map(s=>`<span style="color:${esc(s.color||'#ffffff')};font-size:${sizeToEm(s.size)}em;font-family:${SEGMENT_FONT_FAMILY[s.font]||SEGMENT_FONT_FAMILY.system};font-weight:${s.bold===false?400:900}">${esc(s.text)}</span>`).join("")
     :`<span style="color:${esc(p.color)}">${esc(p.text)}</span>`
-  host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="panel" style="padding:10px 14px;display:flex;align-items:center;gap:10px">
+  host.innerHTML=_heroPhrases.length?_heroPhrases.map((p,i)=>`<div class="phrase-list-item" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(180deg,#0c1726,#08121e)">
     <span style="flex:1;font-size:14px;font-weight:800">${preview(p)}</span>
     <label class="check" style="margin:0"><input type="checkbox" ${p.is_active?"checked":""} onchange="toggleHeroPhrase('${p.id}',this.checked)">Attiva</label>
     <button class="btn dark" type="button" onclick="editHeroPhrase('${p.id}')">✎ Modifica</button>
@@ -1920,5 +1920,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607231101"></script></body>
+<script src="shell-ui.js?v=202607231110"></script></body>
 </html>
