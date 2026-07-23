@@ -19,7 +19,7 @@ a{text-decoration:none;color:inherit}button,input,select{font:inherit}button{cur
 .account-avatar{width:56px;height:56px;min-width:56px;border-radius:16px;background:linear-gradient(135deg,#7a3cff,#a76dff);display:grid;place-items:center;font-size:26px}
 .account-profile-info h2{margin:0 0 3px;font-size:18px;color:#f5f7fb}
 .account-profile-info p{margin:0;font-size:12px;color:#8f9bad}
-.account-plan-card{border-left:4px solid #4a5568}
+.account-plan-card{border-left:4px solid #4a5568;border-right:4px solid #4a5568}
 .account-plan-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .account-plan-head small{color:#8f9bad;font-size:10px;letter-spacing:.06em;font-weight:700}
 .account-plan-badge{padding:6px 14px;border-radius:999px;border:1.5px solid #4a5568;font-size:12px;font-weight:800}
@@ -35,8 +35,9 @@ a{text-decoration:none;color:inherit}button,input,select{font:inherit}button{cur
 .account-links-card a small{color:#8f9bad;font-size:11px}
 .account-danger-card{text-align:center}
 .account-danger-card>small{display:block;color:#8f9bad;font-size:10px;letter-spacing:.06em;font-weight:700;margin-bottom:12px}
-.account-danger-card button{margin-bottom:10px}
-.account-delete-btn{background:transparent;border:1px solid #5a2530;color:#ff8a8a}
+.account-delete-separator{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);margin:22px 0 16px}
+.account-delete-btn{background:transparent;border:1px solid #4a2228;color:#c97575;font-size:11px;padding:9px 18px;width:auto;display:inline-flex;opacity:.75;transition:opacity .15s,border-color .15s,color .15s}
+.account-delete-btn:hover{opacity:1;border-color:#7a3038;color:#ff8a8a}
 .kicker{font-size:11px;letter-spacing:.11em;font-weight:900;color:#ffd36a;margin-bottom:8px}
 .hero h1{font-size:36px;line-height:.98;letter-spacing:-.05em;margin:0 0 10px}.hero h1 span{color:var(--yellow)}
 .hero p{color:var(--muted);line-height:1.45;margin:0 0 14px;font-size:15px}
