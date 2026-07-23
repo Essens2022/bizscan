@@ -1,12 +1,18 @@
 const SUPABASE_URL="https://fafedftoyztptdiubjmx.supabase.co";
 const SUPABASE_KEY="sb_publishable_Xv8QeF_A5ShMEqhxqB1jgQ_mLZGx5KJ";
 let _client;
+let _clientPromise;
 
 async function getSupabaseClient(){
   if(_client)return _client;
-  const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-  _client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  return _client;
+  if(!_clientPromise){
+    _clientPromise=(async()=>{
+      const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      _client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      return _client;
+    })();
+  }
+  return _clientPromise;
 }
 function riskMeta(score){const s=Number(score)||0;if(s<50)return{label:"Rischio basso",color:"green"};if(s<70)return{label:"Rischio medio",color:"amber"};return{label:"Rischio alto",color:"red"}}
 function visualFor(row,i=0){const seed=String(row.category_id||row.category?.slug||row.id||i);let hash=0;for(let n=0;n<seed.length;n++)hash=((hash<<5)-hash+seed.charCodeAt(n))|0;return["vp","vm","va","vb"][Math.abs(hash)%4]}
