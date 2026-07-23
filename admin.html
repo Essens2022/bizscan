@@ -326,6 +326,7 @@ textarea{min-height:92px;resize:vertical}
       <div class="card">
         <h2 id="formTitle">Nuova analisi</h2><p class="section-intro">Compila i dati principali e controlla sempre l anteprima sulla destra</p>
         <input type="hidden" id="editId">
+        <div class="import-json-box"><label class="btn ghost" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px"><span>📥</span> Importa da file (testo semplice)<input type="file" id="importJsonFile" accept=".txt,.json,application/json,text/plain" style="display:none" onchange="importAnalysisFromFile(this.files[0])"></label><span class="field-note" style="margin-left:10px">Carica un semplice file di testo (nessun codice) con tutti i dati — vedi il modello scaricabile per il formato esatto</span></div>
         <div class="step-head"><span class="step-num">1</span><div><b>Informazioni principali</b><small>Titolo, categoria e descrizione · appaiono sulla card e in cima alla pagina dell'analisi</small></div></div><div class="two">
           <label>Titolo<input id="title" placeholder="Titolo dell’analisi"><div class="field-note">Titolo corto con hook che apparirà sulla scheda</div></label>
           <label>Slug<input id="slug" placeholder="nome-attivita"><div class="field-note">Nome tecnico del link · senza spazi · esempio nome-attivita</div></label>
@@ -688,8 +689,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607232059"></script>
-<script src="app.js?v=202607232059"></script>
+ <script src="supabase-data.js?v=202607232128"></script>
+<script src="app.js?v=202607232128"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1296,6 +1297,102 @@ function renderSectionsEditor(){
 function collectSections(){syncSectionDrafts();return _sectionDrafts.filter(x=>x.title||x.content).map((x,i)=>({...x,section_order:i}))}
 
 function normalizeSlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
+function parseSimpleTextFormat(text){
+  const lines=text.split(/\r?\n/)
+  const data={sections:[]}
+  const fieldMap={
+    "titolo":"title","categoria":"category_name","slug":"slug","emoji":"emoji",
+    "descrizione breve":"short_description","video":"video_url","link video":"video_url",
+    "conclusione":"conclusion","investimento":"investment_display","profitto":"profit_display",
+    "tempo di rientro":"payback_display","verdetto":"verdict","punteggio":"bizscan_score",
+    "rischio":"risk_score","prezzo":"price","etichetta":"card_label","tag":"tags",
+    "in evidenza":"featured","popolare":"popular","tendenza":"trending"
+  }
+  let currentSection=null
+  let mode="header"
+  for(const rawLine of lines){
+    const line=rawLine.trim()
+    const sectionMatch=line.match(/^-{2,}\s*SEZIONE\s*:\s*(.+?)\s*-{2,}$/i)
+    if(sectionMatch){
+      if(currentSection)data.sections.push(currentSection)
+      currentSection={title:sectionMatch[1].trim(),is_free:true,content:""}
+      mode="section-meta"
+      continue
+    }
+    if(currentSection){
+      const accessMatch=line.match(/^accesso\s*:\s*(.+)$/i)
+      if(mode==="section-meta" && accessMatch){
+        currentSection.is_free=!/premium/i.test(accessMatch[1])
+        mode="section-content"
+        continue
+      }
+      mode="section-content"
+      currentSection.content+=(currentSection.content?"\n":"")+rawLine
+      continue
+    }
+    const fieldMatch=line.match(/^([^:]+):\s*(.*)$/)
+    if(fieldMatch){
+      const label=fieldMatch[1].trim().toLowerCase()
+      const value=fieldMatch[2].trim()
+      const key=fieldMap[label]
+      if(key){
+        if(key==="tags")data[key]=value.split(",").map(x=>x.trim()).filter(Boolean)
+        else if(["featured","popular","trending"].includes(key))data[key]=/^(s[iì]|yes|true|1)$/i.test(value)
+        else data[key]=value
+      }
+    }
+  }
+  if(currentSection)data.sections.push(currentSection)
+  data.sections.forEach(s=>{s.content=s.content.trim()})
+  return data
+}
+function setValIfExists(id,v){const el=document.getElementById(id);if(el!=null&&v!==undefined&&v!==null)el.value=v}
+async function importAnalysisFromFile(file){
+  if(!file)return
+  try{
+    const text=await file.text()
+    let data
+    try{data=JSON.parse(text)}catch(_){data=parseSimpleTextFormat(text)}
+    setValIfExists("title",data.title||"")
+    setValIfExists("slug",data.slug||normalizeSlug(data.title||""))
+    setValIfExists("emoji",data.emoji||"")
+    setValIfExists("summary",data.short_description||data.summary||"")
+    setValIfExists("videoUrl",data.video_url||"")
+    setValIfExists("conclusion",data.conclusion||"")
+    setValIfExists("score",data.bizscan_score??"")
+    setValIfExists("risk",data.risk_score??"")
+    setValIfExists("investment",data.investment_display||data.investment||"")
+    setValIfExists("profit",data.profit_display||data.profit||"")
+    setValIfExists("payback",data.payback_display||data.payback||"")
+    setValIfExists("cardBadge",data.card_label||"")
+    setValIfExists("price",data.price??"")
+    setValIfExists("tags",Array.isArray(data.tags)?data.tags.join(", "):(data.tags||""))
+    if(data.verdict){
+      const verdictSelect=document.getElementById("verdict")
+      const labelMap={conviene:"Conviene",dipende:"Dipende",non_conviene:"Non conviene"}
+      const wanted=labelMap[data.verdict]||data.verdict
+      for(const opt of verdictSelect.options){if(opt.value===wanted||opt.text===wanted){verdictSelect.value=opt.value;break}}
+    }
+    if(data.category_name){
+      const catSelect=document.getElementById("category")
+      for(const opt of catSelect.options){if(opt.text.trim().toLowerCase()===String(data.category_name).trim().toLowerCase()){catSelect.value=opt.value;break}}
+    }
+    if(typeof data.featured==="boolean")document.getElementById("featured").checked=data.featured
+    if(typeof data.popular==="boolean")document.getElementById("popular").checked=data.popular
+    if(typeof data.trending==="boolean")document.getElementById("trending").checked=data.trending
+    if(Array.isArray(data.sections)&&data.sections.length){
+      _sectionDrafts=[]
+      data.sections.forEach(s=>addSectionRow(s))
+    }
+    preview()
+    toast("Dati importati — controlla e completa prima di salvare")
+  }catch(e){
+    console.error("import error",e)
+    alert("File non valido. Assicurati che sia un JSON nel formato corretto.\n\n"+(e.message||""))
+  }finally{
+    document.getElementById("importJsonFile").value=""
+  }
+}
 function buildAnalysisPayload(id){
   const inv=parseNumberRange(val("investment")),prof=parseNumberRange(getProfitValue()),pb=paybackMonths(val("payback"))
   return {
@@ -1925,5 +2022,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607232059"></script></body>
+<script src="shell-ui.js?v=202607232128"></script></body>
 </html>
