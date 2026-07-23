@@ -279,7 +279,7 @@ function renderHome(){
 
   <section class="home18-section">
    <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html">Tutte le categorie</a></div>
-   <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?q=${encodeURIComponent(n)}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
+   <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?category=${encodeURIComponent(n.toLowerCase())}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
   </section>
 
   <section class="home18-section">
