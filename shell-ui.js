@@ -169,4 +169,60 @@
   window.__bizscanSetupFooter=setupFooter;
 
   document.addEventListener('DOMContentLoaded',function(){setupHeader()});
+
+  // --- Installazione app (PWA) ---
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  }
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function dismissedRecently(){
+    var t=localStorage.getItem('bizscan_install_dismissed');
+    if(!t)return false;
+    return (Date.now()-Number(t)) < 1000*60*60*24*14; // 14 giorni
+  }
+  function showInstallBar(html,onClickInstall){
+    if(document.getElementById('pwaInstallBar'))return;
+    var bar=document.createElement('div');
+    bar.id='pwaInstallBar';
+    bar.className='pwa-install-bar';
+    bar.innerHTML='<img src="/icon-192.png" alt="BizScan"><div class="pwa-install-text">'+html+'</div><button type="button" class="pwa-install-btn" id="pwaInstallBtn">Installa</button><button type="button" class="pwa-install-close" id="pwaInstallClose" aria-label="Chiudi">×</button>';
+    document.body.prepend(bar);
+    document.getElementById('pwaInstallClose').onclick=function(){
+      bar.remove();
+      localStorage.setItem('bizscan_install_dismissed',String(Date.now()));
+    };
+    if(onClickInstall){
+      document.getElementById('pwaInstallBtn').onclick=onClickInstall;
+    }else{
+      document.getElementById('pwaInstallBtn').style.display='none';
+    }
+  }
+
+  if(!isStandalone() && !dismissedRecently()){
+    var deferredPrompt=null;
+    window.addEventListener('beforeinstallprompt',function(e){
+      e.preventDefault();
+      deferredPrompt=e;
+      showInstallBar('<b>Installa BizScan</b><small>Accesso rapido, come app</small>',function(){
+        if(!deferredPrompt)return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function(){
+          deferredPrompt=null;
+          var bar=document.getElementById('pwaInstallBar');
+          if(bar)bar.remove();
+        });
+      });
+    });
+    if(isIOS() && !window.navigator.standalone){
+      showInstallBar('<b>Installa BizScan</b><small>Tocca <b>Condividi</b> poi <b>Aggiungi a Home</b></small>',null);
+    }
+  }
 })();
