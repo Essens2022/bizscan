@@ -686,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607230110"></script>
-<script src="app.js?v=202607230110"></script>
+ <script src="supabase-data.js?v=202607230120"></script>
+<script src="app.js?v=202607230120"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -842,20 +842,33 @@ window.saveCarouselTransition=async()=>{
   if(error)alert("Errore: "+error.message)
 }
 async function loadHeroMedia(){
+  const host=document.getElementById("heroMediaList")
+  if(host)host.innerHTML='<p style="color:#ffb703;font-size:13px;font-weight:800">⏳ Caricamento in corso…</p>'
   try{
     const{data,error}=await supabaseClient.rpc("admin_list_hero_media")
-    if(error){console.error("❌ ERRORE loadHeroMedia (RPC):",error);return}
+    if(error){
+      console.error("❌ ERRORE loadHeroMedia (RPC):",error)
+      if(host)host.innerHTML=`<p style="color:#ff5a67;font-size:13px;font-weight:800">❌ ERRORE dal server: ${esc(error.message||JSON.stringify(error))}</p>`
+      return
+    }
     _heroMedia=(data||[]).sort((a,b)=>a.order_index-b.order_index)
-    if(!document.getElementById("heroMediaList"))console.error("❌ ERRORE: elemento #heroMediaList non trovato nella pagina")
+    if(!host){alert("❌ ERRORE: elemento #heroMediaList non trovato nella pagina - contattare lo sviluppatore");return}
+    if(!Array.isArray(data)){
+      host.innerHTML=`<p style="color:#ff5a67;font-size:13px;font-weight:800">❌ Risposta inattesa dal server (non è una lista): ${esc(JSON.stringify(data))}</p>`
+      return
+    }
     renderHeroMediaList()
     renderAdminLivePreview()
   }catch(e){
-    console.error("❌ ERRORE CRITICO in loadHeroMedia:",e);alert("Errore nel caricamento del carosello: "+(e.message||e))
+    console.error("❌ ERRORE CRITICO in loadHeroMedia:",e)
+    if(host)host.innerHTML=`<p style="color:#ff5a67;font-size:13px;font-weight:800">❌ ERRORE CRITICO: ${esc(e.message||String(e))}</p>`
   }
 }
 function renderHeroMediaList(){
   const host=document.getElementById("heroMediaList");if(!host)return
-  host.innerHTML=_heroMedia.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">${_heroMedia.map((m,i)=>`
+  try{
+  const countLabel=`<p style="color:#8ff5c2;font-size:11px;margin:0 0 10px;font-weight:700">✓ ${_heroMedia.length} element${_heroMedia.length===1?'o':'i'} ricevut${_heroMedia.length===1?'o':'i'} dal server</p>`
+  host.innerHTML=countLabel+(_heroMedia.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">${_heroMedia.map((m,i)=>`
     <div class="panel" style="padding:10px;position:relative">
       <div style="position:absolute;top:16px;left:16px;z-index:2;background:#ffb703;color:#111;font-weight:900;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center">${i+1}</div>
       <div style="position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#000;margin-bottom:8px">
@@ -872,7 +885,11 @@ function renderHeroMediaList(){
       <label class="btn dark full" style="font-size:11px;padding:8px;cursor:pointer">Sostituisci<input type="file" accept="image/*,video/*" style="display:none" onchange="replaceHeroMediaFile('${m.id}',this)"></label>
       <button class="btn danger full" type="button" onclick="deleteHeroMedia('${m.id}')" style="font-size:11px;padding:8px;margin-top:6px;font-weight:800">✕ Elimina</button>
     </div>`).join("")}</div>`
-    :'<p style="color:var(--muted);font-size:12px">Nessun media aggiunto - il carosello non verrà mostrato sul sito</p>'
+    :'<p style="color:var(--muted);font-size:12px">Nessun media aggiunto - il carosello non verrà mostrato sul sito</p>')
+  }catch(e){
+    console.error("❌ ERRORE nel rendering di renderHeroMediaList:",e)
+    host.innerHTML=`<p style="color:#ff5a67;font-size:13px;font-weight:800">❌ ERRORE nel disegnare la lista: ${esc(e.message||String(e))}</p>`
+  }
 }
 async function saveHeroMediaEntry(media_type,url){
   const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:null,p_media_type:media_type,p_url:url,p_link_url:null,p_order_index:_heroMedia.length,p_is_active:true})
@@ -1903,5 +1920,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607230110"></script></body>
+<script src="shell-ui.js?v=202607230120"></script></body>
 </html>
