@@ -7,7 +7,8 @@
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:82px}
 a{text-decoration:none;color:inherit}button,input,select{font:inherit}button{cursor:pointer}
-.app{max-width:1180px;margin:auto}
+.app{max-width:1180px;margin:auto;padding-top:106px}
+@media(max-width:680px){.app{padding-top:91px}}
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(9,11,15,.92);backdrop-filter:blur(18px);border-bottom:1px solid rgba(43,48,58,.8)}
 .brand{display:flex;align-items:center;gap:9px;font-weight:950;font-size:21px}.brand img{width:40px;height:40px;border-radius:50%;object-fit:cover}.brand b{color:var(--yellow)}
 .top-actions{display:flex;gap:8px}.icon-btn{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);background:var(--panel);color:#fff}
