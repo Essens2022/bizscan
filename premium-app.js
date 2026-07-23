@@ -363,7 +363,12 @@ function analysisOverview(p){
   if(key==='indicators')return html;
   if(toolUnlocked(key))return html;
   const titles={scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'};
-  return renderLockedToolCard(titles[key],null,key);
+  const descriptions={
+   scenario:'Profitto stimato in tre scenari — prudente, realistico e ottimistico — con fatturato, utile netto e ROI per ciascuno.',
+   benchmark:'Come si posiziona questa attività rispetto alla media del settore, su ROI, margine, tempo di recupero e rischio.',
+   distribuzione_costi:'Dove vanno esattamente i soldi dell\'investimento iniziale, ripartiti per voce di spesa.'
+  };
+  return renderLockedToolCard(titles[key],descriptions[key],key);
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
