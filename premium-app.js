@@ -278,6 +278,11 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
+   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html">Tutte le categorie</a></div>
+   <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?q=${encodeURIComponent(n)}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
+  </section>
+
+  <section class="home18-section">
    <div class="home18-head"><div><small>PIATTAFORMA</small><h2>Strumenti di analisi</h2></div><a href="search.html?tools=1">Apri tutti gli strumenti</a></div>
    <div class="home18-dashboard">
     <article class="home18-score-card">
@@ -313,11 +318,6 @@ function renderHome(){
    </div>
    <div class="home18-lock-badge"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5" fill="currentColor"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="15.3" r="1.6" fill="#1a0f38"/></svg></div>
    <a href="pricing.html">Scopri i dati premium con BizScan Plus</a>
-  </section>
-
-  <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html">Tutte le categorie</a></div>
-   <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?q=${encodeURIComponent(n)}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
   </section>
 
   <section class="home18-how">
