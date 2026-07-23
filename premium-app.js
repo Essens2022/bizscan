@@ -361,9 +361,24 @@ function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const
  const metaDesc=document.querySelector('meta[name="description"]');
  const descText=`${p.title}: ${p.summary||'analisi completa'}. Investimento ${p.investment||'-'}, ROI ${p.roi||'-'}, tempo di recupero ${p.payback||'-'}. Scopri se conviene aprire questa attività su BizScan.`.slice(0,300);
  if(metaDesc)metaDesc.setAttribute('content',descText);
+ const ogImage=p.wideCover||p.coverUrl||'https://bizscan.it/favicon.png';
+ const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.setAttribute('content',`${p.title} | BizScan`);
+ const ogDesc=document.querySelector('meta[property="og:description"]');if(ogDesc)ogDesc.setAttribute('content',descText);
+ const ogImg=document.querySelector('meta[property="og:image"]');if(ogImg)ogImg.setAttribute('content',ogImage);
+ const ogUrl=document.querySelector('meta[property="og:url"]');if(ogUrl)ogUrl.setAttribute('content',`https://bizscan.it/analysis.html?slug=${p.slug}`);
  let canonical=document.querySelector('link[rel="canonical"]');
  if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.appendChild(canonical)}
  canonical.href=`https://bizscan.it/analysis.html?slug=${encodeURIComponent(p.slug)}`;
+ let ld=document.getElementById('analysisLd');
+ if(!ld){ld=document.createElement('script');ld.type='application/ld+json';ld.id='analysisLd';document.head.appendChild(ld)}
+ ld.textContent=JSON.stringify({
+  '@context':'https://schema.org','@type':'Article',
+  headline:p.title,description:(p.summary||'').slice(0,200),
+  image:p.wideCover||p.coverUrl||'https://bizscan.it/favicon.png',
+  author:{'@type':'Organization',name:'BizScan'},
+  publisher:{'@type':'Organization',name:'BizScan',logo:{'@type':'ImageObject',url:'https://bizscan.it/favicon.png'}},
+  mainEntityOfPage:{'@type':'WebPage','@id':`https://bizscan.it/analysis.html?slug=${p.slug}`}
+ });
  host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
 function analysisOverview(p){
  const d=(p&&p.display)||{};
