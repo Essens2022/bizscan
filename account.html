@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607231440"><link rel="stylesheet" href="premium.css?v=202607231440"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607231447"><link rel="stylesheet" href="premium.css?v=202607231447"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -13,11 +13,38 @@
 
 <section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
 
-<section class="section" id="accountContent" style="display:none"><div id="accountSummary" class="card" style="display:block"><div class="card-body"><h3>Riepilogo account</h3><p>Caricamento…</p></div></div>
-<div class="card" style="display:block;margin-top:14px"><div class="card-body"><h3>Storico acquisti</h3><p style="color:#8d99aa;font-size:12px;margin:6px 0 12px">Consulta tutte le tue fatture e i tuoi acquisti passati</p><a class="btn ghost" href="invoices.html">🧾 Vai a Fatturazione</a></div></div>
+<section class="section" id="accountLoading"><div class="account-card account-skel"><div class="skel-line" style="width:60%;height:22px"></div><div class="skel-line" style="width:40%;margin-top:10px"></div></div><div class="account-card account-skel"><div class="skel-line" style="width:30%;height:16px"></div><div class="skel-row"><div class="skel-block"></div><div class="skel-block"></div><div class="skel-block"></div></div></div></section>
+
+<section class="section" id="accountContent" style="display:none">
+  <div class="account-card account-profile-card">
+    <div class="account-avatar">👤</div>
+    <div class="account-profile-info"><h2 id="accProfileName">—</h2><p id="accProfileEmail">—</p></div>
+  </div>
+
+  <div class="account-card account-plan-card" id="accPlanCard">
+    <div class="account-plan-head"><small>PIANO ATTIVO</small><span class="account-plan-badge" id="accPlanBadge">—</span></div>
+    <div class="account-stats-row">
+      <div><b id="accCreditsAnalysis">0</b><small>Crediti analisi</small></div>
+      <div><b id="accCreditsPdf">0</b><small>Crediti PDF</small></div>
+      <div><b id="accUnlockedCount">0</b><small>Analisi sbloccate</small></div>
+    </div>
+    <a class="btn gold full" href="pricing.html">Gestisci pacchetto</a>
+  </div>
+
+  <div class="account-card account-links-card">
+    <a href="invoices.html"><span>🧾</span><b>Fatturazione</b><small>Storico acquisti</small></a>
+    <a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b><small>Le tue analisi salvate</small></a>
+    <a href="library.html?view=reports"><span>📄</span><b>I miei report</b><small>PDF scaricati</small></a>
+  </div>
+
+  <div class="account-card account-danger-card">
+    <small>ZONA SENSIBILE</small>
+    <button id="logoutBtn" class="btn dark full" onclick="logoutSupabase()">Esci dall'account</button>
+    <button id="deleteAccountBtn" class="btn full account-delete-btn" style="display:none" onclick="confirmDeleteAccountStep1()">Elimina il mio account</button>
+  </div>
 </section>
 
-  <section class="section" id="authSection">
+  <section class="section" id="authSection" style="display:none">
   <div class="card" style="display:block;max-width:520px">
     <div class="card-body">
       <div class="auth-tabs" id="authTabs" style="display:none">
@@ -54,17 +81,6 @@
         </button>
       </div>
 
-      <button id="logoutBtn" class="btn dark full"
-              style="display:none;margin-top:10px"
-              onclick="logoutSupabase()">
-        Esci
-      </button>
-
-      <button id="deleteAccountBtn" class="btn full" style="display:none;margin-top:24px;background:transparent;border:1px solid #5a2530;color:#ff8a8a"
-              onclick="confirmDeleteAccountStep1()">
-        Elimina il mio account
-      </button>
-
       <p id="authMessage" style="margin-top:12px"></p>
       <div id="signupSuccessCard" style="display:none;margin-top:14px;padding:20px;border-radius:14px;background:linear-gradient(135deg,#0f3d2b,#0a2a1e);border:1px solid #2dd4a7;text-align:center">
         <div style="font-size:32px">✅</div>
@@ -87,8 +103,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607231440"></script>
-<script src="app.js?v=202607231440"></script>
+<script src="supabase-data.js?v=202607231447"></script>
+<script src="app.js?v=202607231447"></script>
 
 <script>
 async function waitForSupabase() {
@@ -239,42 +255,60 @@ async function updateAuthView() {
   const { data } = await supabaseClient.auth.getSession()
   const logged = Boolean(data.session)
 
-  document.getElementById("logoutBtn").style.display =
-  logged ? "block" : "none"
+  document.documentElement.classList.remove('maybe-logged-in')
+  document.querySelectorAll('.home18-head-icon[aria-label="Profilo"]').forEach(el=>{
+    el.classList.toggle('account-icon-active', !!logged)
+  })
 
-document.getElementById("accountContent").style.display =
-  logged ? "block" : "none"
+  if(!logged){
+    document.getElementById("accountLoading").style.display="none"
+    document.getElementById("accountContent").style.display="none"
+    document.getElementById("authSection").style.display="block"
+    document.getElementById("authTabs").style.display="flex"
+    document.getElementById("loginPanel").style.display=document.getElementById("authTabLogin").classList.contains('active')?"block":"none"
+    document.getElementById("signupPanel").style.display=document.getElementById("authTabSignup").classList.contains('active')?"block":"none"
+    document.getElementById("authMessage").textContent=""
+    return
+  }
 
-document.documentElement.classList.remove('maybe-logged-in')
-document.querySelectorAll('.home18-head-icon[aria-label="Profilo"]').forEach(el=>{
-  el.classList.toggle('account-icon-active', !!logged)
-})
+  // Utente loggato: raccogliamo TUTTO in parallelo, poi mostriamo il risultato in un solo passaggio -
+  // niente più pezzi che appaiono uno alla volta.
+  const user = data.session.user
+  const [summaryResult, adminResult] = await Promise.allSettled([
+    BizScanData.accessSummary(),
+    supabaseClient.rpc("is_admin")
+  ])
+  const summary = summaryResult.status==='fulfilled' ? summaryResult.value : {}
+  const isAdmin = adminResult.status==='fulfilled' ? Boolean(adminResult.value.data) : false
 
-let _isAdminUser=false
-if(logged){
-  try{const{data:isAdmin}=await supabaseClient.rpc("is_admin");_isAdminUser=Boolean(isAdmin)}catch(e){console.error(e)}
-}
-document.getElementById("deleteAccountBtn").style.display =
-  (logged && !_isAdminUser) ? "block" : "none"
+  const planKey = summary.plan && summary.plan!=='free' ? summary.plan : null
+  const planColors = {single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'}
+  const planLabel = planKey ? planKey.charAt(0).toUpperCase()+planKey.slice(1) : 'Nessuno'
+  const planColor = planKey ? (planColors[planKey]||'#ffb400') : '#4a5568'
 
-document.getElementById("authTabs").style.display =
-  logged ? "none" : "flex"
+  const fn = user.user_metadata?.first_name||''
+  const ln = user.user_metadata?.last_name||''
+  const fullName = (fn+' '+ln).trim()
 
-document.getElementById("loginPanel").style.display =
-  logged ? "none" : (document.getElementById("authTabLogin").classList.contains('active') ? "block" : "none")
+  document.getElementById("accProfileName").textContent = fullName || user.email
+  document.getElementById("accProfileEmail").textContent = fullName ? user.email : ''
+  document.getElementById("accPlanCard").style.borderLeftColor = planColor
+  document.getElementById("accPlanBadge").textContent = planLabel
+  document.getElementById("accPlanBadge").style.background = planColor+'22'
+  document.getElementById("accPlanBadge").style.color = planColor
+  document.getElementById("accPlanBadge").style.borderColor = planColor
+  document.getElementById("accCreditsAnalysis").textContent = summary.available_credits ?? 0
+  document.getElementById("accCreditsPdf").textContent = summary.available_pdf_credits ?? 0
+  document.getElementById("accUnlockedCount").textContent = summary.unlocked_analyses ?? 0
+  document.getElementById("deleteAccountBtn").style.display = isAdmin ? "none" : "block"
 
-document.getElementById("signupPanel").style.display =
-  logged ? "none" : (document.getElementById("authTabSignup").classList.contains('active') ? "block" : "none")
+  document.getElementById("accountLoading").style.display="none"
+  document.getElementById("authSection").style.display="none"
+  document.getElementById("accountContent").style.display="block"
 
-document.getElementById("authMessage").textContent = logged ? "Account collegato" : ""
-if(logged){
-  try{
-    const summary=await BizScanData.accessSummary(); const user=data.session.user;
-    const planLabel=summary.plan&&summary.plan!=='free'?String(summary.plan).charAt(0).toUpperCase()+String(summary.plan).slice(1):'Nessuno'
-    const fn=user.user_metadata?.first_name||'';const ln=user.user_metadata?.last_name||'';const fullName=(fn+' '+ln).trim();
-    document.getElementById("accountSummary").innerHTML=`<div class="card-body">${fullName?`<h3>${fn} ${ln}</h3><p style="opacity:.75;margin-top:-6px">${user.email}</p>`:`<h3>${user.email}</h3>`}<p style="margin-top:14px">Piano attivo: <strong>${planLabel}</strong></p><p>Crediti analisi disponibili: <strong>${summary.available_credits??0}</strong></p><p>Crediti report PDF disponibili: <strong>${summary.available_pdf_credits??0}</strong></p><p>Analisi sbloccate: <strong>${summary.unlocked_analyses??0}</strong></p></div>`
-  }catch(e){console.error(e)}
-}
+  if(isAdmin){
+    location.href="admin.html"
+  }
 }
 
 let _deleteStep=0
@@ -336,5 +370,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607231440CACHEV"></script><script src="cookie-consent.js?v=202607231440"></script></body>
+<script src="shell-ui.js?v=202607231447CACHEV"></script><script src="cookie-consent.js?v=202607231447"></script></body>
 </html>
