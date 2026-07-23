@@ -646,7 +646,12 @@ window._doDownloadReport=async slug=>{
   }
   const url=await BizScanData.signedAttachmentUrl(pdf);
   const viewerUrl='pdf-viewer.html?url='+encodeURIComponent(url)+'&slug='+encodeURIComponent(slug)+'&title='+encodeURIComponent(p?.title||'');
-  window.open(viewerUrl,'_blank','noopener');
+  const isStandaloneApp=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  if(isStandaloneApp){
+   location.href=viewerUrl;
+  }else{
+   window.open(viewerUrl,'_blank','noopener');
+  }
   if(!result.is_free){
    toast('✓ PDF sbloccato — credito utilizzato');
    try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}

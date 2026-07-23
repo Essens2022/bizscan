@@ -47,7 +47,10 @@ body{display:flex;flex-direction:column;height:100dvh}
         a.href=blobUrl;a.download=safeName+'.pdf';
         document.body.appendChild(a);a.click();a.remove();
         setTimeout(function(){URL.revokeObjectURL(blobUrl)},4000);
-      }).catch(function(){window.open(pdfUrl,'_blank','noopener')});
+      }).catch(function(){
+        var isStandaloneApp=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+        if(isStandaloneApp){location.href=pdfUrl}else{window.open(pdfUrl,'_blank','noopener')}
+      });
     });
   }else if(downloadBtn){
     downloadBtn.remove();
@@ -57,7 +60,9 @@ body{display:flex;flex-direction:column;height:100dvh}
   var loadingEl=document.getElementById('pdfLoading');
 
   function showFallback(){
-    scrollHost.outerHTML='<div class="pdf-fallback"><p>Non è stato possibile visualizzare il report qui.</p><a href="'+(pdfUrl||'#')+'" target="_blank" rel="noopener">Apri il PDF direttamente</a></div>';
+    var isStandaloneApp=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+    var linkAttrs=isStandaloneApp?'':' target="_blank" rel="noopener"';
+    scrollHost.outerHTML='<div class="pdf-fallback"><p>Non è stato possibile visualizzare il report qui.</p><a href="'+(pdfUrl||'#')+'"'+linkAttrs+'>Apri il PDF direttamente</a></div>';
   }
 
   if(!pdfUrl){showFallback();return}
