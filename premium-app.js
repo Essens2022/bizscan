@@ -743,15 +743,37 @@ function renderSearch(){
  attachSearchSuggestions(box,{onPick:slug=>location.href='analysis.html?slug='+encodeURIComponent(slug)});
  renderCatalogResults();
 }
-function renderLibrary(){
+function pdfReportCard(r){
+ const cover=r.coverUrl?`<img src="${esc(r.coverUrl)}" alt="" loading="lazy">`:`<div class="pdf-report-emoji">${r.emoji}</div>`;
+ return `<article class="business-card pdf-report-card" onclick="window._doDownloadReport('${esc(r.slug)}')">
+  <div class="business-cover">${cover}<span class="pdf-report-badge">📄 PDF</span></div>
+  <div class="business-body"><h3>${esc(r.title)}</h3><small>Tocca per aprire il report PDF</small></div>
+ </article>`;
+}
+async function renderLibrary(){
  const host=$('#libraryContent');if(!host)return;
  const view=(new URLSearchParams(location.search).get('view')||'favorites');
  const isReports=view==='reports';
- const arr=isReports?analyses.filter(p=>p.has_access):analyses.filter(p=>favorites.includes(p.slug));
  const title=isReports?'I miei report':'Preferiti';
- const subtitle=isReports?'Le analisi complete sbloccate nel tuo account':'Le attività che hai salvato per dopo';
- const emptyMsg=isReports?'Non hai ancora sbloccato nessuna analisi completa':'Non hai ancora salvato nessuna attività';
- host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="${!isReports?'active':''}">Preferiti</a><a href="library.html?view=reports" class="${isReports?'active':''}">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results">${arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`}</div>`
+ const subtitle=isReports?'I report PDF sbloccati e le analisi complete nel tuo account':'Le attività che hai salvato per dopo';
+ const emptyMsg=isReports?'Non hai ancora sbloccato nessun report':'Non hai ancora salvato nessuna attività';
+ if(!isReports){
+  const arr=analyses.filter(p=>favorites.includes(p.slug));
+  host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="active">Preferiti</a><a href="library.html?view=reports" class="">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results">${arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`}</div>`
+  return;
+ }
+ host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="">Preferiti</a><a href="library.html?view=reports" class="active">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>`;
+ const grid=host.querySelector('.business-grid');
+ try{
+  const pdfReports=await BizScanData.fetchMyPdfReports();
+  const pdfSlugs=new Set(pdfReports.map(r=>r.slug));
+  const fullAccessOnly=analyses.filter(p=>p.has_access && !pdfSlugs.has(p.slug));
+  const html=pdfReports.map(pdfReportCard).join('')+fullAccessOnly.map(card).join('');
+  grid.innerHTML=html||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;
+ }catch(e){
+  console.error('pdf reports error',e);
+  grid.innerHTML=`<div class="empty"><h2>Non è stato possibile caricare i report</h2><p>Riprova più tardi</p></div>`;
+ }
 }
 function renderPricing(){
  const host=$('#pricingContent')

@@ -30,6 +30,21 @@ async function fetchPlans(){const c=await getSupabaseClient();const{data,error}=
 async function session(){const c=await getSupabaseClient();const{data,error}=await c.auth.getSession();if(error)throw error;return data.session}
 async function currentUser(){return(await session())?.user||null}
 async function fetchFavorites(){const c=await getSupabaseClient();const u=await currentUser();if(!u)return[];const{data,error}=await c.from("favorites").select("analysis_id,analyses(slug)").eq("user_id",u.id);if(error)throw error;return(data||[]).map(x=>x.analyses?.slug).filter(Boolean)}
+async function fetchMyPdfReports(){
+  const c=await getSupabaseClient();const u=await currentUser();if(!u)return[];
+  const nowIso=new Date().toISOString();
+  const{data,error}=await c.from("pdf_unlocks").select("created_at,expires_at,attachments(analysis_id,analyses(slug,title,emoji,attachments(type,file_url)))").eq("user_id",u.id).order("created_at",{ascending:false});
+  if(error)throw error;
+  const seen=new Set();const out=[];
+  for(const row of(data||[])){
+    if(row.expires_at && row.expires_at<nowIso)continue;
+    const a=row.attachments?.analyses;if(!a||!a.slug||seen.has(a.slug))continue;
+    seen.add(a.slug);
+    const cover=(a.attachments||[]).find(x=>x&&x.type==="cover"&&x.file_url);
+    out.push({slug:a.slug,title:a.title,emoji:a.emoji||"📊",coverUrl:cover?.file_url||""});
+  }
+  return out;
+}
 async function setFavorite(analysisId,enabled){const c=await getSupabaseClient();const u=await currentUser();if(!u)throw new Error("AUTH_REQUIRED");if(enabled){const{error}=await c.from("favorites").upsert({user_id:u.id,analysis_id:analysisId},{onConflict:"user_id,analysis_id"});if(error)throw error}else{const{error}=await c.from("favorites").delete().eq("user_id",u.id).eq("analysis_id",analysisId);if(error)throw error}}
 async function accessSummary(){const c=await getSupabaseClient();const u=await currentUser();if(!u)return{authenticated:false,credits:0,available_credits:0,available_pdf_credits:0,plan:'free',unlocked_analyses:0,subscription_active:false,unlocked:[],unlocked_tools:['score','investimento','rischio','rientro']};const[{data:s,error:e1},{data:urows,error:e2}]=await Promise.all([c.rpc("get_my_access_summary"),c.from("analysis_unlocks").select("analysis_id,source,expires_at,analyses(slug,title,emoji)").eq("user_id",u.id)]);if(e1)throw e1;if(e2)throw e2;const summary=Array.isArray(s)?s[0]:(s||{});const availCredits=Number(summary.available_credits??summary.credits??0);return{authenticated:true,credits:availCredits,available_credits:availCredits,available_pdf_credits:Number(summary.available_pdf_credits??0),plan:summary.plan||'free',unlocked_analyses:Number(summary.unlocked_analyses??0),subscription_active:Boolean(summary.has_active_subscription??summary.subscription_active),has_active_subscription:Boolean(summary.has_active_subscription??summary.subscription_active),subscription_end:summary.subscription_end||null,unlocked:urows||[],unlocked_tools:Array.isArray(summary.unlocked_tools)?summary.unlocked_tools:['score','investimento','rischio','rientro']}}
 async function hasAccess(analysisId){const c=await getSupabaseClient();const u=await currentUser();if(!u)return false;const{data,error}=await c.rpc("has_analysis_access",{p_analysis_id:analysisId});if(error)throw error;return Boolean(data)}
@@ -71,4 +86,4 @@ async function fetchHeroMedia(){const c=await getSupabaseClient();const{data,err
 async function fetchHeroPhrases(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_hero_phrases");if(error)throw error;return data||[]}
 async function fetchHeroSettings(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_get_hero_settings");if(error)throw error;return data||{carousel_transition:'fade'}}
 async function fetchMyOrders(){const c=await getSupabaseClient();const{data,error}=await c.rpc("get_my_orders");if(error)throw error;return data||[]}
-window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders,getCompareAdviceStatus,unlockCompareAdvice};
+window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders,getCompareAdviceStatus,unlockCompareAdvice,fetchMyPdfReports};
