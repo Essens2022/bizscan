@@ -689,8 +689,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607232128"></script>
-<script src="app.js?v=202607232128"></script>
+ <script src="supabase-data.js?v=202607232146"></script>
+<script src="app.js?v=202607232146"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1388,7 +1388,7 @@ async function importAnalysisFromFile(file){
     toast("Dati importati — controlla e completa prima di salvare")
   }catch(e){
     console.error("import error",e)
-    alert("File non valido. Assicurati che sia un JSON nel formato corretto.\n\n"+(e.message||""))
+    alert("Errore durante l'importazione.\n\nTipo: "+(e.name||"sconosciuto")+"\nMessaggio: "+(e.message||"nessun dettaglio")+"\n\nCopia questo testo e mandalo per verificare cosa non va.")
   }finally{
     document.getElementById("importJsonFile").value=""
   }
@@ -2022,5 +2022,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607232128"></script></body>
+<script src="shell-ui.js?v=202607232146"></script></body>
 </html>
