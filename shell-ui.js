@@ -183,10 +183,8 @@
   function isIOS(){
     return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   }
-  function dismissedRecently(){
-    var t=localStorage.getItem('bizscan_install_dismissed');
-    if(!t)return false;
-    return (Date.now()-Number(t)) < 1000*60*60*24*14; // 14 giorni
+  function dismissedPermanently(){
+    return localStorage.getItem('bizscan_install_dismissed')==='1';
   }
   function showInstallBar(html,onClickInstall){
     if(document.getElementById('pwaInstallBar'))return;
@@ -197,7 +195,7 @@
     document.body.prepend(bar);
     document.getElementById('pwaInstallClose').onclick=function(){
       bar.remove();
-      localStorage.setItem('bizscan_install_dismissed',String(Date.now()));
+      localStorage.setItem('bizscan_install_dismissed','1');
     };
     if(onClickInstall){
       document.getElementById('pwaInstallBtn').onclick=onClickInstall;
@@ -206,11 +204,13 @@
     }
   }
 
-  if(!isStandalone() && !dismissedRecently()){
+  if(!isStandalone() && !dismissedPermanently()){
     var deferredPrompt=null;
+    var promptFired=false;
     window.addEventListener('beforeinstallprompt',function(e){
       e.preventDefault();
       deferredPrompt=e;
+      promptFired=true;
       showInstallBar('<b>Installa BizScan</b><small>Accesso rapido, come app</small>',function(){
         if(!deferredPrompt)return;
         deferredPrompt.prompt();
@@ -221,8 +221,20 @@
         });
       });
     });
-    if(isIOS() && !window.navigator.standalone){
-      showInstallBar('<b>Installa BizScan</b><small>Tocca <b>Condividi</b> poi <b>Aggiungi a Home</b></small>',null);
+    // Su iOS, alcune versioni recenti di Chrome supportano beforeinstallprompt come Android;
+    // altre (e Safari) no. Aspettiamo un momento per vedere se l'evento nativo arriva -
+    // altrimenti mostriamo le istruzioni manuali, che coprono sia Safari che Chrome.
+    if(isIOS()){
+      setTimeout(function(){
+        if(!promptFired && !document.getElementById('pwaInstallBar')){
+          showInstallBar('<b>Installa BizScan</b><small>Safari: Condividi → Aggiungi a Home. Chrome: menu ⋮ → Aggiungi a Home</small>',null);
+        }
+      },1200);
     }
+    window.addEventListener('appinstalled',function(){
+      var bar=document.getElementById('pwaInstallBar');
+      if(bar)bar.remove();
+      localStorage.setItem('bizscan_install_dismissed','1');
+    });
   }
 })();
