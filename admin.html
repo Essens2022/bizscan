@@ -622,7 +622,7 @@ textarea{min-height:92px;resize:vertical}
     <div class="card" style="margin-top:18px">
       <h2>Carosello media (in alto nella pagina principale)</h2>
       <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Immagini, GIF o brevi video mostrati a rotazione sopra il titolo. Lascia vuoto per non mostrare nulla.</p>
-      <div id="heroMediaList" style="display:grid;gap:10px;margin-bottom:16px"></div>
+      <div id="heroMediaList" style="margin-bottom:16px"></div>
       <div class="two">
         <label>Tipo<select id="newMediaType"><option value="image">Immagine</option><option value="gif">GIF</option><option value="video">Video</option></select></label>
         <label>Carica un file<input id="newMediaFile" type="file" accept="image/*,video/*" onchange="uploadHeroMediaFile(this)"></label>
@@ -686,8 +686,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607230948"></script>
-<script src="app.js?v=202607230948"></script>
+ <script src="supabase-data.js?v=202607231101"></script>
+<script src="app.js?v=202607231101"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1920,5 +1920,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607230948"></script></body>
+<script src="shell-ui.js?v=202607231101"></script></body>
 </html>
