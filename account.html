@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607231433"><link rel="stylesheet" href="premium.css?v=202607231433"></head><body><div class="app">
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202607231440"><link rel="stylesheet" href="premium.css?v=202607231440"></head><body><div class="app">
 <header class="topbar account-topbar">
   <a class="brand" href="/">
     <img src="favicon.png" alt="BizScan">
@@ -87,8 +87,8 @@
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card"><div class="handle"></div><div id="modalContent"></div></div>
 </div>
-<script src="supabase-data.js?v=202607231433"></script>
-<script src="app.js?v=202607231433"></script>
+<script src="supabase-data.js?v=202607231440"></script>
+<script src="app.js?v=202607231440"></script>
 
 <script>
 async function waitForSupabase() {
@@ -245,6 +245,7 @@ async function updateAuthView() {
 document.getElementById("accountContent").style.display =
   logged ? "block" : "none"
 
+document.documentElement.classList.remove('maybe-logged-in')
 document.querySelectorAll('.home18-head-icon[aria-label="Profilo"]').forEach(el=>{
   el.classList.toggle('account-icon-active', !!logged)
 })
@@ -335,5 +336,5 @@ async function deleteAccountNextStep(){
 updateAuthView()
 </script>
 
-<script src="shell-ui.js?v=202607231433CACHEV"></script><script src="cookie-consent.js?v=202607231433"></script></body>
+<script src="shell-ui.js?v=202607231440CACHEV"></script><script src="cookie-consent.js?v=202607231440"></script></body>
 </html>
