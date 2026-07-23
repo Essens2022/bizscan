@@ -186,22 +186,37 @@
   function dismissedThisSession(){
     return sessionStorage.getItem('bizscan_install_dismissed')==='1';
   }
+  function pushSiteBarsDown(px){
+    var topbar=document.querySelector('.topbar');
+    var backRow=document.querySelector('.page-back-row');
+    if(topbar)topbar.style.top=px+'px';
+    if(backRow)backRow.style.top=(px+ (backRow.dataset.origTop?Number(backRow.dataset.origTop):parseInt(getComputedStyle(backRow).top||'60',10)))+'px';
+  }
+  function restoreSiteBars(){
+    var topbar=document.querySelector('.topbar');
+    var backRow=document.querySelector('.page-back-row');
+    if(topbar)topbar.style.top='';
+    if(backRow)backRow.style.top='';
+  }
   function showInstallBar(html,onClickInstall){
     if(document.getElementById('pwaInstallBar'))return;
+    var backRow=document.querySelector('.page-back-row');
+    if(backRow && !backRow.dataset.origTop){
+      backRow.dataset.origTop=parseInt(getComputedStyle(backRow).top||'60',10);
+    }
     var bar=document.createElement('div');
     bar.id='pwaInstallBar';
     bar.className='pwa-install-bar';
     bar.innerHTML='<img src="/icon-192.png" alt="BizScan"><div class="pwa-install-text">'+html+'</div><button type="button" class="pwa-install-btn" id="pwaInstallBtn">Installa</button><button type="button" class="pwa-install-close" id="pwaInstallClose" aria-label="Chiudi">×</button>';
     document.body.prepend(bar);
+    var barHeight=bar.offsetHeight;
+    pushSiteBarsDown(barHeight);
     document.getElementById('pwaInstallClose').onclick=function(){
       bar.remove();
+      restoreSiteBars();
       sessionStorage.setItem('bizscan_install_dismissed','1');
     };
-    if(onClickInstall){
-      document.getElementById('pwaInstallBtn').onclick=onClickInstall;
-    }else{
-      document.getElementById('pwaInstallBtn').style.display='none';
-    }
+    document.getElementById('pwaInstallBtn').onclick=onClickInstall||triggerInstall;
   }
 
   var deferredPrompt=null;
@@ -218,6 +233,7 @@
   window.addEventListener('appinstalled',function(){
     var bar=document.getElementById('pwaInstallBar');
     if(bar)bar.remove();
+    restoreSiteBars();
   });
 
   function triggerInstall(){
@@ -227,6 +243,7 @@
         deferredPrompt=null;
         var bar=document.getElementById('pwaInstallBar');
         if(bar)bar.remove();
+        restoreSiteBars();
       });
     }else if(isIOS()){
       alert('Per installare BizScan:\n\nSafari: tocca Condividi, poi "Aggiungi a Home".\n\nChrome: tocca il menu ⋮, poi "Aggiungi a Home".');
