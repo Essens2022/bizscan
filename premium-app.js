@@ -395,7 +395,50 @@ function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const
   publisher:{'@type':'Organization',name:'BizScan',logo:{'@type':'ImageObject',url:'https://bizscan.it/favicon.png'}},
   mainEntityOfPage:{'@type':'WebPage','@id':`https://bizscan.it/analysis.html?slug=${p.slug}`}
  });
+ if(p.video_url)attachVideoSchema(p);
  host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
+function attachVideoSchema(p){
+ const url=p.video_url;
+ let videoId=null;
+ let ytMatch=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+ if(ytMatch)videoId=ytMatch[1];
+ const isShort=/\/shorts\//.test(url);
+ const isTikTok=/tiktok\.com/i.test(url);
+ const isInstagramReel=/instagram\.com\/reels?\//i.test(url);
+ const isFacebook=/facebook\.com|fb\.watch/i.test(url);
+ const likelyVertical=isShort||isTikTok||isInstagramReel;
+ const fallbackThumb=p.wideCover||p.coverUrl||'https://bizscan.it/favicon.png';
+ const baseSchema={
+  '@context':'https://schema.org','@type':'VideoObject',
+  name:p.title+' — BizScan',
+  description:(p.summary||'Analisi di business su BizScan').slice(0,200),
+  thumbnailUrl:[fallbackThumb],
+  uploadDate:p.published_at||new Date().toISOString(),
+  contentUrl:url,
+  embedUrl:videoId?`https://www.youtube.com/embed/${videoId}`:url,
+  publisher:{'@type':'Organization',name:'BizScan',logo:{'@type':'ImageObject',url:'https://bizscan.it/favicon.png'}}
+ };
+ function writeSchema(schema){
+  let vld=document.getElementById('videoLd');
+  if(!vld){vld=document.createElement('script');vld.type='application/ld+json';vld.id='videoLd';document.head.appendChild(vld)}
+  vld.textContent=JSON.stringify(schema);
+ }
+ writeSchema(baseSchema);
+ if(videoId){
+  fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`)
+   .then(r=>r.ok?r.json():null)
+   .then(info=>{
+    if(!info)return;
+    const vertical=info.height>info.width;
+    writeSchema({...baseSchema,
+     name:info.title||baseSchema.name,
+     thumbnailUrl:[info.thumbnail_url||fallbackThumb],
+     width:info.width,height:info.height,
+     ...(vertical?{}:{})
+    });
+   }).catch(()=>{});
+ }
+}
 function analysisOverview(p){
  const d=(p&&p.display)||{};
  const gate=(key,html)=>{

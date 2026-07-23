@@ -346,6 +346,7 @@ textarea{min-height:92px;resize:vertical}
     </label>
         </div>
         <label>Descrizione breve<textarea id="summary" placeholder="Costi profitto rischio e tempo di rientro"></textarea><div class="field-note">Massimo una o due righe · appare sotto il titolo</div></label>
+        <label>Link video (YouTube, TikTok, Instagram, Facebook)<input type="url" id="videoUrl" placeholder="https://youtube.com/watch?v=... oppure TikTok/Instagram/Facebook"><div class="field-note">Opzionale · usato solo per la ricerca Google (rich result video), non viene mostrato sulla pagina del prodotto</div></label>
         <div class="step-head"><span class="step-num">2</span><div><b>Numeri chiave</b><small>Score, rischio, investimento e rientro · i primi dati che il cliente vede</small></div></div><div class="three">
           <label>BizScan Score<input id="score" type="number" min="0" max="100" value="80"><div class="field-note">Valutazione generale da 0 a 100</div></label>
           <label>Rischio su 100<input id="risk" type="number" min="0" max="100" value="50"><div class="field-note">0 significa rischio basso · 100 rischio molto alto</div></label>
@@ -687,8 +688,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607231832"></script>
-<script src="app.js?v=202607231832"></script>
+ <script src="supabase-data.js?v=202607231839"></script>
+<script src="app.js?v=202607231839"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1304,6 +1305,7 @@ function buildAnalysisPayload(id){
     slug: normalizeSlug(val("slug")||val("title")),
     emoji: val("emoji")||"📊",
     short_description: val("summary"),
+    video_url: val("videoUrl"),
     conclusion: val("conclusion"),
     bizscan_score: Number(val("score")||0),
     risk_score: Number(val("risk")||0),
@@ -1524,6 +1526,7 @@ async function editAnalysis(id){
   document.getElementById("category").value=x.category_id||""
   document.getElementById("emoji").value=x.emoji||""
   document.getElementById("summary").value=x.short_description||""
+  document.getElementById("videoUrl").value=x.video_url||""
   document.getElementById("score").value=x.bizscan_score??0
   document.getElementById("risk").value=x.risk_score??0
   document.getElementById("order").value=x.order_index??1
@@ -1571,6 +1574,7 @@ async function duplicateAnalysis(id){
     slug:x.slug+"-copia-"+Date.now().toString(36),
     emoji:x.emoji,
     short_description:x.short_description,
+    video_url:x.video_url,
     conclusion:x.conclusion,
     bizscan_score:x.bizscan_score,
     risk_score:x.risk_score,
@@ -1616,7 +1620,7 @@ async function deleteAnalysis(id){
 function minimalPayloadFrom(x){
   return {
     id:x.id,category_id:x.category_id,title:x.title,slug:x.slug,emoji:x.emoji,
-    short_description:x.short_description,conclusion:x.conclusion,
+    short_description:x.short_description,video_url:x.video_url,conclusion:x.conclusion,
     bizscan_score:x.bizscan_score,risk_score:x.risk_score,investment_min:x.investment_min,investment_max:x.investment_max,profit_min:x.profit_min,profit_max:x.profit_max,payback_min_months:x.payback_min_months,payback_max_months:x.payback_max_months,sections:x.sections||[],
     investment_display:x.investment_display,profit_display:x.profit_display,payback_display:x.payback_display,
     verdict:x.verdict,status:x.status,price:x.price,currency:x.currency||"EUR",tags:x.tags||[],card_label:x.card_label,featured:x.featured,homepage:x.homepage,popular:x.popular,trending:x.trending,
@@ -1921,5 +1925,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607231832"></script></body>
+<script src="shell-ui.js?v=202607231839"></script></body>
 </html>
