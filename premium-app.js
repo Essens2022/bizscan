@@ -417,8 +417,7 @@ function lockedCta(toolKey){
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
- const lockIcon='<svg width="14" height="16" viewBox="0 0 14 16" fill="none" style="flex-shrink:0"><path d="M3.2 6.2V4.6a3.8 3.8 0 0 1 7.6 0v1.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"/><rect x="1.4" y="6.2" width="11.2" height="8.4" rx="2.6" fill="currentColor"/><circle cx="7" cy="10" r="1.05" fill="#0d1420"/><rect x="6.55" y="10.6" width="0.9" height="2.1" rx="0.3" fill="#0d1420"/></svg>';
- const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">${lockIcon} Richiede piano ${esc(minPlan)}</span>`:'';
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Richiede piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
   return `${pill}<a href="account.html" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
@@ -436,6 +435,29 @@ function lockedCta(toolKey){
  }
  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Acquista crediti</a>`;
 }
+const PREMIUM_LOCK_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style="margin-bottom:6px">
+<defs>
+  <linearGradient id="goldBorder" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fff3c4"/><stop offset="25%" stop-color="#e8b431"/><stop offset="55%" stop-color="#a9720f"/><stop offset="80%" stop-color="#f2c752"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <radialGradient id="shieldInner" cx="35%" cy="25%" r="80%">
+    <stop offset="0%" stop-color="#1b2430"/><stop offset="60%" stop-color="#0c1017"/><stop offset="100%" stop-color="#04060a"/>
+  </radialGradient>
+  <linearGradient id="lockGold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fff6d8"/><stop offset="18%" stop-color="#f7d35c"/><stop offset="45%" stop-color="#d69a1f"/><stop offset="75%" stop-color="#b87a12"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <linearGradient id="shackleGold" x1="0" y1="0" x2="1" y2="0.3">
+    <stop offset="0%" stop-color="#8a5c0a"/><stop offset="30%" stop-color="#f7d35c"/><stop offset="60%" stop-color="#fff6d8"/><stop offset="100%" stop-color="#c68d1c"/>
+  </linearGradient>
+</defs>
+<path d="M45 3 L82 15 V50 C82 76 66 92 45 101 C24 92 8 76 8 50 V15 Z" fill="url(#shieldInner)" stroke="url(#goldBorder)" stroke-width="5" stroke-linejoin="round"/>
+<path d="M20 14 L45 6 V40 C34 42 24 36 20 26 Z" fill="#ffffff" opacity="0.035"/>
+<path d="M33 46 V38 a12 12 0 0 1 24 0 v8" stroke="url(#shackleGold)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+<rect x="26" y="45" width="38" height="32" rx="8" fill="url(#lockGold)" stroke="#7a4f09" stroke-width="1"/>
+<path d="M30 49 h10 a6 6 0 0 0 -8 8 z" fill="#ffffff" opacity="0.3"/>
+<circle cx="45" cy="58" r="4.2" fill="#231405"/>
+<rect x="43.3" y="60.5" width="3.4" height="8" rx="1.2" fill="#231405"/>
+</svg>`;
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
@@ -443,7 +465,7 @@ function renderLockedToolCard(title,description,toolKey){
    <span class="locked-side-bar" style="background:${color}"></span>
    <div class="locked-tool-inner">
     <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
-    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${lockedCta(toolKey)}</div>
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${PREMIUM_LOCK_BADGE}${lockedCta(toolKey)}</div>
    </div>
   </section>`;
 }
