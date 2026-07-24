@@ -516,7 +516,9 @@ textarea{min-height:92px;resize:vertical}
         <div class="actions">
           <button class="btn primary" onclick="saveAnalysis()">Salva</button>
           <button class="btn dark" onclick="resetForm()">Pulisci</button>
+          <button class="btn ghost" onclick="openFullPreview()">👁 Anteprima completa sul sito</button>
         </div>
+        <div class="field-note" style="margin-top:6px">Salva prima di aprire l'anteprima — vedrai la pagina reale, esattamente come apparirà (anche da bozza, solo per te come admin)</div>
       </div>
 
       <div class="card">
@@ -689,8 +691,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607240953"></script>
-<script src="app.js?v=202607240953"></script>
+ <script src="supabase-data.js?v=202607241348"></script>
+<script src="app.js?v=202607241348"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1491,6 +1493,11 @@ async function importAnalysisFromFile(file){
     document.getElementById("importJsonFile").value=""
   }
 }
+function openFullPreview(){
+  const slug=val("slug")
+  if(!slug){alert("Salva prima l'analisi (serve uno slug) per poter aprire l'anteprima");return}
+  window.open(`analysis.html?slug=${encodeURIComponent(slug)}`,'_blank','noopener')
+}
 function buildAnalysisPayload(id){
   const inv=parseNumberRange(val("investment")),prof=parseNumberRange(getProfitValue()),pb=paybackMonths(val("payback"))
   return {
@@ -2120,5 +2127,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607240953"></script></body>
+<script src="shell-ui.js?v=202607241348"></script></body>
 </html>
