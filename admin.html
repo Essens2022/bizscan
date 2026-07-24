@@ -246,6 +246,24 @@ textarea{min-height:92px;resize:vertical}
 .tier-pill.tier-avanzato{background:rgba(91,140,255,.15);color:#8fb0ff}
 .tier-pill.tier-premium{background:rgba(197,132,255,.15);color:#d9aeff}
 .tier-pill.tier-max{background:rgba(255,183,3,.16);color:#ffcf5c}
+.shell-popover{position:fixed;z-index:1000;display:none;padding:10px;border:1px solid #2b3950;border-radius:17px;background:rgba(10,17,28,.98);box-shadow:0 22px 60px rgba(0,0,0,.46);backdrop-filter:blur(18px);color:#f7f8fb}
+.shell-popover.is-open{display:block}
+.shell-popover-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 6px 10px;border-bottom:1px solid #263347}
+.shell-popover-head>div{display:grid;gap:2px}
+.shell-popover-head small{color:#ffbf2f;font-size:8px;letter-spacing:.14em;font-weight:900}
+.shell-popover-head strong{font-size:14px}
+.shell-popover-head button{width:28px;height:28px;border:1px solid #304057;border-radius:9px;background:#101a29;color:#dbe3ee;font-size:18px;line-height:1}
+.shell-menu-list{display:grid;gap:4px;padding-top:8px}
+.shell-menu-list a{display:grid;grid-template-columns:30px 1fr;align-items:center;min-height:42px;padding:7px 9px;border-radius:11px;color:#d9e0ea;text-decoration:none}
+.shell-menu-list a:hover,.shell-menu-list a:focus-visible{background:#142033;color:#fff;outline:none}
+.shell-menu-list a span{display:grid;place-items:center;width:27px;height:27px;border:1px solid #2c3a50;border-radius:8px;color:#ffbf2f}
+.shell-menu-list a b{font-size:12px}
+.shell-menu-sep{height:1px;background:#232f42;margin:6px 4px}
+.shell-menu-list a#shellLogoutBtn{color:#ff8a8a}
+.shell-menu-list a#shellLogoutBtn span{color:#ff8a8a;border-color:#4a2228}
+.shell-menu-list a#shellLogoutBtn:hover{background:#1c1015}
+.shell-profile-summary{display:flex;align-items:center;gap:10px;padding:12px 7px 7px;text-decoration:none;color:inherit;border-radius:10px;cursor:pointer}
+.shell-avatar{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid #6a5320;border-radius:13px;background:linear-gradient(145deg,#1b180e,#0b121c);color:#ffbf2f;font-size:18px}
 </style>
 </head>
 <body><div class="login" id="login">
@@ -692,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241604"></script>
-<script src="app.js?v=202607241604"></script>
+ <script src="supabase-data.js?v=202607241617"></script>
+<script src="app.js?v=202607241617"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -2135,5 +2153,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241604"></script></body>
+<script src="shell-ui.js?v=202607241617"></script></body>
 </html>
