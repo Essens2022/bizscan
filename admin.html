@@ -691,8 +691,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241348"></script>
-<script src="app.js?v=202607241348"></script>
+ <script src="supabase-data.js?v=202607241528"></script>
+<script src="app.js?v=202607241528"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1493,9 +1493,16 @@ async function importAnalysisFromFile(file){
     document.getElementById("importJsonFile").value=""
   }
 }
-function openFullPreview(){
-  const slug=val("slug")
-  if(!slug){alert("Salva prima l'analisi (serve uno slug) per poter aprire l'anteprima");return}
+async function openFullPreview(){
+  const slug=val("slug")||normalizeSlug(val("title")||"")
+  if(!slug){alert("Inserisci almeno un titolo o uno slug prima di aprire l'anteprima");return}
+  const btn=document.querySelector('.actions .btn.ghost')
+  if(btn){btn.disabled=true;btn.textContent="Salvataggio…"}
+  try{
+    await saveAnalysis()
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="👁 Anteprima completa sul sito"}
+  }
   window.open(`analysis.html?slug=${encodeURIComponent(slug)}`,'_blank','noopener')
 }
 function buildAnalysisPayload(id){
@@ -2127,5 +2134,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241348"></script></body>
+<script src="shell-ui.js?v=202607241528"></script></body>
 </html>
