@@ -204,13 +204,13 @@
     return sessionStorage.getItem('bizscan_install_dismissed')==='1';
   }
   function pushSiteBarsDown(px){
-    var topbar=document.querySelector('.topbar');
+    var topbar=document.querySelector('.topbar, header.top');
     var backRow=document.querySelector('.page-back-row');
     if(topbar)topbar.style.top=px+'px';
     if(backRow)backRow.style.top=(px+ (backRow.dataset.origTop?Number(backRow.dataset.origTop):parseInt(getComputedStyle(backRow).top||'60',10)))+'px';
   }
   function restoreSiteBars(){
-    var topbar=document.querySelector('.topbar');
+    var topbar=document.querySelector('.topbar, header.top');
     var backRow=document.querySelector('.page-back-row');
     if(topbar)topbar.style.top='';
     if(backRow)backRow.style.top='';
