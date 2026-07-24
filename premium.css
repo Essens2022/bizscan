@@ -552,6 +552,11 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 #page-progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#ffb703,#ff8a00,#ffd053);box-shadow:0 0 8px rgba(255,183,3,.7);transition:width .25s ease-out;border-radius:0 3px 3px 0}
 #page-progress.active i{transition:width .3s ease-out}
 .pdf-topup-kicker{display:inline-flex;align-items:center;gap:6px}
+.pdf-topup-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
+.pdf-topup-icon{flex-shrink:0;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:linear-gradient(145deg,#241a08,#150f06);border:1px solid rgba(255,180,0,.35);box-shadow:0 8px 20px rgba(255,180,0,.08)}
+.pdf-topup-head .pdf-topup-kicker{color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.12em}
+.pdf-topup-head h2{margin:6px 0 4px;font-size:20px;letter-spacing:-.02em}
+.pdf-topup-head p{margin:0;color:var(--muted);font-size:13px;max-width:480px}
 .purchase-history-list{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
 .purchase-history-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(180deg,#101a29,#0b1422)}
 .purchase-history-row b{display:block;font-size:13px;margin-bottom:3px}
