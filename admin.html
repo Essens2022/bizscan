@@ -689,8 +689,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607240330"></script>
-<script src="app.js?v=202607240330"></script>
+ <script src="supabase-data.js?v=202607240953"></script>
+<script src="app.js?v=202607240953"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1299,7 +1299,7 @@ function collectSections(){syncSectionDrafts();return _sectionDrafts.filter(x=>x
 function normalizeSlug(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
 function parseSimpleTextFormat(text){
   const lines=text.split(/\r?\n/)
-  const data={sections:[]}
+  const data={sections:[],display:{scenario:{},costi_iniziali:[],benchmark:{},indicators:{},free:[],tools:{}}}
   const fieldMap={
     "titolo":"title","categoria":"category_name","slug":"slug","emoji":"emoji",
     "descrizione breve":"short_description","video":"video_url","link video":"video_url",
@@ -1308,18 +1308,49 @@ function parseSimpleTextFormat(text){
     "rischio":"risk_score","prezzo":"price","etichetta":"card_label","tag":"tags",
     "in evidenza":"featured","popolare":"popular","tendenza":"trending"
   }
+  const toolFieldMap={
+    "break-even mensile":"break_even","cash-flow a 12 mesi":"cash_flow",
+    "costi fissi e variabili":"costi_fissi_variabili","concorrenza locale":"concorrenza_locale",
+    "domanda e stagionalità":"stagionalita","matrice dei rischi":"matrice_rischi",
+    "fabbisogno di personale":"personale","fornitori e autorizzazioni":"fornitori",
+    "strategie di crescita":"strategie_crescita"
+  }
+  const scenarioKeyMap={"prudente":"prudente","realistico":"realistico","ottimistico":"ottimistico"}
+  const benchmarkKeyMap={"roi":"roi","margine netto":"margine","tempo recupero":"recupero","rischio":"rischio"}
+  const indicatorKeyMap={"domanda":"domanda","concorrenza":"concorrenza","scalabilità":"scalabilita","gestione":"gestione"}
+
   let currentSection=null
   let mode="header"
+  let currentToolKey=null
+  let currentToolText=""
+
+  function flushTool(){
+    if(currentToolKey){
+      data.display.tools[currentToolKey]=currentToolText.trim()
+      currentToolKey=null;currentToolText=""
+    }
+  }
+
   for(const rawLine of lines){
     const line=rawLine.trim()
-    const sectionMatch=line.match(/^-{2,}\s*SEZIONE\s*:\s*(.+?)\s*-{2,}$/i)
-    if(sectionMatch){
-      if(currentSection)data.sections.push(currentSection)
-      currentSection={title:sectionMatch[1].trim(),is_free:true,content:""}
-      mode="section-meta"
+
+    const blockMatch=line.match(/^-{2,}\s*(SEZIONE|SCENARI DI PROFITTO|DISTRIBUZIONE COSTI|CONFRONTO CON LA MEDIA|INDICATORI CHIAVE|STRUMENTI DETTAGLIATI)\s*(?::\s*(.+?))?\s*-{2,}$/i)
+    if(blockMatch){
+      if(currentSection){data.sections.push(currentSection);currentSection=null}
+      flushTool()
+      const blockType=blockMatch[1].toUpperCase()
+      if(blockType==="SEZIONE"){
+        currentSection={title:(blockMatch[2]||"").trim(),is_free:true,content:""}
+        mode="section-meta"
+      }else if(blockType==="SCENARI DI PROFITTO"){mode="scenario"}
+      else if(blockType==="DISTRIBUZIONE COSTI"){mode="costi"}
+      else if(blockType==="CONFRONTO CON LA MEDIA"){mode="benchmark"}
+      else if(blockType==="INDICATORI CHIAVE"){mode="indicators"}
+      else if(blockType==="STRUMENTI DETTAGLIATI"){mode="tools"}
       continue
     }
-    if(currentSection){
+
+    if(mode==="section-meta" || mode==="section-content"){
       const accessMatch=line.match(/^accesso\s*:\s*(.+)$/i)
       if(mode==="section-meta" && accessMatch){
         currentSection.is_free=!/premium/i.test(accessMatch[1])
@@ -1330,6 +1361,69 @@ function parseSimpleTextFormat(text){
       currentSection.content+=(currentSection.content?"\n":"")+rawLine
       continue
     }
+
+    if(mode==="scenario"){
+      const freeMatch=line.match(/^gratuito\s*:\s*(.+)$/i)
+      if(freeMatch){if(/^(s[iì]|yes|true|1)$/i.test(freeMatch[1]))data.display.free.push("scenario");continue}
+      const m=line.match(/^(prudente|realistico|ottimistico)\s*:\s*(.+)$/i)
+      if(m){
+        const key=scenarioKeyMap[m[1].toLowerCase()]
+        const parts=m[2].split(",").map(x=>x.trim())
+        const row={}
+        for(const p of parts){
+          const pm=p.match(/^fatturato\s+(.+)$/i);if(pm){row.fatturato=pm[1];continue}
+          const um=p.match(/^utile\s+(.+)$/i);if(um){row.utile=um[1];continue}
+          const rm=p.match(/^roi\s+(.+)$/i);if(rm){row.roi=rm[1];continue}
+          const recm=p.match(/^recupero\s+(.+)$/i);if(recm){row.recupero=recm[1];continue}
+        }
+        data.display.scenario[key]=row
+      }
+      continue
+    }
+
+    if(mode==="costi"){
+      const m=line.match(/^([^:]+):\s*([\d.,]+)\s*€?\s*$/i)
+      if(m)data.display.costi_iniziali.push({label:m[1].trim(),importo:parseFloat(m[2].replace(/\./g,"").replace(",","."))})
+      continue
+    }
+
+    if(mode==="benchmark"){
+      const freeMatch=line.match(/^gratuito\s*:\s*(.+)$/i)
+      if(freeMatch){if(/^(s[iì]|yes|true|1)$/i.test(freeMatch[1]))data.display.free.push("benchmark");continue}
+      const m=line.match(/^(roi|margine netto|tempo recupero|rischio)\s*:\s*(.+)$/i)
+      if(m){
+        const key=benchmarkKeyMap[m[1].toLowerCase()]
+        const parts=m[2].split(",").map(x=>x.trim())
+        const row={}
+        for(const p of parts){
+          const am=p.match(/^attivit[àa]\s+(.+)$/i);if(am){row.a=am[1];continue}
+          const mm=p.match(/^media\s+(.+)$/i);if(mm){row.m=mm[1];continue}
+        }
+        data.display.benchmark[key]=row
+      }
+      continue
+    }
+
+    if(mode==="indicators"){
+      const freeMatch=line.match(/^gratuito\s*:\s*(.+)$/i)
+      if(freeMatch){if(/^(s[iì]|yes|true|1)$/i.test(freeMatch[1]))data.display.free.push("indicators");continue}
+      const m=line.match(/^(domanda|concorrenza|scalabilità|gestione)\s*:\s*(.+)$/i)
+      if(m)data.display.indicators[indicatorKeyMap[m[1].toLowerCase()]]=m[2].trim()
+      continue
+    }
+
+    if(mode==="tools"){
+      const m=line.match(/^([^:]+):\s*(.*)$/)
+      if(m && toolFieldMap[m[1].trim().toLowerCase()]){
+        flushTool()
+        currentToolKey=toolFieldMap[m[1].trim().toLowerCase()]
+        currentToolText=m[2]
+      }else if(currentToolKey){
+        currentToolText+=(currentToolText?"\n":"")+rawLine
+      }
+      continue
+    }
+
     const fieldMatch=line.match(/^([^:]+):\s*(.*)$/)
     if(fieldMatch){
       const label=fieldMatch[1].trim().toLowerCase()
@@ -1343,6 +1437,7 @@ function parseSimpleTextFormat(text){
     }
   }
   if(currentSection)data.sections.push(currentSection)
+  flushTool()
   data.sections.forEach(s=>{s.content=s.content.trim()})
   return data
 }
@@ -1383,6 +1478,9 @@ async function importAnalysisFromFile(file){
     if(Array.isArray(data.sections)&&data.sections.length){
       _sectionDrafts=[]
       data.sections.forEach(s=>addSectionRow(s))
+    }
+    if(data.display && typeof data.display==="object"){
+      loadDisplayDataForm(data.display)
     }
     preview()
     alert("Dati importati con successo — controlla e completa i campi prima di salvare")
@@ -2022,5 +2120,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607240330"></script></body>
+<script src="shell-ui.js?v=202607240953"></script></body>
 </html>
