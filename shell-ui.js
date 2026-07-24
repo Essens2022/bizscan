@@ -124,7 +124,24 @@
         '<a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b></a>'+
         '<a href="account.html"><span>€</span><b>Crediti e pacchetti</b></a>'+
         '<a href="invoices.html"><span>🧾</span><b>Fatturazione</b></a>'+
+        '<div class="shell-menu-sep"></div>'+
+        '<a href="#" id="shellLogoutBtn"><span>⎋</span><b>Esci</b></a>'+
         '</nav>');
+      var logoutBtn=document.getElementById('shellLogoutBtn');
+      if(logoutBtn){
+        logoutBtn.onclick=function(e){
+          e.preventDefault();e.stopPropagation();
+          if(window.BizScanData&&window.BizScanData.getSupabaseClient){
+            window.BizScanData.getSupabaseClient().then(function(c){
+              return c.auth.signOut();
+            }).then(function(){
+              try{localStorage.removeItem('bizscan_favorites')}catch(_){}
+              try{localStorage.removeItem('bizscan_last_credits')}catch(_){}
+              location.href='/';
+            });
+          }
+        };
+      }
       profileTrigger.onclick=function(e){e.preventDefault();e.stopPropagation();togglePopover(profile,profileTrigger)};
     }
 
