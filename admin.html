@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241653"></script>
-<script src="app.js?v=202607241653"></script>
+ <script src="supabase-data.js?v=202607241705"></script>
+<script src="app.js?v=202607241705"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -821,6 +821,11 @@ async function checkAdminAccess() {
   document.getElementById("login").style.display = "none"
   await Promise.all([loadSupabaseCategories(), loadSupabasePlans(), loadSupabaseHomeSections(), loadAnalyses()])
   renderAll()
+  const savedTab=(location.hash||"").replace("#","")
+  if(savedTab){
+    const btn=[...document.querySelectorAll(".tab")].find(t=>t.getAttribute("onclick")===`showTab('${savedTab}',this)`)
+    if(btn)showTab(savedTab,btn)
+  }
 }
 
 checkAdminAccess()
@@ -1216,6 +1221,7 @@ function showTab(name,btn){
   document.getElementById(name+"Panel").classList.add("active")
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"))
   btn.classList.add("active")
+  history.replaceState(null,"","#"+name)
   if(name==="new")refreshSelects()
   if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
 }
@@ -2152,5 +2158,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241653"></script></body>
+<script src="shell-ui.js?v=202607241705"></script></body>
 </html>
