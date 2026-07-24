@@ -168,7 +168,7 @@ function filterHomeAnalyses(items,filter){
  if(filter==='fast-return') return arr.sort((a,b)=>paybackMonths(a.payback)-paybackMonths(b.payback))
  if(filter==='high-profit') return arr.sort((a,b)=>numericMax(b.profit)-numericMax(a.profit))
  if(filter==='online') return arr.filter(p=>String(p.category||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('e-commerce'))
- return arr.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))
+ return arr.sort((a,b)=>(Number(a.order_index)||0)-(Number(b.order_index)||0))
 }
 window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28};
@@ -251,7 +251,8 @@ function initHeroRotation(){
 }
 function renderHome(){
  const host=$('#homeContent');if(!host)return
- const allFeatured=analyses.slice(0,12)
+ const featuredOnly=analyses.filter(p=>p.featured)
+ const allFeatured=(featuredOnly.length?featuredOnly:analyses).slice(0,12)
  const featured=filterHomeAnalyses(allFeatured,homeFilter).slice(0,6)
  const lead=featured[0]||allFeatured[0]||null
  const second=featured[1]||lead
