@@ -1071,7 +1071,8 @@ async function refreshCompareAdvice(a,b){
    const advice=computeCompareAdvice(a,b);
    const winnerLetter=advice.winner===a.title?'A':(advice.winner===b.title?'B':null);
    const visual=winnerLetter?`<div class="advice-vs"><span class="${winnerLetter==='A'?'win':''}">A</span><b>VS</b><span class="${winnerLetter==='B'?'win':''}">B</span></div>`:`<div class="advice-vs neutral"><span>A</span><b>≈</b><span>B</span></div>`;
-   section.innerHTML=`<div class="advice-card unlocked"><div class="advice-visual">${visual}</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>${advice.text}</p></div></div>`;
+   const winnerBadge=advice.winner?`<div class="advice-winner-badge"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Consigliamo: ${esc(advice.winner)}</div>`:'';
+   section.innerHTML=`<div class="advice-card unlocked"><div class="advice-visual">${visual}</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>${advice.text}</p>${winnerBadge}</div></div>`;
   }else if(status.reason==='auth_required'){
    section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Accedi al tuo account per sbloccare il nostro consiglio su questo confronto.</p><a class="btn purple" href="account.html">Accedi</a></div></div>`;
   }else if(status.reason==='can_unlock_with_credit'){
