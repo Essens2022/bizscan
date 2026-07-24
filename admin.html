@@ -37,7 +37,7 @@ textarea{min-height:92px;resize:vertical}
 .toolbar{display:grid;grid-template-columns:1fr 150px 150px;gap:8px;margin-bottom:12px}
 .preview{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#11161d}
 .preview-top{height:155px;padding:14px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(135deg,#5f2200,#ff8a00)}.preview-top span{font-size:46px}.preview-body{padding:14px}.preview-body h3{margin:0 0 6px;font-size:20px}.preview-body p{margin:0;color:var(--muted);font-size:13px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.metric{padding:9px;border-radius:12px;background:#1b2029;border:1px solid #2c333e}.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{font-size:12px}
-.item{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:11px;border-radius:16px;background:#171b22;border:1px solid var(--line);margin-bottom:8px}.item-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#242a34;font-size:26px}.item h3{margin:0 0 4px;font-size:15px}.item small{color:var(--muted)}.item-menu{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.mini{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:#222731;color:#fff}
+.item{display:grid;grid-template-columns:28px 52px 1fr auto;gap:10px;align-items:center;padding:11px;border-radius:16px;background:#171b22;border:1px solid var(--line);margin-bottom:8px}.item-position{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,#2a2408,#171307);border:1px solid rgba(255,180,0,.35);color:var(--yellow);font-size:13px;font-weight:900}.item-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#242a34;font-size:26px}.item-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#242a34}.item h3{margin:0 0 4px;font-size:15px}.item small{color:var(--muted)}.item-menu{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.mini{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:#222731;color:#fff}
 .badge{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;margin-left:6px}.b-pub{background:rgba(45,212,167,.12);color:#baf4df}.b-draft{background:rgba(255,183,3,.12);color:#ffe3a3}.b-hidden{background:rgba(255,77,79,.12);color:#ffb2b3}
 .empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
 .notice{padding:12px;border-radius:14px;background:rgba(58,134,255,.10);border:1px solid rgba(58,134,255,.24);color:#d5e6ff;font-size:13px;line-height:1.45}
@@ -52,7 +52,7 @@ textarea{min-height:92px;resize:vertical}
 @media(min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}.grid{grid-template-columns:1.2fr .8fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
 
 .section-editor-row{padding:12px;border:1px solid var(--line);border-radius:14px;background:#11151b;margin-top:10px}.section-editor-head{display:grid;grid-template-columns:1fr 150px 90px 42px;gap:8px;align-items:end}.section-editor-row textarea{min-height:110px;margin-top:8px}.section-editor-actions{display:flex;gap:6px;margin-top:8px}.section-editor-actions button{width:auto;padding:7px 10px}
-@media(max-width:700px){.toolbar{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}.section-editor-head{grid-template-columns:1fr}.item{grid-template-columns:48px 1fr}.item-menu{grid-column:1/-1;justify-content:flex-start}}
+@media(max-width:700px){.toolbar{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}.section-editor-head{grid-template-columns:1fr}.item{grid-template-columns:22px 44px 1fr}.item-menu{grid-column:1/-1;justify-content:flex-start}}
 .step-head{display:flex;align-items:center;gap:11px;margin:22px 0 12px;padding-top:16px;border-top:1px dashed var(--line)}
 .step-head:first-of-type{margin-top:6px;padding-top:0;border-top:0}
 .step-num{display:grid;place-items:center;width:30px;height:30px;min-width:30px;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:#111;font-weight:950;font-size:14px}
@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241705"></script>
-<script src="app.js?v=202607241705"></script>
+ <script src="supabase-data.js?v=202607241712"></script>
+<script src="app.js?v=202607241712"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1874,18 +1874,22 @@ async function moveAnalysis(id,dir){
   if(i<0||j<0||j>=all.length)return
   const a=all[i],b=all[j]
   const {error:e1}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(a),order_index:b.order_index,skip_order_shift:true}})
-  if(e1){alert("Spostamento non riuscito");return}
+  if(e1){console.error("moveAnalysis step1 error",e1);alert("Spostamento non riuscito (passo 1): "+(e1.message||JSON.stringify(e1)));return}
   const {error:e2}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(b),order_index:a.order_index,skip_order_shift:true}})
-  if(e2){alert("Spostamento non riuscito");return}
+  if(e2){console.error("moveAnalysis step2 error",e2);alert("Spostamento non riuscito (passo 2): "+(e2.message||JSON.stringify(e2)));return}
   await loadAnalyses();renderAll()
 }
 
 function renderAnalyses(){
   const q=(document.getElementById("search").value||"").toLowerCase(),sf=document.getElementById("statusFilter").value,cf=document.getElementById("categoryFilter").value
   const arr=analyses().filter(x=>(!q||(`${x.title} ${x.category_name} ${x.slug}`).toLowerCase().includes(q))&&(sf==="all"||x.status===sf)&&(cf==="all"||x.category_id===cf)).sort((a,b)=>a.order_index-b.order_index)
-  document.getElementById("list").innerHTML=arr.length?arr.map(x=>`
+  document.getElementById("list").innerHTML=arr.length?arr.map((x,i)=>{
+    const cover=(x.attachments||[]).find(a=>a.type==="cover")
+    const thumb=cover?`<img src="${cover.file_url}" alt="" class="item-thumb">`:`<div class="item-icon">${x.emoji||"📊"}</div>`
+    return `
     <div class="item">
-      <div class="item-icon">${x.emoji||"📊"}</div>
+      <div class="item-position">${i+1}</div>
+      ${thumb}
       <div><h3>${x.title}<span class="badge ${x.status==="published"?"b-pub":x.status==="draft"?"b-draft":"b-hidden"}">${x.status}</span></h3><small>${x.category_name} · Score ${x.bizscan_score} · Ordine ${x.order_index} · ${x.homepage?"In homepage":"Non in homepage"}</small></div>
       <div class="item-menu">
         <span class="tooltip-wrap"><button class="mini" aria-label="Sposta su" onclick="moveAnalysis('${x.id}',-1)">↑</button><span class="tooltip">Sposta su</span></span>
@@ -1895,7 +1899,7 @@ function renderAnalyses(){
         <span class="tooltip-wrap"><button class="mini" aria-label="${x.status==="published"?"Torna in bozza":"Pubblica"}" onclick="toggleStatus('${x.id}')">${x.status==="published"?"◉":"○"}</button><span class="tooltip">${x.status==="published"?"Torna in bozza":"Pubblica"}</span></span>
         <span class="tooltip-wrap"><button class="mini" aria-label="Elimina" onclick="deleteAnalysis('${x.id}')">×</button><span class="tooltip">Elimina</span></span>
       </div>
-    </div>`).join(""):`<div class="empty">Nessun risultato</div>`
+    </div>`}).join(""):`<div class="empty">Nessun risultato</div>`
 }
 
 async function saveCategory(){if(!val("categoryName"))return alert("Inserisci il nome");const id=val("categoryId")||undefined,obj={name:val("categoryName"),slug:val("categoryName").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),emoji:val("categoryEmoji"),color:val("categoryColor"),order_index:Number(val("categoryOrder")||0),is_active:true};let q=id?supabaseClient.from("categories").update(obj).eq("id",id):supabaseClient.from("categories").insert(obj);const{error}=await q;if(error)return alert(error.message);await loadSupabaseCategories();resetCategory();renderAll()}
@@ -2158,5 +2162,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241705"></script></body>
+<script src="shell-ui.js?v=202607241712"></script></body>
 </html>
