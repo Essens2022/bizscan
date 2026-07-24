@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241732"></script>
-<script src="app.js?v=202607241732"></script>
+ <script src="supabase-data.js?v=202607241744"></script>
+<script src="app.js?v=202607241744"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1874,11 +1874,16 @@ async function moveAnalysis(id,dir){
   const i=all.findIndex(x=>x.id===id),j=i+dir
   if(i<0){alert("Errore interno: analisi non trovata nella lista (id="+id+")");return}
   if(j<0||j>=all.length){alert("Sei già al "+(j<0?"primo":"ultimo")+" posto, non c'è nessun altro elemento in quella direzione.");return}
-  const a=all[i],b=all[j]
-  const {error:e1}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(a),order_index:b.order_index,skip_order_shift:true}})
-  if(e1){console.error("moveAnalysis step1 error",e1);alert("Spostamento non riuscito (passo 1): "+(e1.message||JSON.stringify(e1)));return}
-  const {error:e2}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(b),order_index:a.order_index,skip_order_shift:true}})
-  if(e2){console.error("moveAnalysis step2 error",e2);alert("Spostamento non riuscito (passo 2): "+(e2.message||JSON.stringify(e2)));return}
+  // Scambia le posizioni nell'array, poi rinumera TUTTO in sequenza (1,2,3...).
+  // Necessario perché più analisi possono avere lo stesso "Ordine" (es. tutte a 1):
+  // scambiare due valori identici non produce alcun cambiamento visibile, anche se
+  // il salvataggio riesce - rinumerando in sequenza si eliminano i pareggi una volta per tutte.
+  const tmp=all[i];all[i]=all[j];all[j]=tmp
+  const toSave=all.map((x,idx)=>({x,newOrder:idx+1})).filter(({x,newOrder})=>x.order_index!==newOrder)
+  for(const {x,newOrder} of toSave){
+    const {error}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(x),order_index:newOrder,skip_order_shift:true}})
+    if(error){console.error("moveAnalysis error",error);alert("Spostamento non riuscito: "+(error.message||JSON.stringify(error)));return}
+  }
   await loadAnalyses();renderAll()
  }catch(ex){
   console.error("moveAnalysis exception",ex)
@@ -2168,5 +2173,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241732"></script></body>
+<script src="shell-ui.js?v=202607241744"></script></body>
 </html>
