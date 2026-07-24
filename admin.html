@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607241617"></script>
-<script src="app.js?v=202607241617"></script>
+ <script src="supabase-data.js?v=202607241653"></script>
+<script src="app.js?v=202607241653"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1867,11 +1867,10 @@ async function moveAnalysis(id,dir){
   const i=all.findIndex(x=>x.id===id),j=i+dir
   if(i<0||j<0||j>=all.length)return
   const a=all[i],b=all[j]
-  const [{error:e1},{error:e2}]=await Promise.all([
-    supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(a),order_index:b.order_index}}),
-    supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(b),order_index:a.order_index}})
-  ])
-  if(e1||e2){alert("Spostamento non riuscito");return}
+  const {error:e1}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(a),order_index:b.order_index,skip_order_shift:true}})
+  if(e1){alert("Spostamento non riuscito");return}
+  const {error:e2}=await supabaseClient.rpc("admin_save_analysis",{p:{...minimalPayloadFrom(b),order_index:a.order_index,skip_order_shift:true}})
+  if(e2){alert("Spostamento non riuscito");return}
   await loadAnalyses();renderAll()
 }
 
@@ -2153,5 +2152,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607241617"></script></body>
+<script src="shell-ui.js?v=202607241653"></script></body>
 </html>
