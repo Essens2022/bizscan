@@ -1137,7 +1137,10 @@ function attachSearchSuggestions(input,{onPick}={}){
  const render=()=>{
   const items=searchSuggestions(input.value);
   if(!items.length){box.hidden=true;box.innerHTML='';return}
-  box.innerHTML=items.map(p=>`<a href="analysis.html?slug=${encodeURIComponent(p.slug)}" data-slug="${esc(p.slug)}"><span class="ss-emoji">${esc(p.categoryEmoji||p.emoji||'📊')}</span><span class="ss-text"><b>${esc(p.title)}</b><small>${esc(p.category||'')}</small></span></a>`).join('');
+  box.innerHTML=items.map(p=>{
+   const thumb=p.coverUrl?`<img src="${esc(p.coverUrl)}" alt="" class="ss-thumb">`:`<span class="ss-emoji">${esc(p.categoryEmoji||p.emoji||'📊')}</span>`;
+   return `<a href="analysis.html?slug=${encodeURIComponent(p.slug)}" data-slug="${esc(p.slug)}">${thumb}<span class="ss-text"><b>${esc(p.title)}</b><small>${esc(p.category||'')}</small></span></a>`;
+  }).join('');
   box.hidden=false;
   box.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{if(onPick){e.preventDefault();onPick(a.dataset.slug)}}));
  };
