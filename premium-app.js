@@ -31,7 +31,7 @@ let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const euro=n=>Number(n).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
-function riskClass(p){return Number(p.risk)<45?'risk-low':Number(p.risk)<70?'risk-mid':'risk-high'}
+function riskClass(p){return Number(p.risk)<50?'risk-low':Number(p.risk)<70?'risk-mid':'risk-high'}
 function mediaFor(p){return p.coverUrl||p.wideCover||''}
 function num(v){const m=String(v??'').replace(',','.').match(/[\d.]+/);return m?parseFloat(m[0]):null}
 function metricBars(p){
