@@ -518,6 +518,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .social-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;transition:filter .15s,transform .15s}
 .social-badge:hover{filter:brightness(1.15);transform:translateY(-1px)}
 .social-youtube{background:#ff0000;color:#fff}
+.social-tiktok{background:#000;color:#fff}
 .social-badge.is-soon{background:#1a2233;color:#5a6579;cursor:default}
 .social-badge.is-soon:hover{filter:none;transform:none}
 .footer-sources-label{display:block;color:#e7ecf3;font-size:14px;font-weight:800;margin-bottom:12px}
