@@ -155,6 +155,29 @@
   window.addEventListener('resize',closePanels);
   window.addEventListener('scroll',closePanels,{passive:true});
 
+  function buildSourcesMarquee(){
+    var sources=[
+      'FIPE — Federazione Italiana Pubblici Esercizi',
+      'ISTAT — Istituto Nazionale di Statistica',
+      'Ministero delle Infrastrutture e dei Trasporti',
+      'Ministero delle Imprese e del Made in Italy',
+      'Agenzia delle Entrate',
+      'Unioncamere',
+      'Camere di Commercio d\'Italia',
+      'InfoCamere',
+      'Movimprese',
+      'INPS — Istituto Nazionale Previdenza Sociale',
+      'Banca d\'Italia',
+      'Confcommercio',
+      'Confesercenti',
+      'Confartigianato'
+    ];
+    var badge=function(t){return '<span class="footer-source-badge">'+t+'</span>'};
+    var row=sources.map(badge).join('');
+    return '<div class="footer-sources"><small class="footer-sources-label">Dati ufficiali e verificati, tra le fonti che consultiamo</small>'
+      +'<div class="footer-sources-track"><div class="footer-sources-row">'+row+row+'</div></div></div>';
+  }
+
   function setupFooter(){
     if(document.querySelector('.site-footer'))return;
     if(!document.getElementById('homeContent'))return;
@@ -163,6 +186,7 @@
     var html=''
       +'<footer class="site-footer">'
       +'<div class="footer-brand"><a class="footer-logo" href="/"><strong>Biz</strong><b>Scan</b></a><p>Analisi strutturate per capire un business prima di investirci tempo o capitale.</p></div>'
+      +buildSourcesMarquee()
       +'<div class="footer-trust">'
       +'<div class="footer-trust-head"><svg class="footer-shield" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" fill="currentColor" opacity=".16"/><path d="M12 2.5l7.5 3v5.2c0 4.7-3.2 8.9-7.5 10.3-4.3-1.4-7.5-5.6-7.5-10.3V5.5l7.5-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.7 12.2l2.1 2.1 4.3-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Pagamenti sicuri</strong></div>'
       +'<p class="footer-trust-note">I dati di pagamento non transitano né vengono conservati sui nostri server</p>'
