@@ -332,4 +332,53 @@
     });
   }
   buildHelpButton();
+
+  // ---------- Tour guidato alla prima visita (solo homepage, una volta sola) ----------
+  function buildFirstVisitTour(){
+    var page=location.pathname.split('/').pop()||'';
+    var isHome=(page===''||page==='/'||page==='index.html');
+    if(!isHome)return;
+    var already=false;
+    try{already=localStorage.getItem('bizscan_tour_done')==='1'}catch(_){}
+    if(already)return;
+
+    var steps=[
+      {icon:'🔎',title:'Benvenuto su BizScan',body:'Analizziamo attività di business reali — costi, rischi, profitti — così puoi decidere prima di investire tempo o denaro.'},
+      {icon:'🗂️',title:'Come cercare',body:'Cerca un&#39;attività specifica con la barra di ricerca, oppure tocca una categoria per scoprire cosa c&#39;è disponibile.'},
+      {icon:'🔑',title:'Come funzionano i crediti',body:'Il tuo piano sblocca gli strumenti. Un <b>credito analisi</b> sblocca il contenuto completo di UNA attività a tua scelta. Un <b>credito PDF</b> serve solo per scaricare il documento — sono due cose separate.'},
+      {icon:'✓',title:'Pronto per iniziare',body:'Esplora le attività, confronta le opportunità, e usa il pulsante <b>?</b> in ogni pagina se hai dubbi lungo il percorso.'}
+    ];
+    var idx=0;
+
+    var overlay=document.createElement('div');
+    overlay.id='bizscanTourOverlay';
+    var card=document.createElement('div');
+    card.id='bizscanTourCard';
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    function finish(){
+      try{localStorage.setItem('bizscan_tour_done','1')}catch(_){}
+      overlay.remove();
+    }
+    function render(){
+      var s=steps[idx];
+      var dots=steps.map(function(_,i){return '<span class="bizscan-tour-dot'+(i===idx?' active':'')+'"></span>'}).join('');
+      card.innerHTML=
+        '<button class="bizscan-tour-skip" aria-label="Salta">Salta</button>'+
+        '<div class="bizscan-tour-icon">'+s.icon+'</div>'+
+        '<h3>'+s.title+'</h3>'+
+        '<p>'+s.body+'</p>'+
+        '<div class="bizscan-tour-dots">'+dots+'</div>'+
+        '<button class="btn gold full bizscan-tour-next">'+(idx===steps.length-1?'Inizia':'Avanti')+'</button>';
+      card.querySelector('.bizscan-tour-skip').addEventListener('click',finish);
+      card.querySelector('.bizscan-tour-next').addEventListener('click',function(){
+        if(idx===steps.length-1){finish();return}
+        idx++;render();
+      });
+    }
+    render();
+    overlay.addEventListener('click',function(e){if(e.target===overlay)finish()});
+  }
+  buildFirstVisitTour();
 })();
