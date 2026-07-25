@@ -343,10 +343,10 @@
     if(already)return;
 
     var steps=[
-      {icon:'🔎',title:'Benvenuto su BizScan',body:'Analizziamo attività di business reali — costi, rischi, profitti — così puoi decidere prima di investire tempo o denaro.'},
-      {icon:'🗂️',title:'Come cercare',body:'Cerca un&#39;attività specifica con la barra di ricerca, oppure tocca una categoria per scoprire cosa c&#39;è disponibile.'},
-      {icon:'🔑',title:'Come funzionano i crediti',body:'Il tuo piano sblocca gli strumenti. Un <b>credito analisi</b> sblocca il contenuto completo di UNA attività a tua scelta. Un <b>credito PDF</b> serve solo per scaricare il documento — sono due cose separate.'},
-      {icon:'✓',title:'Pronto per iniziare',body:'Esplora le attività, confronta le opportunità, e usa il pulsante <b>?</b> in ogni pagina se hai dubbi lungo il percorso.'}
+      {icon:'🔎',title:'Benvenuto su BizScan',body:'Analizziamo attività di business reali — costi, rischi, profitti, tempo di recupero — con dati concreti, per aiutarti a capire se conviene davvero aprire un&#39;attività, prima di investire tempo o denaro.'},
+      {icon:'🗂️',title:'Come cercare',body:'Usa la barra di ricerca per trovare un&#39;attività specifica (es. "pizzeria" o "parrucchiere"), oppure tocca una categoria per esplorare cosa c&#39;è disponibile in quel settore. Ogni scheda mostra già gratis le cifre principali — punteggio, rischio, investimento, profitto — così puoi farti un&#39;idea prima ancora di aprire l&#39;analisi.'},
+      {icon:'🔑',title:'Come funzionano i crediti',body:'Il tuo piano (mensile) sblocca gli strumenti — grafici, indicatori, confronti — validi su tutte le attività. Ma per vedere il contenuto <b>completo</b> di una singola attività (tutte le sezioni, i numeri dettagliati) serve <b>un credito analisi</b>, che scegli tu su quale attività usare. Il <b>PDF scaricabile</b> è separato: richiede un <b>credito PDF</b> a parte, anche se hai già sbloccato l&#39;analisi stessa.'},
+      {icon:'✓',title:'Pronto per iniziare',body:'Esplora le attività, salva le tue preferite, confronta due opportunità fianco a fianco. Se in qualsiasi pagina hai dubbi su qualcosa che vedi, cerca il pulsante <b>?</b> in basso — spiega esattamente quella pagina.'}
     ];
     var idx=0;
 
@@ -380,5 +380,5 @@
     render();
     overlay.addEventListener('click',function(e){if(e.target===overlay)finish()});
   }
-  buildFirstVisitTour();
+  setTimeout(buildFirstVisitTour,3500);
 })();
