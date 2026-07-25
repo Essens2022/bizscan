@@ -338,6 +338,9 @@
     var permanentlyDismissed=false;
     try{permanentlyDismissed=localStorage.getItem('bizscan_tour_dismissed')==='1'}catch(_){}
     if(permanentlyDismissed)return;
+    var dismissedThisTab=false;
+    try{dismissedThisTab=sessionStorage.getItem('bizscan_tour_session_dismissed')==='1'}catch(_){}
+    if(dismissedThisTab)return;
 
     var steps=[
       {icon:'🔎',title:'Benvenuto su BizScan',body:'Analizziamo attività di business reali — costi, rischi, profitti, tempo di recupero — con dati concreti, per aiutarti a capire se conviene davvero aprire un&#39;attività, prima di investire tempo o denaro.'},
@@ -355,6 +358,7 @@
     document.body.appendChild(overlay);
 
     function finish(){
+      try{sessionStorage.setItem('bizscan_tour_session_dismissed','1')}catch(_){}
       var chk=card.querySelector('#bizscanTourDismissChk');
       if(chk && chk.checked){
         try{localStorage.setItem('bizscan_tour_dismissed','1')}catch(_){}
