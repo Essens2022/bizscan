@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607251344"></script>
-<script src="app.js?v=202607251344"></script>
+ <script src="supabase-data.js?v=202607251349"></script>
+<script src="app.js?v=202607251349"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1485,6 +1485,9 @@ async function importAnalysisFromFile(file){
     setValIfExists("risk",data.risk_score??"")
     setValIfExists("investment",data.investment_display||data.investment||"")
     setValIfExists("profit",data.profit_display||data.profit||"")
+    document.getElementById("profitMode").value="custom"
+    profitModeChanged()
+    setValIfExists("profit",data.profit_display||data.profit||"")
     setValIfExists("payback",data.payback_display||data.payback||"")
     setValIfExists("cardBadge",data.card_label||"")
     setValIfExists("price",data.price??"")
@@ -2194,5 +2197,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607251344"></script></body>
+<script src="shell-ui.js?v=202607251349"></script></body>
 </html>
