@@ -511,7 +511,7 @@ function lockedCta(toolKey){
  const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Richiede piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
-  return `${pill}<a href="account.html?next=${encodeURIComponent(location.pathname+location.search)}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
+  return `${pill}<a href="account.html?next=${encodeURIComponent(location.pathname+location.search+location.hash)}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
  }
  const userPlan=access.plan||'free';
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
@@ -587,7 +587,7 @@ function confirmWithdrawalWaiver(priceLabel,onConfirm){
 }
 window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
- if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi</a>');return}
+ if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search+location.hash)+'">Accedi</a>');return}
  confirmWithdrawalWaiver('',()=>window._doUnlockTool(toolKey));
 }
 window._doUnlockTool=async(toolKey)=>{
@@ -647,7 +647,10 @@ function tabContent(tab){
  }
  return '';
 }
-function bindTabs(){const nav=$('.tabs'),content=$('#analysisTabContent');if(!nav||!content)return;nav.querySelectorAll('button').forEach(b=>{const activate=()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');content.innerHTML=b.dataset.tab==='overview'?analysisOverview(findCurrent()):tabContent(b.dataset.tab);b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})};b.addEventListener('click',activate);let touchStartX=0,touchStartY=0,touchMoved=false;b.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchMoved=false},{passive:true});b.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-touchStartX),dy=Math.abs(e.touches[0].clientY-touchStartY);if(dx>8||dy>8)touchMoved=true},{passive:true});b.addEventListener('touchend',e=>{if(touchMoved)return;e.preventDefault();activate()},{passive:false})})}
+function bindTabs(){const nav=$('.tabs'),content=$('#analysisTabContent');if(!nav||!content)return;nav.querySelectorAll('button').forEach(b=>{const activate=()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');content.innerHTML=b.dataset.tab==='overview'?analysisOverview(findCurrent()):tabContent(b.dataset.tab);b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});try{history.replaceState(null,'','#'+b.dataset.tab)}catch(_){}};b.addEventListener('click',activate);let touchStartX=0,touchStartY=0,touchMoved=false;b.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchMoved=false},{passive:true});b.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-touchStartX),dy=Math.abs(e.touches[0].clientY-touchStartY);if(dx>8||dy>8)touchMoved=true},{passive:true});b.addEventListener('touchend',e=>{if(touchMoved)return;e.preventDefault();activate()},{passive:false})});
+ const savedTab=(location.hash||'').replace('#','');
+ if(savedTab){const btn=[...nav.querySelectorAll('button')].find(x=>x.dataset.tab===savedTab);if(btn)btn.click()}
+}
 window.refreshReportAccess=async slug=>{
  const p=analyses.find(x=>x.slug===slug),note=document.getElementById('reportAccessNote'),btn=document.getElementById('downloadReportBtn');
  if(!note||!btn)return;
