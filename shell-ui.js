@@ -292,14 +292,23 @@
     'compare':{title:'Come funziona il confronto',body:'<p>Scegli due attività per confrontarle fianco a fianco — punteggio, rischio, investimento, profitto.</p><p>Il consiglio di BizScan sotto il confronto si aggiorna automaticamente in base ai dati reali delle due attività scelte.</p>'}
   };
   function currentPageKey(){
-    var p=location.pathname.split('/').pop().replace('.html','')||'index';
+    var raw=location.pathname.split('/').pop()||'';
+    var p=raw.replace('.html','');
+    if(p===''||p==='/')p='index';
     return HELP_CONTENT[p]?p:null;
   }
   function buildHelpButton(){
     var key=currentPageKey();
+    var existingBtn=document.getElementById('bizscanHelpBtn');
+    var existingPanel=document.getElementById('bizscanHelpPanel');
+    if(existingBtn)existingBtn.remove();
+    if(existingPanel)existingPanel.remove();
     if(!key)return;
     var btn=document.createElement('button');
     btn.id='bizscanHelpBtn';
+    var alreadySeen=false;
+    try{alreadySeen=sessionStorage.getItem('bizscan_help_seen')==='1'}catch(_){}
+    if(!alreadySeen)btn.className='bizscan-help-pulse';
     btn.setAttribute('aria-label','Aiuto');
     btn.textContent='?';
     document.body.appendChild(btn);
@@ -308,7 +317,11 @@
     var c=HELP_CONTENT[key];
     panel.innerHTML='<div class="bizscan-help-head"><strong>'+c.title+'</strong><button aria-label="Chiudi">×</button></div><div class="bizscan-help-body">'+c.body+'</div>';
     document.body.appendChild(panel);
-    function toggle(){panel.classList.toggle('is-open')}
+    function toggle(){
+      panel.classList.toggle('is-open')
+      btn.classList.remove('bizscan-help-pulse')
+      try{sessionStorage.setItem('bizscan_help_seen','1')}catch(_){}
+    }
     btn.addEventListener('click',function(e){e.stopPropagation();toggle()});
     panel.querySelector('button').addEventListener('click',toggle);
     document.addEventListener('click',function(e){
