@@ -335,6 +335,8 @@
 
   // ---------- Tour guidato alla prima visita (solo homepage, una volta sola) ----------
   function buildFirstVisitTour(){
+    var page=location.pathname.split('/').pop()||'';
+    if(page==='admin.html')return;
     var permanentlyDismissed=false;
     try{permanentlyDismissed=localStorage.getItem('bizscan_tour_dismissed')==='1'}catch(_){}
     if(permanentlyDismissed)return;

@@ -37,7 +37,7 @@ textarea{min-height:92px;resize:vertical}
 .toolbar{display:grid;grid-template-columns:1fr 150px 150px;gap:8px;margin-bottom:12px}
 .preview{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#11161d}
 .preview-top{height:155px;padding:14px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(135deg,#5f2200,#ff8a00)}.preview-top span{font-size:46px}.preview-body{padding:14px}.preview-body h3{margin:0 0 6px;font-size:20px}.preview-body p{margin:0;color:var(--muted);font-size:13px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.metric{padding:9px;border-radius:12px;background:#1b2029;border:1px solid #2c333e}.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{font-size:12px}
-.item{display:grid;grid-template-columns:28px 52px 1fr auto;gap:10px;align-items:center;padding:11px;border-radius:16px;background:#171b22;border:1px solid var(--line);margin-bottom:8px}.item-position{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,#2a2408,#171307);border:1px solid rgba(255,180,0,.35);color:var(--yellow);font-size:13px;font-weight:900}.item-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#242a34;font-size:26px}.item-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#242a34}.item h3{margin:0 0 4px;font-size:15px}.item small{color:var(--muted)}.item-menu{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.mini{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:#222731;color:#fff}
+.item{display:grid;grid-template-columns:28px 52px 1fr auto;gap:10px;align-items:center;padding:11px;border-radius:16px;background:#171b22;border:1px solid var(--line);margin-bottom:8px}.item-position{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,#2a2408,#171307);border:1px solid rgba(255,180,0,.35);color:var(--yellow);font-size:13px;font-weight:900}.item-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:#242a34;font-size:26px}.item-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#242a34}.item h3{margin:0 0 4px;font-size:15px}.item small{color:var(--muted)}.item-menu{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.mini{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:#222731;color:#fff}.dash-item{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;padding:11px;border-radius:16px;background:#171b22;border:1px solid var(--line);margin-bottom:8px}.dash-item h3{margin:0 0 4px;font-size:15px}.dash-item small{color:var(--muted)}
 .badge{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;margin-left:6px}.b-pub{background:rgba(45,212,167,.12);color:#baf4df}.b-draft{background:rgba(255,183,3,.12);color:#ffe3a3}.b-hidden{background:rgba(255,77,79,.12);color:#ffb2b3}
 .empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
 .notice{padding:12px;border-radius:14px;background:rgba(58,134,255,.10);border:1px solid rgba(58,134,255,.24);color:#d5e6ff;font-size:13px;line-height:1.45}
@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607251143"></script>
-<script src="app.js?v=202607251143"></script>
+ <script src="supabase-data.js?v=202607251344"></script>
+<script src="app.js?v=202607251344"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1930,7 +1930,7 @@ function renderDashboard(){
   const all=analyses(),pub=all.filter(x=>x.status==="published").length,draft=all.filter(x=>x.status==="draft").length,total=Math.max(all.length,1)
   document.getElementById("barPublished").style.width=(pub/total*100)+"%"
   document.getElementById("barDraft").style.width=(draft/total*100)+"%"
-  document.getElementById("latest").innerHTML=all.slice().sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at)).slice(0,5).map(x=>`<div class="item"><div class="item-icon">${x.emoji}</div><div><h3>${x.title}</h3><small>${x.status} · ${x.category_name}</small></div></div>`).join("")||'<div class="empty">Nessuna analisi</div>'
+  document.getElementById("latest").innerHTML=all.slice().sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at)).slice(0,5).map(x=>`<div class="dash-item"><div class="item-icon">${x.emoji}</div><div><h3>${x.title}</h3><small>${x.status} · ${x.category_name}</small></div></div>`).join("")||'<div class="empty">Nessuna analisi</div>'
 }
 
 function renderStats(){
@@ -2194,5 +2194,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607251143"></script></body>
+<script src="shell-ui.js?v=202607251344"></script></body>
 </html>
