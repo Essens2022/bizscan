@@ -23,8 +23,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .pwa-install-bar{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(90deg,#0d1420,#151f30);border-bottom:1px solid var(--line2)}
 .pwa-install-bar img{width:30px;height:30px;border-radius:8px;flex-shrink:0}
 #bizscanHelpBtn{position:fixed;right:18px;bottom:18px;z-index:250;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,180,0,.4);background:radial-gradient(circle at 30% 30%,#241a08,#0e0a03);color:#ffbf2f;font-size:19px;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.4),0 0 0 4px rgba(255,180,0,.06);cursor:pointer}
-#bizscanHelpBtn.bizscan-help-pulse{animation:bizscanHelpPulse 2.2s ease-out infinite}
-#bizscanHelpBtn.bizscan-help-pulse::after{content:"";position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(255,180,0,.5);animation:bizscanHelpRing 2.2s ease-out infinite}
+#bizscanHelpBtn.bizscan-help-pulse{animation:bizscanHelpPulse 2.2s ease-out infinite;animation-play-state:running;will-change:box-shadow}
+#bizscanHelpBtn.bizscan-help-pulse::after{content:"";position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(255,180,0,.5);animation:bizscanHelpRing 2.2s ease-out infinite;animation-play-state:running;will-change:transform,opacity}
 @keyframes bizscanHelpPulse{0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.4),0 0 0 4px rgba(255,180,0,.06)}50%{box-shadow:0 10px 26px rgba(0,0,0,.4),0 0 0 4px rgba(255,180,0,.16)}}
 @keyframes bizscanHelpRing{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.9);opacity:0}}
 #bizscanHelpBtn:hover{border-color:rgba(255,180,0,.7)}

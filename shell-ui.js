@@ -306,12 +306,16 @@
     if(!key)return;
     var btn=document.createElement('button');
     btn.id='bizscanHelpBtn';
-    var alreadySeen=false;
-    try{alreadySeen=sessionStorage.getItem('bizscan_help_seen')==='1'}catch(_){}
-    if(!alreadySeen)btn.className='bizscan-help-pulse';
+    btn.className='bizscan-help-pulse';
     btn.setAttribute('aria-label','Aiuto');
     btn.textContent='?';
     document.body.appendChild(btn);
+    var pulseInterval=setInterval(function(){
+      if(!btn.classList.contains('bizscan-help-pulse')){clearInterval(pulseInterval);return}
+      btn.classList.remove('bizscan-help-pulse')
+      void btn.offsetWidth // forza il browser a "vedere" il cambio prima di riaggiungere la classe
+      btn.classList.add('bizscan-help-pulse')
+    },6000)
     var panel=document.createElement('div');
     panel.id='bizscanHelpPanel';
     var c=HELP_CONTENT[key];
@@ -320,7 +324,6 @@
     function toggle(){
       panel.classList.toggle('is-open')
       btn.classList.remove('bizscan-help-pulse')
-      try{sessionStorage.setItem('bizscan_help_seen','1')}catch(_){}
     }
     btn.addEventListener('click',function(e){e.stopPropagation();toggle()});
     panel.querySelector('button').addEventListener('click',toggle);
