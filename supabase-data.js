@@ -9,6 +9,18 @@ async function getSupabaseClient(){
     _clientPromise=(async()=>{
       const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
       _client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      // Conferma email (e altri magic link) usano il flusso PKCE: l'URL di ritorno contiene
+      // un parametro ?code=... che va scambiato esplicitamente per una sessione attiva.
+      // Senza questo passaggio, detectSessionInUrl (pensato per il vecchio flusso a hash)
+      // non basta da solo, e la persona resta disconnessa anche dopo aver confermato l'email.
+      const codeParam=new URLSearchParams(location.search).get("code");
+      if(codeParam){
+        try{
+          await _client.auth.exchangeCodeForSession(window.location.href);
+          const cleanUrl=location.pathname+location.search.replace(/[?&]code=[^&]+/,"").replace(/^&/,"?")+location.hash;
+          history.replaceState(null,"",cleanUrl.replace(/\?$/,""));
+        }catch(e){console.warn("Scambio codice PKCE non riuscito",e)}
+      }
       return _client;
     })();
   }
