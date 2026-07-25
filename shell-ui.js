@@ -161,7 +161,7 @@
       {c:'src-istat',t:'ISTAT'},
       {c:'src-mit',t:'MIT'},
       {c:'src-mimit',t:'MIMIT'},
-      {c:'src-ade',t:'Agenzia Entrate'},
+      {c:'src-ade',t:'Agenzia delle Entrate'},
       {c:'src-unioncamere',t:'Unioncamere'},
       {c:'src-camcom',t:'Camere di Commercio'},
       {c:'src-infocamere',t:'InfoCamere'},
