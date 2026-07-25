@@ -281,18 +281,18 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA</small><h2>Opportunità in evidenza</h2></div><a href="search.html">Vedi tutte</a></div>
+   <div class="home18-head"><div><small>ESPLORA</small><h2>Opportunità in evidenza</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
    <div class="home18-filters" role="tablist" aria-label="Filtra opportunità"><button class="${homeFilter==='recommended'?'active':''}" type="button" onclick="setHomeFilter('recommended')">Consigliate</button><button class="${homeFilter==='low-risk'?'active':''}" type="button" onclick="setHomeFilter('low-risk')">Basso rischio</button><button class="${homeFilter==='fast-return'?'active':''}" type="button" onclick="setHomeFilter('fast-return')">Rientro rapido</button><button class="${homeFilter==='high-profit'?'active':''}" type="button" onclick="setHomeFilter('high-profit')">Profitto alto</button><button class="${homeFilter==='online'?'active':''}" type="button" onclick="setHomeFilter('online')">Online</button></div>
    <div class="home18-carousel" id="homeFeaturedCarousel">${featured.length?featured.map(card).join(''):'<div class="home18-filter-empty">Nessuna analisi disponibile per questo filtro</div>'}</div>
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html">Tutte le categorie</a></div>
+   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
    <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?category=${encodeURIComponent(n.toLowerCase())}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>PIATTAFORMA</small><h2>Strumenti di analisi</h2></div><a href="search.html?tools=1">Apri tutti gli strumenti</a></div>
+   <div class="home18-head"><div><small>PIATTAFORMA</small><h2>Strumenti di analisi</h2></div><a href="search.html?tools=1" class="home18-head-link">Apri tutto <span>→</span></a></div>
    <div class="home18-dashboard">
     <article class="home18-score-card">
      <div class="home18-score-top">${scoreRing(82,'large')}<div><small>BIZSCAN SCORE</small><h3>Punteggio su 100</h3><p>Rischio, investimento, profitto e rientro in un unico numero</p></div></div>
@@ -308,7 +308,7 @@ function renderHome(){
   </section>
 
   ${hasData?`<section class="home18-section">
-   <div class="home18-head"><div><small>CONFRONTO</small><h2>Metti a confronto due business</h2></div><a href="compare.html">Apri confronto</a></div>
+   <div class="home18-head"><div><small>CONFRONTO</small><h2>Metti a confronto due business</h2></div><a href="compare.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
    <div class="home18-compare">${[lead,second].map(p=>`<article><h3>${esc(p.title)}</h3><div><span>Score</span><b>${Number(p.score)||0}/100</b></div><div><span>Rischio</span><b>${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div><div><span>Rientro</span><b>${esc(p.payback||'—')}</b></div><div><span>Vantaggio</span><b class="home18-winner">${esc(p.verdictLabel||'Da valutare')}</b></div></article>`).join('')}</div>
   </section>`:`<section class="home18-section">
    <div class="home18-head"><div><small>CONFRONTO</small><h2>Metti a confronto due business</h2></div></div>
