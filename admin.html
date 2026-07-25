@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607251118"></script>
-<script src="app.js?v=202607251118"></script>
+ <script src="supabase-data.js?v=202607251132"></script>
+<script src="app.js?v=202607251132"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1759,6 +1759,7 @@ async function editAnalysis(id){
   document.getElementById("slug").value=x.slug||""
   document.getElementById("category").value=x.category_id||""
   document.getElementById("emoji").value=x.emoji||""
+  renderEmojiPicker()
   document.getElementById("summary").value=x.short_description||""
   document.getElementById("videoUrl").value=x.video_url||""
   document.getElementById("score").value=x.bizscan_score??0
@@ -2193,5 +2194,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607251118"></script></body>
+<script src="shell-ui.js?v=202607251132"></script></body>
 </html>
