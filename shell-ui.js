@@ -280,4 +280,40 @@
       }
     },1200);
   }
+
+  // ---------- Pulsante di aiuto contestuale ----------
+  var HELP_CONTENT={
+    'index':{title:'Cosa trovi in questa pagina',body:'<p>BizScan analizza attività di business reali — costi, rischi, profitti — così puoi decidere prima di investire tempo o denaro.</p><p><b>Come funzionano i crediti:</b> il tuo piano sblocca gli strumenti (grafici, indicatori), ma per vedere il contenuto <b>completo</b> di una singola attività serve un credito analisi. Per scaricare il PDF completo serve un credito PDF separato.</p><p>Tocca una categoria o cerca un&#39;attività per iniziare.</p>'},
+    'search':{title:'Come cercare',body:'<p>Usa la barra di ricerca per un&#39;attività specifica, oppure tocca una categoria per filtrare.</p><p>I filtri rapidi (rischio basso, rientro veloce, ecc.) riordinano i risultati in base a quel criterio.</p><p>Ogni scheda mostra le cifre principali gratis — per il dettaglio completo serve sbloccare l&#39;analisi.</p>'},
+    'analysis':{title:'Cosa è gratis e cosa è premium',body:'<p>Le prime sezioni (Panoramica) sono sempre visibili gratis. Le sezioni con il lucchetto richiedono <b>un credito analisi</b> oppure un piano che le includa.</p><p>Il PDF scaricabile è separato — richiede <b>un credito PDF</b>, anche se hai già sbloccato l&#39;analisi.</p><p>Il pulsante di sblocco ti mostra sempre quanti crediti userai prima di confermare.</p>'},
+    'pricing':{title:'Piano o crediti — qual è la differenza',body:'<p><b>Il piano</b> (mensile) sblocca gli strumenti — grafici, indicatori, confronti — su tutte le attività.</p><p><b>I crediti</b> sono separati: ogni credito analisi sblocca il contenuto completo di UNA attività specifica, a tua scelta. I crediti PDF servono solo per scaricare il documento.</p><p>Puoi comprare crediti aggiuntivi in qualsiasi momento, anche senza cambiare piano.</p>'},
+    'account':{title:'La tua pagina account',body:'<p>Qui vedi i tuoi crediti disponibili (analisi e PDF), le analisi già sbloccate, e i report scaricabili.</p><p>La cronologia degli acquisti è nella sezione Fatturazione.</p>'},
+    'library':{title:'I tuoi preferiti e report',body:'<p>Qui trovi le attività che hai salvato come preferite, e i report PDF che hai già sbloccato — pronti per essere riaperti in qualsiasi momento, senza consumare crediti di nuovo.</p>'},
+    'compare':{title:'Come funziona il confronto',body:'<p>Scegli due attività per confrontarle fianco a fianco — punteggio, rischio, investimento, profitto.</p><p>Il consiglio di BizScan sotto il confronto si aggiorna automaticamente in base ai dati reali delle due attività scelte.</p>'}
+  };
+  function currentPageKey(){
+    var p=location.pathname.split('/').pop().replace('.html','')||'index';
+    return HELP_CONTENT[p]?p:null;
+  }
+  function buildHelpButton(){
+    var key=currentPageKey();
+    if(!key)return;
+    var btn=document.createElement('button');
+    btn.id='bizscanHelpBtn';
+    btn.setAttribute('aria-label','Aiuto');
+    btn.textContent='?';
+    document.body.appendChild(btn);
+    var panel=document.createElement('div');
+    panel.id='bizscanHelpPanel';
+    var c=HELP_CONTENT[key];
+    panel.innerHTML='<div class="bizscan-help-head"><strong>'+c.title+'</strong><button aria-label="Chiudi">×</button></div><div class="bizscan-help-body">'+c.body+'</div>';
+    document.body.appendChild(panel);
+    function toggle(){panel.classList.toggle('is-open')}
+    btn.addEventListener('click',function(e){e.stopPropagation();toggle()});
+    panel.querySelector('button').addEventListener('click',toggle);
+    document.addEventListener('click',function(e){
+      if(panel.classList.contains('is-open') && !panel.contains(e.target) && e.target!==btn)panel.classList.remove('is-open');
+    });
+  }
+  buildHelpButton();
 })();
