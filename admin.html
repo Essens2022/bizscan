@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607251114"></script>
-<script src="app.js?v=202607251114"></script>
+ <script src="supabase-data.js?v=202607251118"></script>
+<script src="app.js?v=202607251118"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1947,7 +1947,27 @@ function resetForm(){
   coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
   loadDisplayDataForm(null)
 }
-function readCover(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{coverData=r.result;document.getElementById("coverName").textContent=f.name;preview()};r.readAsDataURL(f)}
+function readCover(input){
+  const f=input.files[0];if(!f)return
+  const r=new FileReader()
+  r.onload=()=>{
+    const img=new Image()
+    img.onload=()=>{
+      const MAX_W=1600
+      let w=img.width,h=img.height
+      if(w>MAX_W){h=Math.round(h*(MAX_W/w));w=MAX_W}
+      const canvas=document.createElement("canvas")
+      canvas.width=w;canvas.height=h
+      canvas.getContext("2d").drawImage(img,0,0,w,h)
+      coverData=canvas.toDataURL("image/jpeg",0.82)
+      const approxKB=Math.round(coverData.length*0.75/1024)
+      document.getElementById("coverName").textContent=f.name+" (ottimizzata, ~"+approxKB+" KB)"
+      preview()
+    }
+    img.src=r.result
+  }
+  r.readAsDataURL(f)
+}
 function readPdf(input){const f=input.files[0];if(!f)return;pdfMeta={name:f.name,size:f.size,type:f.type};document.getElementById("pdfName").textContent=f.name}
 function preview(){
   document.getElementById("pTitle").textContent=val("title")||"Titolo dell’analisi";document.getElementById("pCategory").textContent=document.getElementById("category")?.selectedOptions?.[0]?.textContent||"Ristorazione";document.getElementById("pEmoji").textContent=val("emoji")||"";document.getElementById("pSummary").textContent=val("summary")||"Costi profitto rischio e tempo di rientro";document.getElementById("pRisk").textContent=val("risk")||"50";document.getElementById("pInvestment").textContent=val("investment")||"150K €";document.getElementById("pScore").textContent=val("score")||"80";document.getElementById("pPlacement").textContent=placementLabel(placementValues());document.getElementById("pBadge").textContent=val("cardBadge")||"Nessuna etichetta";document.getElementById("previewTop").style.background=coverData?`linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.25)),url('${coverData}') center/cover`:"linear-gradient(135deg,#5f2200,#ff8a00)"
@@ -2173,5 +2193,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607251114"></script></body>
+<script src="shell-ui.js?v=202607251118"></script></body>
 </html>
