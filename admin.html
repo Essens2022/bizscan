@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607251349"></script>
-<script src="app.js?v=202607251349"></script>
+ <script src="supabase-data.js?v=202607251424"></script>
+<script src="app.js?v=202607251424"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1785,6 +1785,8 @@ async function editAnalysis(id){
   document.getElementById("profit").value=x.profit_display||""
   profitModeChanged()
   coverData="";pdfMeta=null
+  document.getElementById("cover").value=""
+  document.getElementById("pdf").value=""
   const cover=(x.attachments||[]).find(a=>a.type==="cover")
   const pdf=(x.attachments||[]).find(a=>a.type==="pdf")
   document.getElementById("coverName").textContent=cover?(cover.file_name||"Copertina caricata"):"Nessuna immagine selezionata"
@@ -1948,7 +1950,7 @@ function resetForm(){
   document.querySelectorAll("#newPanel input:not([type=checkbox]),#newPanel textarea").forEach(x=>x.value="")
   document.getElementById("score").value=80;document.getElementById("risk").value=50;document.getElementById("order").value=1;document.getElementById("status").value="draft";document.getElementById("verdict").value="Conviene";document.getElementById("profitMode").value="Medio alto";document.getElementById("profit").value="Medio alto";document.getElementById("cardBadge").value="";document.getElementById("price").value="1.99";document.getElementById("tags").value="";document.getElementById("featured").checked=false;document.getElementById("popular").checked=false;document.getElementById("trending").checked=false;document.getElementById("homePosition").value="1";document.getElementById("emoji").value=""
   refreshSelects();document.querySelectorAll(".plan").forEach(x=>x.checked=x.value==="plus");document.querySelectorAll(".free").forEach(x=>x.checked=["score","risk","verdict"].includes(x.value));renderHomeSectionChecks([]);document.querySelectorAll(".placement").forEach(x=>x.checked=x.value==="home");renderEmojiPicker();renderPositionPicker();renderSectionsEditor()
-  coverData="";pdfMeta=null;document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
+  coverData="";pdfMeta=null;document.getElementById("cover").value="";document.getElementById("pdf").value="";document.getElementById("coverName").textContent="Nessuna immagine selezionata";document.getElementById("pdfName").textContent="Nessun PDF selezionato";document.getElementById("pdfFree").checked=false;document.querySelectorAll('.pdf-plan').forEach(x=>x.checked=false);document.getElementById("formTitle").textContent="Nuova analisi";_sectionDrafts=[];renderSectionsEditor();preview()
   loadDisplayDataForm(null)
 }
 function readCover(input){
@@ -2197,5 +2199,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607251349"></script></body>
+<script src="shell-ui.js?v=202607251424"></script></body>
 </html>
