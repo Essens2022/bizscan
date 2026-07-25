@@ -165,8 +165,16 @@ function paybackMonths(value){
 function filterHomeAnalyses(items,filter){
  const arr=[...items]
  if(filter==='low-risk') return arr.filter(p=>Number(p.risk)<50).sort((a,b)=>(a.risk||99)-(b.risk||99))
- if(filter==='fast-return') return arr.sort((a,b)=>paybackMonths(a.payback)-paybackMonths(b.payback))
- if(filter==='high-profit') return arr.sort((a,b)=>numericMax(b.profit)-numericMax(a.profit))
+ if(filter==='fast-return'){
+  const months=items.map(p=>paybackMonths(p.payback)).filter(n=>n<999).sort((a,b)=>a-b)
+  const median=months.length?months[Math.floor(months.length/2)]:999
+  return arr.filter(p=>paybackMonths(p.payback)<=median).sort((a,b)=>paybackMonths(a.payback)-paybackMonths(b.payback))
+ }
+ if(filter==='high-profit'){
+  const values=items.map(p=>numericMax(p.profit)).sort((a,b)=>a-b)
+  const median=values.length?values[Math.floor(values.length/2)]:0
+  return arr.filter(p=>numericMax(p.profit)>=median).sort((a,b)=>numericMax(b.profit)-numericMax(a.profit))
+ }
  if(filter==='online') return arr.filter(p=>String(p.category||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('e-commerce'))
  return arr.sort((a,b)=>(Number(a.order_index)||0)-(Number(b.order_index)||0))
 }
