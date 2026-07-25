@@ -36,7 +36,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .bizscan-help-body p{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:#c7d0dd}
 .bizscan-help-body p:last-child{margin-bottom:0}
 .bizscan-help-body b{color:#ffbf2f}
-#bizscanTourOverlay{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,9,17,.38);backdrop-filter:blur(4px)}
+#bizscanTourOverlay{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,9,17,.42);backdrop-filter:blur(5px)}
 #bizscanTourCard{position:relative;width:min(360px,100%);padding:28px 24px 22px;border-radius:22px;border:1px solid #2b3950;background:linear-gradient(160deg,#0d1626,#0a0f1a);box-shadow:0 30px 80px rgba(0,0,0,.55);text-align:center;color:#f5f7fb;animation:shellPop .2s ease-out}
 .bizscan-tour-skip{position:absolute;top:14px;right:14px;border:none;background:transparent;color:#8f9bad;font-size:12px;cursor:pointer;padding:6px 8px}
 .bizscan-tour-skip:hover{color:#f5f7fb}

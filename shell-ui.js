@@ -380,5 +380,5 @@
     render();
     overlay.addEventListener('click',function(e){if(e.target===overlay)finish()});
   }
-  setTimeout(buildFirstVisitTour,3500);
+  setTimeout(buildFirstVisitTour,10000);
 })();
