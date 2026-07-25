@@ -157,24 +157,24 @@
 
   function buildSourcesMarquee(){
     var sources=[
-      'FIPE — Federazione Italiana Pubblici Esercizi',
-      'ISTAT — Istituto Nazionale di Statistica',
-      'Ministero delle Infrastrutture e dei Trasporti',
-      'Ministero delle Imprese e del Made in Italy',
-      'Agenzia delle Entrate',
-      'Unioncamere',
-      'Camere di Commercio d\'Italia',
-      'InfoCamere',
-      'Movimprese',
-      'INPS — Istituto Nazionale Previdenza Sociale',
-      'Banca d\'Italia',
-      'Confcommercio',
-      'Confesercenti',
-      'Confartigianato'
+      {c:'src-fipe',t:'FIPE'},
+      {c:'src-istat',t:'ISTAT'},
+      {c:'src-mit',t:'MIT'},
+      {c:'src-mimit',t:'MIMIT'},
+      {c:'src-ade',t:'Agenzia Entrate'},
+      {c:'src-unioncamere',t:'Unioncamere'},
+      {c:'src-camcom',t:'Camere di Commercio'},
+      {c:'src-infocamere',t:'InfoCamere'},
+      {c:'src-movimprese',t:'Movimprese'},
+      {c:'src-inps',t:'INPS'},
+      {c:'src-bankit',t:'Banca d&#39;Italia'},
+      {c:'src-confcommercio',t:'Confcommercio'},
+      {c:'src-confesercenti',t:'Confesercenti'},
+      {c:'src-confartigianato',t:'Confartigianato'}
     ];
-    var badge=function(t){return '<span class="footer-source-badge">'+t+'</span>'};
+    var badge=function(s){return '<span class="src-badge '+s.c+'">'+s.t+'</span>'};
     var row=sources.map(badge).join('');
-    return '<div class="footer-sources"><small class="footer-sources-label">Dati ufficiali e verificati, tra le fonti che consultiamo</small>'
+    return '<div class="footer-sources"><strong class="footer-sources-label">Dati ufficiali e verificati, tra le fonti che consultiamo</strong>'
       +'<div class="footer-sources-track"><div class="footer-sources-row">'+row+row+'</div></div></div>';
   }
 
