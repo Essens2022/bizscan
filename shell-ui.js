@@ -429,4 +429,29 @@
     overlay.addEventListener('click',function(e){if(e.target===overlay)finish()});
   }
   setTimeout(buildFirstVisitTour,10000);
+
+  // ---------- Ritorno universale al punto esatto (non solo la pagina/tab, anche lo scroll) ----------
+  window.buildReturnUrl=function(){
+    var y=Math.round(window.scrollY||window.pageYOffset||0);
+    var hash=location.hash||'';
+    var base=location.pathname+location.search;
+    var sep=hash?'&':'#';
+    // Se c'è già un hash (es. #risks), aggiungiamo il parametro di scroll dopo un separatore interno;
+    // altrimenti usiamo l'hash stesso per portare lo scroll, senza bisogno di query string aggiuntive.
+    return hash ? (base+hash+'__y'+y) : (base+'#__y'+y);
+  };
+  (function restoreScrollIfNeeded(){
+    var h=location.hash||'';
+    var m=h.match(/__y(\d+)$/);
+    if(!m)return;
+    var targetY=parseInt(m[1],10);
+    var cleanHash=h.replace(/__y\d+$/,'');
+    try{history.replaceState(null,'',location.pathname+location.search+cleanHash)}catch(_){}
+    var attempts=0;
+    var iv=setInterval(function(){
+      attempts++;
+      window.scrollTo(0,targetY);
+      if(attempts>=15)clearInterval(iv);
+    },200);
+  })();
 })();
