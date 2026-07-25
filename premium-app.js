@@ -647,7 +647,7 @@ function tabContent(tab){
  }
  return '';
 }
-function bindTabs(){const nav=$('.tabs'),content=$('#analysisTabContent');if(!nav||!content)return;nav.querySelectorAll('button').forEach(b=>{const activate=()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');content.innerHTML=b.dataset.tab==='overview'?analysisOverview(findCurrent()):tabContent(b.dataset.tab);b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})};b.addEventListener('click',activate);b.addEventListener('touchend',e=>{e.preventDefault();activate()},{passive:false})})}
+function bindTabs(){const nav=$('.tabs'),content=$('#analysisTabContent');if(!nav||!content)return;nav.querySelectorAll('button').forEach(b=>{const activate=()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');content.innerHTML=b.dataset.tab==='overview'?analysisOverview(findCurrent()):tabContent(b.dataset.tab);b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})};b.addEventListener('click',activate);let touchStartX=0,touchStartY=0,touchMoved=false;b.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchMoved=false},{passive:true});b.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-touchStartX),dy=Math.abs(e.touches[0].clientY-touchStartY);if(dx>8||dy>8)touchMoved=true},{passive:true});b.addEventListener('touchend',e=>{if(touchMoved)return;e.preventDefault();activate()},{passive:false})})}
 window.refreshReportAccess=async slug=>{
  const p=analyses.find(x=>x.slug===slug),note=document.getElementById('reportAccessNote'),btn=document.getElementById('downloadReportBtn');
  if(!note||!btn)return;
