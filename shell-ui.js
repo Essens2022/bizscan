@@ -160,9 +160,17 @@
       'FIPE — Federazione Italiana Pubblici Esercizi',
       'ISTAT — Istituto Nazionale di Statistica',
       'Ministero delle Infrastrutture e dei Trasporti',
+      'Ministero delle Imprese e del Made in Italy',
       'Agenzia delle Entrate',
       'Unioncamere',
-      'Camere di Commercio d\'Italia'
+      'Camere di Commercio d\'Italia',
+      'InfoCamere',
+      'Movimprese',
+      'INPS — Istituto Nazionale Previdenza Sociale',
+      'Banca d\'Italia',
+      'Confcommercio',
+      'Confesercenti',
+      'Confartigianato'
     ];
     var badge=function(t){return '<span class="footer-source-badge">'+t+'</span>'};
     var row=sources.map(badge).join('');
