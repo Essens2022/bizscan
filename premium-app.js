@@ -511,7 +511,7 @@ function lockedCta(toolKey){
  const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Richiede piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
-  return `${pill}<a href="account.html" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
+  return `${pill}<a href="account.html?next=${encodeURIComponent(location.pathname+location.search)}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
  }
  const userPlan=access.plan||'free';
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
@@ -587,7 +587,7 @@ function confirmWithdrawalWaiver(priceLabel,onConfirm){
 }
 window.unlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
- if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html">Accedi</a>');return}
+ if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi</a>');return}
  confirmWithdrawalWaiver('',()=>window._doUnlockTool(toolKey));
 }
 window._doUnlockTool=async(toolKey)=>{
@@ -691,7 +691,7 @@ window._doDownloadReport=async slug=>{
   if(!pdf){modal('Report PDF non disponibile','<p>Il PDF non risulta collegato a questa analisi.</p>');return}
   const result=await BizScanData.requestPdfAccess(pdf.id);
   if(!result.allowed){
-    if(result.reason==='auth_required'){location.href='account.html';return}
+    if(result.reason==='auth_required'){location.href='account.html?next='+encodeURIComponent(location.pathname+location.search);return}
     if(result.reason==='plan_not_allowed'){modal('Rapporto non incluso','<p>Il piano attivo non consente di sbloccare questo rapporto.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
     if(result.reason==='no_credits'){modal('Crediti PDF esauriti','<p>Hai già utilizzato tutti i crediti PDF disponibili. I rapporti già sbloccati restano accessibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti PDF</a>');return}
     modal('Rapporto bloccato',`<p>${esc(result.message||'Questo rapporto non è disponibile per il tuo account')}</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
@@ -891,7 +891,7 @@ window.chooseAddon=async type=>{
   modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Questo prodotto non è ancora disponibile singolarmente. Nel frattempo puoi trovarlo incluso nei pacchetti.</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');
   return;
  }
- if(!access.authenticated){modal(item[0],'<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
+ if(!access.authenticated){modal(item[0],'<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi o registrati</a>');return}
  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
@@ -901,7 +901,7 @@ window.chooseAddon=async type=>{
    try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
   }
   if(!session?.access_token){
-   modal(item[0],'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html">Accedi</a>');
+   modal(item[0],'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi</a>');
    return;
   }
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
@@ -930,7 +930,7 @@ function invoiceRowHtml(o){
 async function renderInvoices(){
  const host=$('#invoicesContent');if(!host)return;
  if(!access.authenticated){
-  host.innerHTML='<div class="empty"><h1>Fatturazione</h1><p>Accedi al tuo account per vedere la cronologia dei tuoi acquisti.</p><a class="btn gold" href="account.html">Accedi</a></div>';
+  host.innerHTML='<div class="empty"><h1>Fatturazione</h1><p>Accedi al tuo account per vedere la cronologia dei tuoi acquisti.</p><a class="btn gold" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi</a></div>';
   return;
  }
  host.innerHTML='<section class="page-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
@@ -946,7 +946,7 @@ async function renderInvoices(){
  }
 }
 window.choosePdfPack=async(count,price)=>{
- if(!access.authenticated){modal('Crediti PDF','<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html">Accedi o registrati</a>');return}
+ if(!access.authenticated){modal('Crediti PDF','<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi o registrati</a>');return}
  confirmWithdrawalWaiver(euro(price),()=>window._doChoosePdfPack(count,price));
 }
 window._doChoosePdfPack=async(count,price)=>{
@@ -959,7 +959,7 @@ window._doChoosePdfPack=async(count,price)=>{
    try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
   }
   if(!session?.access_token){
-   modal('Crediti PDF','<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html">Accedi</a>');
+   modal('Crediti PDF','<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(location.pathname+location.search)+'">Accedi</a>');
    return;
   }
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
@@ -1083,7 +1083,7 @@ async function refreshCompareAdvice(a,b){
    const winnerBadge=advice.winner?`<div class="advice-winner-badge"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Consigliamo: ${esc(advice.winner)}</div>`:'';
    section.innerHTML=`<div class="advice-card unlocked"><div class="advice-visual">${visual}</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>${advice.text}</p>${winnerBadge}</div></div>`;
   }else if(status.reason==='auth_required'){
-   section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Accedi al tuo account per sbloccare il nostro consiglio su questo confronto.</p><a class="btn purple" href="account.html">Accedi</a></div></div>`;
+   section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Accedi al tuo account per sbloccare il nostro consiglio su questo confronto.</p><a class="btn purple" href="account.html?next=${encodeURIComponent(location.pathname+location.search)}">Accedi</a></div></div>`;
   }else if(status.reason==='can_unlock_with_credit'){
    section.innerHTML=`<div class="advice-card"><div class="advice-lock">🔒</div><div class="advice-copy"><h3>Il consiglio di BizScan</h3><p>Qual è, tra queste due attività, la scelta su cui ci sentiamo di puntare di più? Sblocca il nostro consiglio con 1 credito di analisi.</p><button class="btn purple" onclick="unlockCompareAdvice('${a.id}','${b.id}')">Sblocca con 1 credito</button></div></div>`;
   }else{
