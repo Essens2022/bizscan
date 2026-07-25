@@ -512,6 +512,12 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .site-footer{margin-top:36px;padding:40px 26px 26px;border-top:1px solid var(--line);text-align:center;display:flex;flex-direction:column;align-items:center}
 .footer-brand{max-width:420px}
 .footer-sources{margin:18px 0 4px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.footer-social{margin:16px 0}
+.footer-social-label{display:block;color:var(--muted);font-size:11px;margin-bottom:8px}
+.footer-social-icons{display:flex;gap:8px}
+.social-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;transition:filter .15s,transform .15s}
+.social-badge:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.social-youtube{background:#ff0000;color:#fff}
 .footer-sources-label{display:block;color:#e7ecf3;font-size:14px;font-weight:800;margin-bottom:12px}
 .src-badge{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;height:30px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
 .src-fipe{background:#0b3d91;color:#fff}

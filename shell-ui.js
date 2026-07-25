@@ -215,6 +215,9 @@
       +'<div class="footer-col"><h4>Account</h4><a href="account.html">Il mio account</a><a href="library.html?view=reports">I miei report</a><a href="account.html">Assistenza</a></div>'
       +'<div class="footer-col"><h4>Legale</h4><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="termini.html">Termini e Condizioni</a><a href="#" onclick="event.preventDefault();if(window.openCookiePreferences)window.openCookiePreferences()">Gestisci preferenze cookie</a></div>'
       +'</div>'
+      +'<div class="footer-social"><small class="footer-social-label">Seguici</small><div class="footer-social-icons">'
+      +'<a href="https://www.youtube.com/@BizScanItalia" target="_blank" rel="noopener" class="social-badge social-youtube" aria-label="YouTube"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z"/></svg></a>'
+      +'</div></div>'
       +'<div class="footer-bottom">© '+year+' BizScan. Tutti i diritti riservati.</div>'
       +'</footer>';
     shell.insertAdjacentHTML('beforeend',html);
