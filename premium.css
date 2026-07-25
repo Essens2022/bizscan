@@ -45,6 +45,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 #bizscanTourCard p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#c7d0dd}
 #bizscanTourCard p b{color:#ffbf2f}
 .bizscan-tour-dots{display:flex;justify-content:center;gap:6px;margin-bottom:18px}
+.bizscan-tour-dismiss{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:14px;font-size:12px;color:#a9b4c6;cursor:pointer}
+.bizscan-tour-dismiss input{width:15px;height:15px;accent-color:var(--gold);cursor:pointer}
 .bizscan-tour-dot{width:6px;height:6px;border-radius:50%;background:#2b3950}
 .bizscan-tour-dot.active{background:var(--gold);width:18px;border-radius:3px}
 @media(max-width:680px){#bizscanHelpBtn{right:14px;bottom:82px}#bizscanHelpPanel{right:14px;bottom:136px}}

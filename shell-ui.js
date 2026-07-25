@@ -335,18 +335,15 @@
 
   // ---------- Tour guidato alla prima visita (solo homepage, una volta sola) ----------
   function buildFirstVisitTour(){
-    var page=location.pathname.split('/').pop()||'';
-    var isHome=(page===''||page==='/'||page==='index.html');
-    if(!isHome)return;
-    var already=false;
-    try{already=localStorage.getItem('bizscan_tour_done')==='1'}catch(_){}
-    if(already)return;
+    var permanentlyDismissed=false;
+    try{permanentlyDismissed=localStorage.getItem('bizscan_tour_dismissed')==='1'}catch(_){}
+    if(permanentlyDismissed)return;
 
     var steps=[
       {icon:'🔎',title:'Benvenuto su BizScan',body:'Analizziamo attività di business reali — costi, rischi, profitti, tempo di recupero — con dati concreti, per aiutarti a capire se conviene davvero aprire un&#39;attività, prima di investire tempo o denaro.'},
       {icon:'🗂️',title:'Come cercare',body:'Usa la barra di ricerca per trovare un&#39;attività specifica (es. "pizzeria" o "parrucchiere"), oppure tocca una categoria per esplorare cosa c&#39;è disponibile in quel settore. Ogni scheda mostra già gratis le cifre principali — punteggio, rischio, investimento, profitto — così puoi farti un&#39;idea prima ancora di aprire l&#39;analisi.'},
       {icon:'🔑',title:'Come funzionano i crediti',body:'Il tuo piano (mensile) sblocca gli strumenti — grafici, indicatori, confronti — validi su tutte le attività. Ma per vedere il contenuto <b>completo</b> di una singola attività (tutte le sezioni, i numeri dettagliati) serve <b>un credito analisi</b>, che scegli tu su quale attività usare. Il <b>PDF scaricabile</b> è separato: richiede un <b>credito PDF</b> a parte, anche se hai già sbloccato l&#39;analisi stessa.'},
-      {icon:'✓',title:'Pronto per iniziare',body:'Esplora le attività, salva le tue preferite, confronta due opportunità fianco a fianco. Se in qualsiasi pagina hai dubbi su qualcosa che vedi, cerca il pulsante <b>?</b> in basso — spiega esattamente quella pagina.'}
+      {icon:'✓',title:'Hai capito?',body:'Esplora le attività, salva le tue preferite, confronta due opportunità fianco a fianco. Se in qualsiasi pagina hai dubbi su qualcosa che vedi, cerca il pulsante <b>?</b> in basso — spiega esattamente quella pagina. Se hai già capito come funziona, spunta la casella qui sotto per non vedere più questa guida.'}
     ];
     var idx=0;
 
@@ -358,22 +355,27 @@
     document.body.appendChild(overlay);
 
     function finish(){
-      try{localStorage.setItem('bizscan_tour_done','1')}catch(_){}
+      var chk=card.querySelector('#bizscanTourDismissChk');
+      if(chk && chk.checked){
+        try{localStorage.setItem('bizscan_tour_dismissed','1')}catch(_){}
+      }
       overlay.remove();
     }
     function render(){
       var s=steps[idx];
       var dots=steps.map(function(_,i){return '<span class="bizscan-tour-dot'+(i===idx?' active':'')+'"></span>'}).join('');
+      var isLast=idx===steps.length-1;
       card.innerHTML=
         '<button class="bizscan-tour-skip" aria-label="Salta">Salta</button>'+
         '<div class="bizscan-tour-icon">'+s.icon+'</div>'+
         '<h3>'+s.title+'</h3>'+
         '<p>'+s.body+'</p>'+
         '<div class="bizscan-tour-dots">'+dots+'</div>'+
-        '<button class="btn gold full bizscan-tour-next">'+(idx===steps.length-1?'Inizia':'Avanti')+'</button>';
+        (isLast?'<label class="bizscan-tour-dismiss"><input type="checkbox" id="bizscanTourDismissChk"> Ho capito, non mostrare più questa guida</label>':'')+
+        '<button class="btn gold full bizscan-tour-next">'+(isLast?'Fatto':'Avanti')+'</button>';
       card.querySelector('.bizscan-tour-skip').addEventListener('click',finish);
       card.querySelector('.bizscan-tour-next').addEventListener('click',function(){
-        if(idx===steps.length-1){finish();return}
+        if(isLast){finish();return}
         idx++;render();
       });
     }
