@@ -910,7 +910,7 @@ window.chooseAddon=async type=>{
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({item_type:type,return_to:location.pathname+location.search})
+   body:JSON.stringify({item_type:type,return_to:location.pathname+location.search+location.hash})
   });
   const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.url){
@@ -968,7 +968,7 @@ window._doChoosePdfPack=async(count,price)=>{
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({pdf_pack_count:count,return_to:location.pathname+location.search})
+   body:JSON.stringify({pdf_pack_count:count,return_to:location.pathname+location.search+location.hash})
   });
   const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.url){
@@ -1003,7 +1003,7 @@ window._doChoosePackage=async key=>{
   const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({plan_type:key,return_to:location.pathname+location.search})
+   body:JSON.stringify({plan_type:key,return_to:location.pathname+location.search+location.hash})
   });
   const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.url){
