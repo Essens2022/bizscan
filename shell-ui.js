@@ -312,6 +312,14 @@
     btn.setAttribute('aria-label','Aiuto');
     btn.textContent='?';
     document.body.appendChild(btn);
+    if(!alreadySeen){
+      var pulseInterval=setInterval(function(){
+        if(!btn.classList.contains('bizscan-help-pulse')){clearInterval(pulseInterval);return}
+        btn.classList.remove('bizscan-help-pulse')
+        void btn.offsetWidth // forza il browser a "vedere" il cambio prima di riaggiungere la classe
+        btn.classList.add('bizscan-help-pulse')
+      },6000)
+    }
     var panel=document.createElement('div');
     panel.id='bizscanHelpPanel';
     var c=HELP_CONTENT[key];
