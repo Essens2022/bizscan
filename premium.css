@@ -512,10 +512,24 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .site-footer{margin-top:36px;padding:40px 26px 26px;border-top:1px solid var(--line);text-align:center;display:flex;flex-direction:column;align-items:center}
 .footer-brand{max-width:420px}
 .footer-sources{margin:18px 0 4px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.footer-sources-label{display:block;color:var(--muted);font-size:11px;margin-bottom:10px}
+.footer-sources-label{display:block;color:#e7ecf3;font-size:14px;font-weight:800;margin-bottom:12px}
+.src-badge{display:inline-flex;align-items:center;flex-shrink:0;height:30px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
+.src-fipe{background:#0b3d91;color:#fff}
+.src-istat{background:#003c71;color:#fff}
+.src-mit{background:#0d47a1;color:#fff;font-style:italic}
+.src-mimit{background:#1565c0;color:#fff}
+.src-ade{background:#eef2fb;color:#0d2b6b}
+.src-unioncamere{background:#004a8f;color:#fff}
+.src-camcom{background:#e8eef7;color:#0d2b6b}
+.src-infocamere{background:#00457c;color:#fff}
+.src-movimprese{background:#eef2fb;color:#0d2b6b}
+.src-inps{background:#00854a;color:#fff}
+.src-bankit{background:#7a1f2b;color:#f5e6c8}
+.src-confcommercio{background:#003d7c;color:#ffb300}
+.src-confesercenti{background:#d9481f;color:#fff}
+.src-confartigianato{background:#1a5c38;color:#fff}
 .footer-sources-track{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .footer-sources-row{display:flex;gap:10px;width:max-content;animation:footerSourcesScroll 70s linear infinite}
-.footer-source-badge{flex-shrink:0;white-space:nowrap;padding:8px 16px;border:1px solid var(--line2);border-radius:999px;background:#0b1524;color:#c7d0dd;font-size:11.5px;font-weight:600}
 @keyframes footerSourcesScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .footer-brand .footer-logo{font-size:22px;font-weight:950}
 .footer-brand .footer-logo strong{color:#fff;font:inherit}
