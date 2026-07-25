@@ -170,7 +170,18 @@
       {c:'src-bankit',t:'Banca d&#39;Italia'},
       {c:'src-confcommercio',t:'Confcommercio'},
       {c:'src-confesercenti',t:'Confesercenti'},
-      {c:'src-confartigianato',t:'Confartigianato'}
+      {c:'src-confartigianato',t:'Confartigianato'},
+      {c:'src-cna',t:'CNA'},
+      {c:'src-aci',t:'ACI'},
+      {c:'src-fiaip',t:'FIAIP'},
+      {c:'src-enit',t:'ENIT'},
+      {c:'src-federalberghi',t:'Federalberghi'},
+      {c:'src-coni',t:'CONI'},
+      {c:'src-salute',t:'Ministero della Salute'},
+      {c:'src-assofranchising',t:'Assofranchising'},
+      {c:'src-invitalia',t:'Invitalia'},
+      {c:'src-lavoro',t:'Ministero del Lavoro'},
+      {c:'src-federdistribuzione',t:'Federdistribuzione'}
     ];
     var badge=function(s){return '<span class="src-badge '+s.c+'">'+s.t+'</span>'};
     var row=sources.map(badge).join('');
