@@ -513,7 +513,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .footer-brand{max-width:420px}
 .footer-sources{margin:18px 0 4px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .footer-sources-label{display:block;color:#e7ecf3;font-size:14px;font-weight:800;margin-bottom:12px}
-.src-badge{display:inline-flex;align-items:center;flex-shrink:0;height:30px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
+.src-badge{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;height:30px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
 .src-fipe{background:#0b3d91;color:#fff}
 .src-istat{background:#003c71;color:#fff}
 .src-mit{background:#0d47a1;color:#fff;font-style:italic}

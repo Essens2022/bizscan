@@ -166,13 +166,13 @@
       {c:'src-camcom',t:'Camere di Commercio'},
       {c:'src-infocamere',t:'InfoCamere'},
       {c:'src-movimprese',t:'Movimprese'},
-      {c:'src-inps',t:'INPS'},
-      {c:'src-bankit',t:'Banca d&#39;Italia'},
+      {c:'src-inps',t:'INPS',svg:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M7 15c1.2-4 2.8-6 5-6s3.8 2 5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="9" r="1.6" fill="currentColor"/></svg>'},
+      {c:'src-bankit',t:'Banca d&#39;Italia',svg:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M12 2l9 4.5v2H3v-2L12 2z" fill="currentColor"/><rect x="4" y="9.5" width="2.2" height="9" fill="currentColor"/><rect x="10.9" y="9.5" width="2.2" height="9" fill="currentColor"/><rect x="17.8" y="9.5" width="2.2" height="9" fill="currentColor"/><rect x="3" y="19.5" width="18" height="2" fill="currentColor"/></svg>'},
       {c:'src-confcommercio',t:'Confcommercio'},
       {c:'src-confesercenti',t:'Confesercenti'},
       {c:'src-confartigianato',t:'Confartigianato'},
       {c:'src-cna',t:'CNA'},
-      {c:'src-aci',t:'ACI'},
+      {c:'src-aci',t:'ACI',svg:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".15"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M8 13.5l2.2-5h1.6l2.2 5M9 11.8h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.5 8.5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'},
       {c:'src-fiaip',t:'FIAIP'},
       {c:'src-enit',t:'ENIT'},
       {c:'src-federalberghi',t:'Federalberghi'},
@@ -183,7 +183,7 @@
       {c:'src-lavoro',t:'Ministero del Lavoro'},
       {c:'src-federdistribuzione',t:'Federdistribuzione'}
     ];
-    var badge=function(s){return '<span class="src-badge '+s.c+'">'+s.t+'</span>'};
+    var badge=function(s){return '<span class="src-badge '+s.c+'">'+(s.svg||'')+'<span>'+s.t+'</span></span>'};
     var row=sources.map(badge).join('');
     return '<div class="footer-sources"><strong class="footer-sources-label">Dati ufficiali e verificati, tra le fonti che consultiamo</strong>'
       +'<div class="footer-sources-track"><div class="footer-sources-row">'+row+row+'</div></div></div>';
