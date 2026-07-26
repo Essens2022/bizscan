@@ -451,7 +451,12 @@ function emojiRow(textareaId){
 }
 window.insertEmoji=function(textareaId,emoji){
  const el=document.getElementById(textareaId);if(!el)return;
- el.value+=emoji;el.focus();
+ const start=el.selectionStart??el.value.length;
+ const end=el.selectionEnd??el.value.length;
+ el.value=el.value.slice(0,start)+emoji+el.value.slice(end);
+ const newPos=start+emoji.length;
+ el.focus();
+ el.setSelectionRange(newPos,newPos);
 };
 window.toggleEmojiPanel=function(ev,textareaId){
  ev.stopPropagation();
@@ -504,7 +509,7 @@ function timeAgo(iso){
 }
 async function initFeedbackSection(slug){
  const p=findCurrent();if(!p?.id)return;
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  try{
   const {data:stats}=await supabaseClient.rpc('public_feedback_stats',{p_analysis_id:p.id});
   const s=stats?.[0];
@@ -547,7 +552,7 @@ window.submitFeedback=async function(slug){
  if(!message){msgBox.textContent='Scrivi un messaggio';msgBox.className='feedback-form-msg error';return}
  if(!stars){msgBox.textContent='Seleziona una valutazione da 1 a 5 stelle';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  const {error}=await supabaseClient.rpc('submit_analysis_feedback',{p_analysis_id:p.id,p_display_name:name,p_message:message,p_stars:stars});
  if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Grazie per il tuo feedback!';msgBox.className='feedback-form-msg success';
@@ -562,14 +567,14 @@ window.submitSuggestion=async function(){
  const message=box.value.trim();
  if(!message){msgBox.textContent='Scrivi un messaggio prima di inviare';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  const {error}=await supabaseClient.rpc('submit_site_suggestion',{p_message:message});
  if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Grazie! Il tuo messaggio è stato inviato.';msgBox.className='feedback-form-msg success';
  box.value='';
 };
 async function initSiteFeedback(){
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  try{
   const {data:stats}=await supabaseClient.rpc('public_site_feedback_stats');
   const s=stats?.[0];
@@ -601,7 +606,7 @@ window.submitSiteFeedback=async function(){
  if(!message){msgBox.textContent='Scrivi un messaggio';msgBox.className='feedback-form-msg error';return}
  if(!stars){msgBox.textContent='Seleziona una valutazione da 1 a 5 stelle';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  const {error}=await supabaseClient.rpc('submit_site_feedback',{p_display_name:name,p_message:message,p_stars:stars});
  if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Grazie per il tuo feedback!';msgBox.className='feedback-form-msg success';
@@ -616,7 +621,7 @@ window.submitHomeSuggestion=async function(){
  const message=box.value.trim();
  if(!message){msgBox.textContent='Scrivi un messaggio prima di inviare';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
- await waitForSupabase();
+ const supabaseClient=await BizScanData.getSupabaseClient();
  const {error}=await supabaseClient.rpc('submit_site_suggestion',{p_message:message});
  if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Grazie! Il tuo messaggio è stato inviato.';msgBox.className='feedback-form-msg success';
