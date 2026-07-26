@@ -430,7 +430,70 @@ function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const
   mainEntityOfPage:{'@type':'WebPage','@id':`https://bizscan.it/analysis.html?slug=${p.slug}`}
  });
  if(p.video_url)attachVideoSchema(p);
- host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div>`;bindTabs();refreshReportAccess(p.slug)}
+ host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div><section class="panel feedback-section"><div class="feedback-header"><div><h2>Cosa dicono gli utenti</h2><p>Condividi la tua esperienza con questa analisi</p></div><div class="feedback-avg" id="feedbackAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div><div class="feedback-carousel-wrap"><div class="feedback-carousel" id="feedbackCarousel"><div class="feedback-empty">Ancora nessuna recensione. Sii il primo a lasciarne una!</div></div></div><div class="feedback-form-card" id="feedbackFormCard"><h3>Lascia il tuo feedback</h3><div class="feedback-form-row"><input type="text" id="feedbackName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="feedbackMessage" placeholder="Racconta la tua esperienza…" maxlength="500" rows="3"></textarea></div><div class="feedback-form-row feedback-stars-row"><div class="feedback-star-picker" id="feedbackStarPicker" data-value="0"><span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span></div><button class="btn gold" id="feedbackSubmitBtn" onclick="submitFeedback('${p.slug}')">Invia recensione</button></div><p class="feedback-form-msg" id="feedbackFormMsg"></p></div></section>`;bindTabs();refreshReportAccess(p.slug);initFeedbackSection(p.slug)}
+function renderStars(n){const full='★'.repeat(Math.round(n));const empty='☆'.repeat(5-Math.round(n));return full+empty}
+function timeAgo(iso){
+ const d=new Date(iso),now=new Date(),diffDays=Math.floor((now-d)/86400000);
+ if(diffDays<1)return 'Oggi';
+ if(diffDays<2)return 'Ieri';
+ if(diffDays<30)return `${diffDays} giorni fa`;
+ if(diffDays<365)return `${Math.floor(diffDays/30)} mesi fa`;
+ return `${Math.floor(diffDays/365)} anni fa`;
+}
+async function initFeedbackSection(slug){
+ const p=findCurrent();if(!p?.id)return;
+ await waitForSupabase();
+ try{
+  const {data:stats}=await supabaseClient.rpc('public_feedback_stats',{p_analysis_id:p.id});
+  const s=stats?.[0];
+  const avgBox=document.getElementById('feedbackAvg');
+  if(avgBox){
+   if(s&&Number(s.total_count)>0){
+    avgBox.innerHTML=`<span class="feedback-avg-num">${s.avg_stars}</span><span class="feedback-avg-stars">${renderStars(s.avg_stars)}</span><small>${s.total_count} recensioni</small>`;
+   }else{
+    avgBox.innerHTML=`<span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>nessuna recensione</small>`;
+   }
+  }
+  const {data:top}=await supabaseClient.rpc('public_top_feedback',{p_analysis_id:p.id,p_limit:10});
+  const carousel=document.getElementById('feedbackCarousel');
+  if(carousel){
+   if(top&&top.length){
+    carousel.innerHTML=top.map(f=>`<div class="feedback-card"><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><div class="feedback-card-foot"><b>${esc(f.display_name)}</b><small>${timeAgo(f.created_at)}</small></div></div>`).join('');
+   }
+  }
+  const formCard=document.getElementById('feedbackFormCard');
+  if(formCard&&!access.authenticated){
+   formCard.innerHTML=`<h3>Lascia il tuo feedback</h3><p style="color:var(--muted);margin-bottom:12px">Accedi al tuo account per lasciare una recensione.</p><a class="btn gold" href="account.html?next=${encodeURIComponent(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search)}">Accedi</a>`;
+  }
+ }catch(e){console.warn('Errore caricamento feedback',e)}
+}
+document.addEventListener('click',e=>{
+ const star=e.target.closest('#feedbackStarPicker span');
+ if(!star)return;
+ const picker=star.closest('#feedbackStarPicker');
+ const val=Number(star.dataset.star);
+ picker.dataset.value=val;
+ picker.querySelectorAll('span').forEach(s=>s.classList.toggle('filled',Number(s.dataset.star)<=val));
+});
+window.submitFeedback=async function(slug){
+ const p=findCurrent();if(!p?.id)return;
+ const name=document.getElementById('feedbackName').value.trim();
+ const message=document.getElementById('feedbackMessage').value.trim();
+ const stars=Number(document.getElementById('feedbackStarPicker').dataset.value||0);
+ const msgBox=document.getElementById('feedbackFormMsg');
+ if(!name){msgBox.textContent='Inserisci il tuo nome';msgBox.className='feedback-form-msg error';return}
+ if(!message){msgBox.textContent='Scrivi un messaggio';msgBox.className='feedback-form-msg error';return}
+ if(!stars){msgBox.textContent='Seleziona una valutazione da 1 a 5 stelle';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
+ await waitForSupabase();
+ const {error}=await supabaseClient.rpc('submit_analysis_feedback',{p_analysis_id:p.id,p_display_name:name,p_message:message,p_stars:stars});
+ if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Grazie per il tuo feedback!';msgBox.className='feedback-form-msg success';
+ document.getElementById('feedbackMessage').value='';
+ document.getElementById('feedbackStarPicker').dataset.value='0';
+ document.getElementById('feedbackStarPicker').querySelectorAll('span').forEach(s=>s.classList.remove('filled'));
+ initFeedbackSection(slug);
+};
 function attachVideoSchema(p){
  const url=p.video_url;
  let videoId=null;
