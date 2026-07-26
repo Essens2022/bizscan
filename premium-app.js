@@ -141,7 +141,32 @@ window.toggleCompare=slug=>{
 function categories(){const m={};analyses.forEach(p=>{const k=p.category||'Altro';m[k]=(m[k]||0)+1});return Object.entries(m)}
 function scoreRing(value,size='normal'){return `<div class="score-ring ${size}" style="--v:${Number(value)||0}"><div><b>${Number(value)||0}</b><small>/100</small></div></div>`}
 function card(p){const url=`analysis.html?slug=${encodeURIComponent(p.slug)}`;return `<article class="business-card"><div class="business-cover business-cover-link" role="link" tabindex="0" aria-label="Apri ${esc(p.title)}" onclick="location.href='${url}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='${url}'}">${image(p)}<div class="card-tools"><button aria-label="Confronta" onclick="event.preventDefault();event.stopPropagation();toggleCompare('${p.slug}')" data-compare-slug="${p.slug}">${compare.includes(p.slug)?'✓':'⇄'}</button><button aria-label="Salva" data-fav-slug="${p.slug}" onclick="event.preventDefault();event.stopPropagation();toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥':'♡'}</button></div></div><a href="${url}" class="business-body"><div class="business-title-row"><div><h3>${esc(p.title)}</h3><div class="category">${esc(p.category||'Business')}</div></div><span class="card-open-arrow">→</span></div><div class="card-metrics">${scoreRing(p.score,'small')}<div class="metric-list"><span><em>Investimento</em><b>${esc(p.investment||'—')}</b></span><span><em>Profitto annuo</em><b>${esc(p.profit||'—')}</b></span><span><em>Rischio</em><b class="${riskClass(p)}">${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></span></div></div></a></article>`}
-function categoryIcons(i){return ['☕','🧰','🛍','▣','♨','⚙','▤','⌂'][i]||'◇'}
+function categoryIcons(name){
+ const key=String(name||'').trim().toLowerCase();
+ const icons={
+  'agricoltura':'<svg viewBox="0 0 24 24" fill="none"><path d="M12 21V9M12 9C12 9 8 9 6 6.5C4 4 4 3 4 3C4 3 8 3 10 5.5C11.2 7 12 9 12 9ZM12 9C12 9 16 9 18 6.5C20 4 20 3 20 3C20 3 16 3 14 5.5C12.8 7 12 9 12 9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  'altro':'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+  'animali':'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="7" cy="8" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="8" r="2"/><ellipse cx="12" cy="15" rx="5" ry="4"/></svg>',
+  'artigianato':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5l3 3L8 19l-4 1 1-4L14.5 6.5z"/><path d="M13 8l3 3"/></svg>',
+  'automotive':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-3l2-5h12l2 5v3"/><path d="M4 16h16M6 16v2M18 16v2"/><circle cx="7.5" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>',
+  'bellezza':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M7 6c0 3 5 4 5 8M17 6c0 3-5 4-5 8"/></svg>',
+  'educazione':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 4L2 9l10 5 10-5-10-5z"/><path d="M6 11.5V17c0 1.5 3 3 6 3s6-1.5 6-3v-5.5" stroke-linecap="round"/></svg>',
+  'finanza':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M9 19V6M14 19v-8M19 19V4"/></svg>',
+  'fitness e sport':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2M19 12h2M5 12v0M6 8v8M18 8v8M6 12h12"/></svg>',
+  'franchising':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9l1-5h14l1 5" stroke-linecap="round"/><path d="M4 9v10h16V9M4 9c0 1.5 1.2 2.5 2.5 2.5S9 10.5 9 9c0 1.5 1.2 2.5 2.5 2.5S14 10.5 14 9c0 1.5 1.2 2.5 2.5 2.5S19 10.5 19 9"/><path d="M10 19v-5h4v5"/></svg>',
+  'immobiliare':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg>',
+  'industria':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 20V11l4 3v-3l4 3v-3l4 3V6l4 4v10z" stroke-linecap="round"/></svg>',
+  'logistica':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V7h9v9"/><path d="M12 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.5" fill="currentColor" stroke="none"/><circle cx="17" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  'online':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4" stroke-linecap="round"/></svg>',
+  'retail':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>',
+  'ristorazione':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a2 2 0 002 2v9M6 3v7M9 3v7M6 3H4.5M15 3c-1.5 0-2.5 1.8-2.5 4s1 4 2.5 4v11"/></svg>',
+  'salute':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2 .5-.8 2-2 4-2 3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>',
+  'servizi':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14.5 6.5a3 3 0 11-4.2 4.2L4 17v3h3l6.3-6.3a3 3 0 014.2-4.2l-2.3 2.3-2-2 2.3-2.3z" stroke-linecap="round"/></svg>',
+  'tecnologia':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M5.5 18.5l2-2M16.5 7.5l2-2" stroke-linecap="round"/></svg>',
+  'turismo':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l7-16 3 7 3-4 5 13z"/></svg>',
+ };
+ return icons[key]||icons['altro'];
+}
 function sparkline(vals,color='purple'){const w=250,h=85,pad=8,max=Math.max(...vals),min=Math.min(...vals),pts=vals.map((v,i)=>`${pad+i*(w-pad*2)/(vals.length-1)},${h-pad-(v-min)/(max-min||1)*(h-pad*2)}`).join(' ');return `<svg viewBox="0 0 ${w} ${h}" class="sparkline ${color}" role="img"><polyline points="${pts}" fill="none" vector-effect="non-scaling-stroke"/></svg>`}
 function platformStats(){
  const published=analyses.length;
@@ -288,7 +313,7 @@ function renderHome(){
 
   <section class="home18-section">
    <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
-   <div class="home18-categories">${cats.map(([n,c],i)=>`<a href="search.html?category=${encodeURIComponent(n.toLowerCase())}"><i>${categoryIcons(i)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
+   <div class="home18-categories">${cats.map(([n,c])=>`<a href="search.html?category=${encodeURIComponent(n.toLowerCase())}"><i>${categoryIcons(n)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
   </section>
 
   <section class="home18-section">
