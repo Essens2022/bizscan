@@ -53,6 +53,15 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .suggestion-section h3{margin:0 0 6px;font-size:15px}
 .suggestion-section p{font-size:11.5px;color:var(--muted);margin:0 0 12px}
 .suggestion-section textarea{width:100%;max-width:520px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#060c16;color:#fff;font-family:inherit;font-size:12.5px;resize:vertical;display:block;margin-bottom:10px}
+.home18-testimonials .home18-head{align-items:center}
+.site-fb-avg{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid rgba(255,180,0,.3);border-radius:12px;background:rgba(255,180,0,.05);flex-shrink:0}
+.site-fb-marquee-wrap{overflow:hidden;margin:16px 0 24px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.site-fb-marquee{display:flex;gap:14px;width:max-content;animation:siteFbScroll 60s linear infinite}
+.site-fb-marquee:hover{animation-play-state:paused}
+@keyframes siteFbScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.site-fb-card{flex:0 0 280px;border:1px solid var(--line);border-radius:14px;background:#0e1622;padding:16px;display:flex;flex-direction:column;gap:10px}
+.site-fb-actions{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:780px){.site-fb-actions{grid-template-columns:1fr}.home18-testimonials .home18-head{flex-direction:column;align-items:flex-start;gap:12px}}
 .page-title{padding:26px 0 12px}.page-title h1{font-size:34px;margin:0 0 5px}.page-title p{margin:0;color:var(--muted)}.search-results{margin-top:16px}.compare-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:720px}.comparison-full{margin-top:12px}.comparison-table{display:grid;grid-template-columns:1.3fr repeat(2,1fr);font-size:10px}.comparison-table>*{padding:9px;border-bottom:1px solid var(--line)}.empty{padding:60px 20px;text-align:center;color:var(--muted)}
 .bottom-nav{display:none}.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}.modal.show{display:flex}.modal-box{width:min(500px,100%);border:1px solid var(--line2);background:#0c1725;border-radius:16px;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0}.modal-head button{border:0;background:transparent;color:white;font-size:24px}.toast{position:fixed;left:50%;bottom:86px;transform:translate(-50%,10px);opacity:0;background:#0d1928;border:1px solid var(--line2);padding:10px 14px;border-radius:9px;z-index:1200;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 .pwa-install-bar{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(90deg,#0d1420,#151f30);border-bottom:1px solid var(--line2)}

@@ -359,12 +359,22 @@ function renderHome(){
    <div class="home18-steps"><article><b>01</b><div><h3>Scegli l’attività</h3><p>Cerca per nome o settore e apri la scheda che ti interessa</p></div></article><article><b>02</b><div><h3>Leggi i numeri chiave</h3><p>Valuta costi margini rischio ROI e tempo di recupero</p></div></article><article><b>03</b><div><h3>Confronta e decidi</h3><p>Metti due opportunità una accanto all’altra e scarica il dossier completo</p></div></article></div>
   </section>
 
+  <section class="home18-section home18-testimonials">
+   <div class="home18-head"><div><small>LA COMUNITÀ</small><h2>Cosa dicono di BizScan</h2></div><div class="site-fb-avg" id="siteFbAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div>
+   <div class="site-fb-marquee-wrap"><div class="site-fb-marquee" id="siteFbMarquee"><div class="feedback-empty">Ancora nessuna recensione</div></div></div>
+   <div class="site-fb-actions">
+    <div class="feedback-form-card" id="siteFbFormCard"><h3>Lascia il tuo feedback su BizScan</h3><div class="feedback-form-row"><input type="text" id="siteFbName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="siteFbMessage" placeholder="La tua esperienza con BizScan…" maxlength="500" rows="3"></textarea></div><div class="feedback-form-row feedback-stars-row"><div class="feedback-star-picker" id="siteFbStarPicker" data-value="0"><span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span></div><button class="btn gold" onclick="submitSiteFeedback()">Invia feedback</button></div><p class="feedback-form-msg" id="siteFbFormMsg"></p></div>
+    <div class="suggestion-section"><h3>Aiutaci a migliorare BizScan</h3><p>Hai un'idea, hai trovato un problema, o vuoi suggerirci qualcosa?</p><textarea id="homeSuggestionMessage" placeholder="Cosa possiamo migliorare o aggiungere?" maxlength="1000" rows="3"></textarea><button class="btn ghost" onclick="submitHomeSuggestion()">Invia suggerimento</button><p class="feedback-form-msg" id="homeSuggestionMsg"></p></div>
+   </div>
+  </section>
+
   <section class="home18-faq">
    <small>DOMANDE FREQUENTI</small><h2>Tutto quello che serve sapere</h2><p>Risposte chiare prima di acquistare o aprire un’analisi</p>
    <div class="home18-faq-list"><details open><summary>Che cosa include un’analisi BizScan?<span>+</span></summary><p>Una panoramica strutturata di investimento iniziale costi ricavi profitto potenziale rischio ROI tempo di recupero e indicatori disponibili per il livello acquistato</p></details><details><summary>Devo pagare un abbonamento?<span>+</span></summary><p>No I pacchetti prevedono un pagamento unico e le analisi sbloccate restano disponibili nel tuo account</p></details><details><summary>Qual è la differenza tra analisi interattiva e report PDF?<span>+</span></summary><p>L’analisi interattiva serve per esplorare dati e confronti Il PDF è il dossier completo da conservare e consultare offline</p></details><details><summary>Posso confrontare due attività?<span>+</span></summary><p>Sì Puoi confrontare punteggio investimento profitto ROI recupero e rischio</p></details><details><summary>I dati sostituiscono una consulenza professionale?<span>+</span></summary><p>No BizScan è uno strumento informativo Prima di investire verifica dati locali contratti fiscalità autorizzazioni e condizioni specifiche con professionisti qualificati</p></details></div>
   </section>
  </div>`
  initHeroRotation()
+ initSiteFeedback()
 }
 window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.html?q='+encodeURIComponent(q)};
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
@@ -468,9 +478,9 @@ async function initFeedbackSection(slug){
  }catch(e){console.warn('Errore caricamento feedback',e)}
 }
 document.addEventListener('click',e=>{
- const star=e.target.closest('#feedbackStarPicker span');
+ const star=e.target.closest('.feedback-star-picker span');
  if(!star)return;
- const picker=star.closest('#feedbackStarPicker');
+ const picker=star.closest('.feedback-star-picker');
  const val=Number(star.dataset.star);
  picker.dataset.value=val;
  picker.querySelectorAll('span').forEach(s=>s.classList.toggle('filled',Number(s.dataset.star)<=val));
@@ -497,6 +507,60 @@ window.submitFeedback=async function(slug){
 window.submitSuggestion=async function(){
  const box=document.getElementById('suggestionMessage');
  const msgBox=document.getElementById('suggestionMsg');
+ const message=box.value.trim();
+ if(!message){msgBox.textContent='Scrivi un messaggio prima di inviare';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
+ await waitForSupabase();
+ const {error}=await supabaseClient.rpc('submit_site_suggestion',{p_message:message});
+ if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Grazie! Il tuo messaggio è stato inviato.';msgBox.className='feedback-form-msg success';
+ box.value='';
+};
+async function initSiteFeedback(){
+ await waitForSupabase();
+ try{
+  const {data:stats}=await supabaseClient.rpc('public_site_feedback_stats');
+  const s=stats?.[0];
+  const avgBox=document.getElementById('siteFbAvg');
+  if(avgBox){
+   avgBox.innerHTML=(s&&Number(s.total_count)>0)
+    ?`<span class="feedback-avg-num">${s.avg_stars}</span><span class="feedback-avg-stars">${renderStars(s.avg_stars)}</span><small>${s.total_count} recensioni</small>`
+    :`<span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>nessuna recensione</small>`;
+  }
+  const {data:top}=await supabaseClient.rpc('public_top_site_feedback',{p_limit:15});
+  const marquee=document.getElementById('siteFbMarquee');
+  if(marquee&&top&&top.length){
+   const badge=' <svg class="verified-badge" viewBox="0 0 24 24" width="13" height="13" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+   const row=top.map(f=>`<div class="site-fb-card"><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><div class="feedback-card-foot"><b>${esc(f.display_name)}${f.is_official?badge:''}</b></div></div>`).join('');
+   marquee.innerHTML=row+row; // duplicato per lo scorrimento infinito senza soluzione di continuità
+  }
+ }catch(e){console.warn('Errore caricamento feedback sito',e)}
+}
+window.submitSiteFeedback=async function(){
+ const name=document.getElementById('siteFbName').value.trim();
+ const message=document.getElementById('siteFbMessage').value.trim();
+ const stars=Number(document.getElementById('siteFbStarPicker').dataset.value||0);
+ const msgBox=document.getElementById('siteFbFormMsg');
+ if(!access.authenticated){
+  msgBox.innerHTML=`Accedi al tuo account per lasciare un feedback. <a href="account.html?next=${encodeURIComponent(window.buildReturnUrl?window.buildReturnUrl():location.pathname)}">Accedi</a>`;
+  msgBox.className='feedback-form-msg';return;
+ }
+ if(!name){msgBox.textContent='Inserisci il tuo nome';msgBox.className='feedback-form-msg error';return}
+ if(!message){msgBox.textContent='Scrivi un messaggio';msgBox.className='feedback-form-msg error';return}
+ if(!stars){msgBox.textContent='Seleziona una valutazione da 1 a 5 stelle';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
+ await waitForSupabase();
+ const {error}=await supabaseClient.rpc('submit_site_feedback',{p_display_name:name,p_message:message,p_stars:stars});
+ if(error){msgBox.textContent=error.message||'Errore, riprova';msgBox.className='feedback-form-msg error';return}
+ msgBox.textContent='Grazie per il tuo feedback!';msgBox.className='feedback-form-msg success';
+ document.getElementById('siteFbMessage').value='';
+ document.getElementById('siteFbStarPicker').dataset.value='0';
+ document.getElementById('siteFbStarPicker').querySelectorAll('span').forEach(s=>s.classList.remove('filled'));
+ initSiteFeedback();
+};
+window.submitHomeSuggestion=async function(){
+ const box=document.getElementById('homeSuggestionMessage');
+ const msgBox=document.getElementById('homeSuggestionMsg');
  const message=box.value.trim();
  if(!message){msgBox.textContent='Scrivi un messaggio prima di inviare';msgBox.className='feedback-form-msg error';return}
  msgBox.textContent='Invio in corso…';msgBox.className='feedback-form-msg';
