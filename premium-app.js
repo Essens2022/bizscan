@@ -442,7 +442,13 @@ function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const
  if(p.video_url)attachVideoSchema(p);
  host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div><section class="panel feedback-section"><div class="feedback-header"><div><h2>Cosa dicono gli utenti</h2><p>Condividi la tua esperienza con questa analisi</p></div><div class="feedback-avg" id="feedbackAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div><div class="feedback-carousel-wrap"><div class="feedback-carousel" id="feedbackCarousel"><div class="feedback-empty">Ancora nessuna recensione. Sii il primo a lasciarne una!</div></div></div><div class="feedback-form-card" id="feedbackFormCard"><h3>Lascia il tuo feedback</h3><div class="feedback-form-row feedback-stars-row"><small>La tua valutazione</small><div class="feedback-star-picker" id="feedbackStarPicker" data-value="0"><span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span></div></div><div class="feedback-form-row"><input type="text" id="feedbackName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="feedbackMessage" placeholder="Racconta la tua esperienza…" maxlength="500" rows="3"></textarea>${emojiRow('feedbackMessage')}</div><button class="btn gold full" id="feedbackSubmitBtn" onclick="submitFeedback('${p.slug}')">Invia recensione</button><p class="feedback-form-msg" id="feedbackFormMsg"></p></div></section><section class="panel suggestion-section"><h3>Aiutaci a migliorare BizScan</h3><p>Hai un'idea, hai trovato un problema, o vuoi suggerirci qualcosa? Scrivilo qui — leggiamo ogni messaggio.</p><textarea id="suggestionMessage" placeholder="Cosa possiamo migliorare o aggiungere?" maxlength="1000" rows="3"></textarea>${emojiRow('suggestionMessage')}<button class="btn ghost" onclick="submitSuggestion()">Invia suggerimento</button><p class="feedback-form-msg" id="suggestionMsg"></p></section>`;bindTabs();refreshReportAccess(p.slug);initFeedbackSection(p.slug)}
 const EMOJI_SET=['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','🤡','👍','👎','👏','🙌','🤝','🙏','💪','🔥','🚀','🎉','💯','✨','❤️','🫡'];
-function emojiRow(textareaId){return `<div class="emoji-picker-wrap"><button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPanel(event,'${textareaId}')" aria-label="Inserisci emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9.5"/><path d="M8.3 14.5c1 1.3 2.2 2 3.7 2s2.7-.7 3.7-2" stroke-linecap="round"/><circle cx="8.7" cy="9.7" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.3" cy="9.7" r="1.1" fill="currentColor" stroke="none"/></svg></button><div class="emoji-panel" id="emojiPanel-${textareaId}">${EMOJI_SET.map(e=>`<button type="button" onclick="insertEmoji('${textareaId}','${e}')">${e}</button>`).join('')}</div></div>`}
+function chunk(arr,size){const out=[];for(let i=0;i<arr.length;i+=size)out.push(arr.slice(i,i+size));return out}
+function emojiRow(textareaId){
+ const pages=chunk(EMOJI_SET,36);
+ const pagesHtml=pages.map(page=>`<div class="emoji-page">${page.map(e=>`<button type="button" onclick="insertEmoji('${textareaId}','${e}')">${e}</button>`).join('')}</div>`).join('');
+ const dots=pages.map((_,i)=>`<i data-dot="${i}" class="${i===0?'active':''}"></i>`).join('');
+ return `<div class="emoji-picker-wrap"><button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPanel(event,'${textareaId}')" aria-label="Inserisci emoji"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9.5"/><path d="M8.3 14.5c1 1.3 2.2 2 3.7 2s2.7-.7 3.7-2" stroke-linecap="round"/><circle cx="8.7" cy="9.7" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.3" cy="9.7" r="1.1" fill="currentColor" stroke="none"/></svg></button><div class="emoji-panel" id="emojiPanel-${textareaId}" data-page="0"><div class="emoji-pages-track">${pagesHtml}</div><div class="emoji-dots">${dots}</div></div></div>`
+}
 window.insertEmoji=function(textareaId,emoji){
  const el=document.getElementById(textareaId);if(!el)return;
  el.value+=emoji;el.focus();
@@ -454,7 +460,35 @@ window.toggleEmojiPanel=function(ev,textareaId){
  document.querySelectorAll('.emoji-panel.open').forEach(p=>p.classList.remove('open'));
  if(!wasOpen)panel.classList.add('open');
 };
+function goToEmojiPage(panel,pageIndex){
+ const pages=panel.querySelectorAll('.emoji-page');
+ const clamped=Math.max(0,Math.min(pageIndex,pages.length-1));
+ const track=panel.querySelector('.emoji-pages-track');
+ track.style.transform=`translateX(-${clamped*100}%)`;
+ panel.dataset.page=clamped;
+ panel.querySelectorAll('.emoji-dots i').forEach((d,i)=>d.classList.toggle('active',i===clamped));
+}
+document.addEventListener('touchstart',e=>{
+ const track=e.target.closest('.emoji-pages-track');
+ if(!track)return;
+ track.dataset.startX=e.touches[0].clientX;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+ const track=e.target.closest('.emoji-pages-track');
+ if(!track||!track.dataset.startX)return;
+ const diff=e.changedTouches[0].clientX-Number(track.dataset.startX);
+ const panel=track.closest('.emoji-panel');
+ const current=Number(panel.dataset.page||0);
+ if(diff<-40)goToEmojiPage(panel,current+1);
+ else if(diff>40)goToEmojiPage(panel,current-1);
+});
 document.addEventListener('click',e=>{
+ const dot=e.target.closest('.emoji-dots i');
+ if(dot){
+  const panel=dot.closest('.emoji-panel');
+  goToEmojiPage(panel,Number(dot.dataset.dot));
+  return;
+ }
  if(!e.target.closest('.emoji-panel')&&!e.target.closest('.emoji-toggle-btn')){
   document.querySelectorAll('.emoji-panel.open').forEach(p=>p.classList.remove('open'));
  }
