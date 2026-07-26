@@ -573,6 +573,28 @@ window.submitSuggestion=async function(){
  msgBox.textContent='Grazie! Il tuo messaggio è stato inviato.';msgBox.className='feedback-form-msg success';
  box.value='';
 };
+function initMarqueeAutoScroll(inner,shouldLoop){
+ const el=inner.parentElement; // il wrapper con overflow-x è il vero contenitore scrollabile
+ if(!el||el.dataset.marqueeInit)return;
+ el.dataset.marqueeInit='1';
+ if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
+ let paused=false;
+ const halfway=()=>inner.scrollWidth/2;
+ function step(){
+  if(!paused){
+   el.scrollLeft+=0.6;
+   if(el.scrollLeft>=halfway())el.scrollLeft=0;
+  }
+  requestAnimationFrame(step);
+ }
+ requestAnimationFrame(step);
+ const pause=()=>{paused=true};
+ const resume=()=>{setTimeout(()=>{paused=false},1500)};
+ el.addEventListener('touchstart',pause,{passive:true});
+ el.addEventListener('touchend',resume,{passive:true});
+ el.addEventListener('mouseenter',pause);
+ el.addEventListener('mouseleave',resume);
+}
 async function initSiteFeedback(){
  const supabaseClient=await BizScanData.getSupabaseClient();
  try{
@@ -588,8 +610,13 @@ async function initSiteFeedback(){
   const marquee=document.getElementById('siteFbMarquee');
   if(marquee&&top&&top.length){
    const badge=' <svg class="verified-badge" viewBox="0 0 24 24" width="13" height="13" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-   const row=top.map(f=>`<div class="site-fb-card"><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><div class="feedback-card-foot"><b>${esc(f.display_name)}${f.is_official?badge:''}</b></div></div>`).join('');
-   marquee.innerHTML=row+row; // duplicato per lo scorrimento infinito senza soluzione di continuità
+   const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><div class="feedback-card-foot"><b>${esc(f.display_name)}${f.is_official?badge:''}</b></div></div>`;
+   const row=top.map(cardHtml).join('');
+   // Duplichiamo il contenuto solo se ci sono abbastanza elementi da riempire lo schermo -
+   // con pochi elementi (1-3), duplicarli sembrerebbe un errore visivo (lo stesso feedback due volte visibile insieme)
+   const shouldDuplicate=top.length>4;
+   marquee.innerHTML=shouldDuplicate?row+row:row;
+   initMarqueeAutoScroll(marquee,shouldDuplicate);
   }
  }catch(e){console.warn('Errore caricamento feedback sito',e)}
 }
