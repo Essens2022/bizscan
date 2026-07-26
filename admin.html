@@ -298,6 +298,7 @@ textarea{min-height:92px;resize:vertical}
     <button class="tab" onclick="showTab('analyses',this)">Analisi <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('new',this)">Nuova analisi <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('categories',this)">Categorie <span class="tab-help">?</span></button>
+    <button class="tab" onclick="showTab('feedback',this)">Feedback <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('plans',this)">Piani <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('data',this)">Importa esporta <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('homepage',this)">Pagina principale <span class="tab-help">?</span></button>
@@ -324,6 +325,10 @@ textarea{min-height:92px;resize:vertical}
       <div class="card">
         <h2>Ultime analisi</h2><p class="section-intro">Mostra gli ultimi contenuti creati o modificati</p>
         <div id="latest"></div>
+      </div>
+      <div class="card">
+        <h2>Suggerimenti degli utenti</h2><p class="section-intro">Messaggi ricevuti su cosa migliorare — gestione completa nella scheda "Feedback"</p>
+        <div id="dashboardSuggestions">Caricamento…</div>
       </div>
     </div>
   </section>
@@ -582,6 +587,19 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 
+  <section id="feedbackPanel" class="panel">
+    <div class="grid">
+      <div class="card">
+        <h2>Recensioni sulle analisi</h2><p class="section-intro">Gestisci tutte le recensioni lasciate dagli utenti — modifica o elimina se necessario</p>
+        <div id="feedbackList">Caricamento…</div>
+      </div>
+      <div class="card">
+        <h2>Suggerimenti degli utenti</h2><p class="section-intro">Messaggi inviati da chiunque su cosa migliorare nel sito</p>
+        <div id="suggestionsList">Caricamento…</div>
+      </div>
+    </div>
+  </section>
+
   <section id="plansPanel" class="panel">
     <div class="grid">
       <div class="card">
@@ -710,8 +728,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607262109"></script>
-<script src="app.js?v=202607262109"></script>
+ <script src="supabase-data.js?v=202607262116"></script>
+<script src="app.js?v=202607262116"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -869,6 +887,82 @@ window.saveCarouselTransition=async()=>{
   const secs=Number(document.getElementById("carouselSeconds").value)
   const{error}=await supabaseClient.rpc("admin_set_hero_settings",{p_carousel_transition:val,p_carousel_seconds:secs})
   if(error)alert("Errore: "+error.message)
+}
+async function loadFeedbackList(){
+  const host=document.getElementById("feedbackList")
+  try{
+    const{data,error}=await supabaseClient.rpc("admin_list_all_feedback")
+    if(error)throw error
+    if(!data||!data.length){host.innerHTML='<div class="empty">Nessuna recensione ancora</div>';return}
+    host.innerHTML=data.map(f=>{
+      const dt=new Date(f.created_at)
+      const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
+      return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px">
+        <div style="display:flex;justify-content:space-between;width:100%"><b>${f.analysis_title}</b><small style="color:#8d99aa">${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small></div>
+        <input data-fb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
+        <textarea data-fb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:11px">Stelle <select data-fb="${f.id}" data-field="stars" style="padding:6px">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===f.stars?'selected':''}>${n}</option>`).join('')}</select></label>
+          <label style="font-size:11px">Data <input type="datetime-local" data-fb="${f.id}" data-field="created_at" value="${dtLocal}" style="padding:6px"></label>
+          <label style="font-size:11px"><input type="checkbox" data-fb="${f.id}" data-field="is_hidden" ${f.is_hidden?'checked':''}> Nascondi</label>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn primary" style="padding:6px 14px" onclick="saveFeedbackEdit('${f.id}')">Salva</button>
+          <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteFeedback('${f.id}')">Elimina</button>
+        </div>
+      </div>`
+    }).join('')
+  }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+}
+async function saveFeedbackEdit(id){
+  const inputs=document.querySelectorAll(`[data-fb="${id}"]`)
+  let name="",message="",stars=5,createdAt=null,isHidden=false
+  inputs.forEach(el=>{
+    const f=el.dataset.field
+    if(f==="display_name")name=el.value
+    if(f==="message")message=el.value
+    if(f==="stars")stars=Number(el.value)
+    if(f==="created_at")createdAt=el.value?new Date(el.value).toISOString():null
+    if(f==="is_hidden")isHidden=el.checked
+  })
+  const{error}=await supabaseClient.rpc("admin_update_feedback",{p_id:id,p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt,p_is_hidden:isHidden})
+  if(error){alert("Errore: "+error.message);return}
+  alert("Recensione aggiornata")
+  loadFeedbackList()
+}
+async function deleteFeedback(id){
+  if(!confirm("Eliminare questa recensione? L'azione è permanente."))return
+  const{error}=await supabaseClient.rpc("admin_delete_feedback",{p_id:id})
+  if(error){alert("Errore: "+error.message);return}
+  loadFeedbackList()
+}
+async function loadSuggestionsList(){
+  const host=document.getElementById("suggestionsList")
+  try{
+    const{data,error}=await supabaseClient.rpc("admin_list_suggestions")
+    if(error)throw error
+    if(!data||!data.length){host.innerHTML='<div class="empty">Nessun suggerimento ancora</div>';return}
+    host.innerHTML=data.map(s=>{
+      const dt=new Date(s.created_at).toLocaleString("it-IT")
+      return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:6px;${s.is_read?'opacity:.55':''}">
+        <div style="display:flex;justify-content:space-between;width:100%"><small style="color:#8d99aa">${dt} ${s.user_email?'· '+s.user_email:'· anonimo'}</small></div>
+        <p style="margin:0;font-size:13px;white-space:pre-wrap">${s.message}</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn dark" style="padding:6px 14px" onclick="toggleSuggestionRead('${s.id}',${!s.is_read})">${s.is_read?'Segna non letto':'Segna come letto'}</button>
+          <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteSuggestion('${s.id}')">Elimina</button>
+        </div>
+      </div>`
+    }).join('')
+  }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+}
+async function toggleSuggestionRead(id,val){
+  await supabaseClient.rpc("admin_mark_suggestion_read",{p_id:id,p_read:val})
+  loadSuggestionsList()
+}
+async function deleteSuggestion(id){
+  if(!confirm("Eliminare questo suggerimento?"))return
+  await supabaseClient.rpc("admin_delete_suggestion",{p_id:id})
+  loadSuggestionsList()
 }
 async function loadHeroMedia(){
   const host=document.getElementById("heroMediaList")
@@ -1224,6 +1318,7 @@ function showTab(name,btn){
   history.replaceState(null,"","#"+name)
   if(name==="new")refreshSelects()
   if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
+  if(name==="feedback"){loadFeedbackList();loadSuggestionsList()}
 }
 
 
@@ -1940,6 +2035,20 @@ function renderDashboard(){
   document.getElementById("barPublished").style.width=(pub/total*100)+"%"
   document.getElementById("barDraft").style.width=(draft/total*100)+"%"
   document.getElementById("latest").innerHTML=all.slice().sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at)).slice(0,5).map(x=>`<div class="dash-item"><div class="item-icon">${x.emoji}</div><div><h3>${x.title}</h3><small>${x.status} · ${x.category_name}</small></div></div>`).join("")||'<div class="empty">Nessuna analisi</div>'
+  loadDashboardSuggestions()
+}
+async function loadDashboardSuggestions(){
+  const host=document.getElementById("dashboardSuggestions")
+  if(!host)return
+  try{
+    const{data,error}=await supabaseClient.rpc("admin_list_suggestions")
+    if(error)throw error
+    if(!data||!data.length){host.innerHTML='<div class="empty">Nessun suggerimento ancora</div>';return}
+    host.innerHTML=data.slice(0,5).map(s=>{
+      const dt=new Date(s.created_at).toLocaleDateString("it-IT")
+      return `<div class="dash-item" style="${s.is_read?'opacity:.55':''}"><div class="item-icon">💬</div><div><h3 style="font-size:13px">${s.message.slice(0,80)}${s.message.length>80?'…':''}</h3><small>${dt}${s.user_email?' · '+s.user_email:''}</small></div></div>`
+    }).join('')
+  }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>'}
 }
 
 function renderStats(){
@@ -2203,5 +2312,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607262109"></script></body>
+<script src="shell-ui.js?v=202607262116"></script></body>
 </html>
