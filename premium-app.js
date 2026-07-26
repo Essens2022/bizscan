@@ -493,6 +493,7 @@ function analysisOverview(p){
  const B=(k,f)=>esc((bm[k]&&bm[k][f])??DB[k][f]);
  const MK=k=>(bm[k]?'':(DB[k].mk?` <mark>${DB[k].mk}</mark>`:''));
  const LV=(v,key)=>{
+   if(key==='scalabilita')return 'risk-mid'; // la scalabilità non è né positiva né negativa in sé, è solo una caratteristica strutturale
    const s=String(v||'').toLowerCase();
    const isHigh=s.includes('alta')||s.includes('alto');
    const isLow=s.includes('bass');
