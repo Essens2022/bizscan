@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607261113"></script>
-<script src="app.js?v=202607261113"></script>
+ <script src="supabase-data.js?v=202607261408"></script>
+<script src="app.js?v=202607261408"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1500,7 +1500,11 @@ async function importAnalysisFromFile(file){
     }
     if(data.category_name){
       const catSelect=document.getElementById("category")
-      for(const opt of catSelect.options){if(opt.text.trim().toLowerCase()===String(data.category_name).trim().toLowerCase()){catSelect.value=opt.value;break}}
+      const wantedCat=String(data.category_name).trim().toLowerCase()
+      for(const opt of catSelect.options){
+        const optNameOnly=opt.text.replace(/^\S+\s+/,"").trim().toLowerCase()
+        if(optNameOnly===wantedCat){catSelect.value=opt.value;break}
+      }
     }
     if(typeof data.featured==="boolean")document.getElementById("featured").checked=data.featured
     if(typeof data.popular==="boolean")document.getElementById("popular").checked=data.popular
@@ -2199,5 +2203,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607261113"></script></body>
+<script src="shell-ui.js?v=202607261408"></script></body>
 </html>
