@@ -591,6 +591,17 @@ textarea{min-height:92px;resize:vertical}
     <div class="grid">
       <div class="card">
         <h2>Recensioni sulle analisi</h2><p class="section-intro">Gestisci tutte le recensioni lasciate dagli utenti — modifica o elimina se necessario</p>
+        <div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px">
+          <h3 style="margin:0 0 10px;font-size:14px">Aggiungi una recensione</h3>
+          <label>Analisi<select id="fbNewAnalysis"></select></label>
+          <label>Nome (lascia vuoto per "Amministrazione BizScan" con spunta blu)<input id="fbNewName" placeholder="Es. Marco R."></label>
+          <label>Messaggio<textarea id="fbNewMessage" rows="2"></textarea></label>
+          <div class="two">
+            <label>Stelle<select id="fbNewStars">${[5,4,3,2,1].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label>
+            <label>Data<input type="datetime-local" id="fbNewDate"></label>
+          </div>
+          <button class="btn primary" onclick="addAdminFeedback()">Aggiungi recensione</button>
+        </div>
         <div id="feedbackList">Caricamento…</div>
       </div>
       <div class="card">
@@ -728,8 +739,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607262116"></script>
-<script src="app.js?v=202607262116"></script>
+ <script src="supabase-data.js?v=202607262121"></script>
+<script src="app.js?v=202607262121"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -889,6 +900,15 @@ window.saveCarouselTransition=async()=>{
   if(error)alert("Errore: "+error.message)
 }
 async function loadFeedbackList(){
+  const sel=document.getElementById("fbNewAnalysis")
+  if(sel&&!sel.dataset.loaded){
+    sel.innerHTML=analyses().map(a=>`<option value="${a.id}">${a.title}</option>`).join('')
+    sel.dataset.loaded="1"
+  }
+  const now=new Date()
+  const nowLocal=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16)
+  const dateInput=document.getElementById("fbNewDate")
+  if(dateInput&&!dateInput.value)dateInput.value=nowLocal
   const host=document.getElementById("feedbackList")
   try{
     const{data,error}=await supabaseClient.rpc("admin_list_all_feedback")
@@ -898,7 +918,7 @@ async function loadFeedbackList(){
       const dt=new Date(f.created_at)
       const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
       return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px">
-        <div style="display:flex;justify-content:space-between;width:100%"><b>${f.analysis_title}</b><small style="color:#8d99aa">${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small></div>
+        <div style="display:flex;justify-content:space-between;width:100%"><b>${f.analysis_title}</b><small style="color:#8d99aa">${f.is_official?'✓ ufficiale · ':''}${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small></div>
         <input data-fb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
         <textarea data-fb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -913,6 +933,21 @@ async function loadFeedbackList(){
       </div>`
     }).join('')
   }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+}
+async function addAdminFeedback(){
+  const analysisId=document.getElementById("fbNewAnalysis").value
+  const name=document.getElementById("fbNewName").value.trim()
+  const message=document.getElementById("fbNewMessage").value.trim()
+  const stars=Number(document.getElementById("fbNewStars").value)
+  const dateVal=document.getElementById("fbNewDate").value
+  if(!message){alert("Scrivi un messaggio");return}
+  const createdAt=dateVal?new Date(dateVal).toISOString():new Date().toISOString()
+  const{error}=await supabaseClient.rpc("admin_add_feedback",{p_analysis_id:analysisId,p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt})
+  if(error){alert("Errore: "+error.message);return}
+  document.getElementById("fbNewName").value=""
+  document.getElementById("fbNewMessage").value=""
+  alert("Recensione aggiunta")
+  loadFeedbackList()
 }
 async function saveFeedbackEdit(id){
   const inputs=document.querySelectorAll(`[data-fb="${id}"]`)
@@ -2312,5 +2347,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607262116"></script></body>
+<script src="shell-ui.js?v=202607262121"></script></body>
 </html>
