@@ -397,7 +397,7 @@ textarea{min-height:92px;resize:vertical}
           <div class="context-title"><div><h2>Sezioni analisi</h2><p class="section-intro">Crea il contenuto gratuito e premium nell ordine corretto</p></div><button type="button" class="btn" onclick="addSectionRow()">+ Sezione</button></div>
           <div id="sectionsEditor"></div>
         </div>
-        <div class="step-head"><span class="step-num">4</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
+        <div class="step-head"><span class="step-num">4</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"><div class="field-note">Proporzione consigliata: 16:7 (largo e basso) — es. 1792×768px o 1600×700px. Viene compressa e ottimizzata automaticamente al caricamento.</div></label>
         <div class="field-note">Consigliato: JPG orizzontale, formato 31:16, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
         <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
         <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
@@ -710,8 +710,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607252355"></script>
-<script src="app.js?v=202607252355"></script>
+ <script src="supabase-data.js?v=202607261042"></script>
+<script src="app.js?v=202607261042"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -2199,5 +2199,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607252355"></script></body>
+<script src="shell-ui.js?v=202607261042"></script></body>
 </html>
