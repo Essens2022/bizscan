@@ -48,6 +48,10 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-form-msg.error{color:var(--red)}
 .feedback-form-msg.success{color:var(--green)}
 @media(max-width:680px){.feedback-card{flex:0 0 220px}.feedback-header{flex-direction:column;align-items:flex-start}}
+.suggestion-section{margin-top:12px;padding:20px}
+.suggestion-section h3{margin:0 0 6px;font-size:15px}
+.suggestion-section p{font-size:11.5px;color:var(--muted);margin:0 0 12px}
+.suggestion-section textarea{width:100%;max-width:520px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#060c16;color:#fff;font-family:inherit;font-size:12.5px;resize:vertical;display:block;margin-bottom:10px}
 .page-title{padding:26px 0 12px}.page-title h1{font-size:34px;margin:0 0 5px}.page-title p{margin:0;color:var(--muted)}.search-results{margin-top:16px}.compare-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:720px}.comparison-full{margin-top:12px}.comparison-table{display:grid;grid-template-columns:1.3fr repeat(2,1fr);font-size:10px}.comparison-table>*{padding:9px;border-bottom:1px solid var(--line)}.empty{padding:60px 20px;text-align:center;color:var(--muted)}
 .bottom-nav{display:none}.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}.modal.show{display:flex}.modal-box{width:min(500px,100%);border:1px solid var(--line2);background:#0c1725;border-radius:16px;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0}.modal-head button{border:0;background:transparent;color:white;font-size:24px}.toast{position:fixed;left:50%;bottom:86px;transform:translate(-50%,10px);opacity:0;background:#0d1928;border:1px solid var(--line2);padding:10px 14px;border-radius:9px;z-index:1200;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 .pwa-install-bar{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(90deg,#0d1420,#151f30);border-bottom:1px solid var(--line2)}
