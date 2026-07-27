@@ -641,7 +641,7 @@ async function initSiteFeedback(){
   const marquee=document.getElementById('siteFbMarquee');
   if(marquee&&top&&top.length){
    const badge=' ${VERIFIED_BADGE}';
-   const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?badge:''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p>${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan ${VERIFIED_BADGE}</b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`;
+   const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?badge:''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p>${f.source_title?`<small class="feedback-source-tag">su «${esc(f.source_title)}»</small>`:''}${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan ${VERIFIED_BADGE}</b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`;
    const row=top.map(cardHtml).join('');
    // Duplichiamo il contenuto solo se ci sono abbastanza elementi da riempire lo schermo -
    // con pochi elementi (1-3), duplicarli sembrerebbe un errore visivo (lo stesso feedback due volte visibile insieme)
