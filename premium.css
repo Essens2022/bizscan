@@ -140,7 +140,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .pricing-promises{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:15px}
 .pricing-promises span{border:1px solid var(--line2);background:#0a1320;border-radius:999px;padding:7px 10px;color:#cbd3dd;font-size:9px}
 .pricing-promises span:before{content:'✓';color:var(--green);font-weight:900;margin-right:6px}
-.pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-items:stretch}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-items:stretch;margin-top:36px;padding-top:28px;border-top:1px solid var(--line)}
 .price-card{position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid var(--line2);border-radius:16px;background:linear-gradient(180deg,#101a29,#09121e);padding:16px;box-shadow:0 14px 38px rgba(0,0,0,.14)}
 .price-card:hover{border-color:#415672;transform:translateY(-1px)}
 .price-card.is-pro{border-color:#b78000;box-shadow:0 0 0 1px rgba(255,180,0,.12),0 18px 45px rgba(255,170,0,.08)}
