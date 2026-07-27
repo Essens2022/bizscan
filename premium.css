@@ -35,6 +35,17 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-card-msg{font-size:12px;line-height:1.5;color:#d3dae3;margin:0;flex:1;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .feedback-card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:8px}
 .feedback-card-foot b{font-size:11px}
+.home18-mission{text-align:center;padding:56px 0}
+.home18-mission>small{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.home18-mission>h2{margin:10px auto 14px;font-size:32px;line-height:1.25;max-width:760px;letter-spacing:-.02em}
+.home18-mission-lead{max-width:600px;margin:0 auto 32px;color:#9aa6b7;font-size:14.5px;line-height:1.6}
+.home18-mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:960px;margin:0 auto}
+.home18-mission-card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#0e1622,#0a121e);padding:24px 20px;text-align:left}
+.home18-mission-card>span{font-size:26px;display:block;margin-bottom:10px}
+.home18-mission-card h3{margin:0 0 8px;font-size:15px}
+.home18-mission-card p{margin:0;font-size:12.5px;color:#9aa6b7;line-height:1.55}
+.home18-mission-closing{max-width:600px;margin:32px auto 0;font-size:13.5px;font-style:italic;color:#c7d0dd;line-height:1.6}
+@media(max-width:780px){.home18-mission-grid{grid-template-columns:1fr}.home18-mission>h2{font-size:24px}}
 .feedback-reply{margin-top:8px;padding:8px 10px;border-left:2px solid var(--gold);background:rgba(255,180,0,.06);border-radius:0 8px 8px 0}
 .feedback-reply b{display:block;font-size:10px;color:var(--gold);margin-bottom:3px}
 .feedback-reply p{margin:0;font-size:11px;color:#c7d0dd;line-height:1.4}
