@@ -33,8 +33,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-card{flex:0 0 260px;scroll-snap-align:start;border:1px solid var(--line);border-radius:14px;background:#0e1622;padding:16px;display:flex;flex-direction:column;gap:10px}
 .feedback-card-stars{color:var(--gold);font-size:14px;letter-spacing:1px}
 .feedback-card-msg{font-size:12px;line-height:1.5;color:#d3dae3;margin:0;flex:1;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
-.feedback-card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:8px}
-.feedback-card-foot b{font-size:11px}
+.feedback-name{display:flex;align-items:center;gap:4px;color:var(--gold);font-weight:800;font-size:12.5px;margin-bottom:6px}
 .home18-mission{text-align:center;padding:56px 0}
 .home18-mission>small{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .home18-mission>h2{margin:10px auto 14px;font-size:32px;line-height:1.25;max-width:760px;letter-spacing:-.02em}
@@ -50,7 +49,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-reply b{display:flex;align-items:center;gap:4px;font-size:10px;color:#fff;margin-bottom:3px}
 .feedback-reply p{margin:0;font-size:11px;color:#c7d0dd;line-height:1.4}
 .verified-badge{vertical-align:middle;margin-left:2px;position:relative;top:-1px}
-.feedback-card-foot small{color:var(--muted);font-size:10px}
+.feedback-date{color:var(--muted);font-size:10px;display:block;margin-top:6px}
 .feedback-form-card{margin:20px auto 0;border:1px solid var(--line);border-radius:14px;background:#0a121e;padding:20px;max-width:520px;text-align:center}
 .feedback-form-card h3{margin:0 0 14px;font-size:15px;text-align:center}
 .feedback-form-row{text-align:left}
