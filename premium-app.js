@@ -624,7 +624,7 @@ function initMarqueeAutoScroll(inner,shouldLoop){
   const maxScroll=el.scrollWidth-el.clientWidth;
   if(maxScroll<=2){requestAnimationFrame(step);return} // nessuno spazio reale per scorrere (contenuto entra tutto a schermo largo)
   if(!paused){
-   el.scrollLeft+=0.6*direction;
+   el.scrollLeft+=1.2*direction;
    if(el.scrollLeft>=maxScroll)direction=-1;
    else if(el.scrollLeft<=0)direction=1;
   }
