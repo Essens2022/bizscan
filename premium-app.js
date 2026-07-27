@@ -619,12 +619,13 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
- let paused=false;
- const halfway=()=>inner.scrollWidth/2;
+ let paused=false,direction=1;
  function step(){
   if(!paused){
-   el.scrollLeft+=0.6;
-   if(el.scrollLeft>=halfway())el.scrollLeft=0;
+   const maxScroll=el.scrollWidth-el.clientWidth;
+   el.scrollLeft+=0.6*direction;
+   if(el.scrollLeft>=maxScroll)direction=-1;
+   else if(el.scrollLeft<=0)direction=1;
   }
   requestAnimationFrame(step);
  }
@@ -653,11 +654,11 @@ async function initSiteFeedback(){
    const badge=' ${VERIFIED_BADGE}';
    const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?badge:''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p>${f.source_title?`<small class="feedback-source-tag">su «${esc(f.source_title)}»</small>`:''}${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan ${VERIFIED_BADGE}</b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`;
    const row=top.map(cardHtml).join('');
-   // Duplichiamo il contenuto solo se ci sono abbastanza elementi da riempire lo schermo -
-   // con pochi elementi (1-3), duplicarli sembrerebbe un errore visivo (lo stesso feedback due volte visibile insieme)
-   const shouldDuplicate=top.length>4;
-   marquee.innerHTML=shouldDuplicate?row+row:row;
-   initMarqueeAutoScroll(marquee,shouldDuplicate);
+   // Con il movimento avanti-indietro non serve duplicare il contenuto (nessuna cucitura da nascondere) -
+   // il movimento dinamico si attiva a partire da 4 elementi
+   const shouldAnimate=top.length>=4;
+   marquee.innerHTML=row;
+   initMarqueeAutoScroll(marquee,shouldAnimate);
   }
  }catch(e){console.warn('Errore caricamento feedback sito',e)}
 }
