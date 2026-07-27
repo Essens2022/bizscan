@@ -47,7 +47,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .home18-mission-closing{max-width:600px;margin:32px auto 0;font-size:13.5px;font-style:italic;color:#c7d0dd;line-height:1.6}
 @media(max-width:780px){.home18-mission-grid{grid-template-columns:1fr}.home18-mission>h2{font-size:24px}}
 .feedback-reply{margin-top:8px;padding:8px 10px;border-left:2px solid var(--gold);background:rgba(255,180,0,.06);border-radius:0 8px 8px 0}
-.feedback-reply b{display:block;font-size:10px;color:var(--gold);margin-bottom:3px}
+.feedback-reply b{display:flex;align-items:center;gap:4px;font-size:10px;color:#fff;margin-bottom:3px}
 .feedback-reply p{margin:0;font-size:11px;color:#c7d0dd;line-height:1.4}
 .verified-badge{vertical-align:middle;margin-left:2px;position:relative;top:-1px}
 .feedback-card-foot small{color:var(--muted);font-size:10px}
