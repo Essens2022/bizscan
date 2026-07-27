@@ -7,12 +7,12 @@ try{
 }catch(_){}
 let PACKAGES=[
  {key:'single',name:'Base',price:1.99,analyses:5,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Indicatori chiave gratis','5 crediti','Scenari di profitto']},
- {key:'starter',name:'Starter',price:4.99,analyses:13,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Tutto del piano Base','13 crediti','Break-even mensile']},
- {key:'smart',name:'Smart',price:6.99,analyses:18,pdfCredits:1,badge:'SCELTA INTELLIGENTE',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','18 crediti','Distribuzione costi iniziali','Confronto con la media categoria','1 credito report PDF']},
- {key:'pro',name:'Pro',price:9.99,analyses:26,pdfCredits:2,badge:'PIÙ SCELTO',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','26 crediti','Cash-flow a 12 mesi','Costi fissi e variabili mensili','2 crediti report PDF']},
- {key:'advanced',name:'Advanced',price:14.99,analyses:39,pdfCredits:3,badge:'CONSIGLIATO',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','39 crediti','Fabbisogno di personale','Fornitori e autorizzazioni','3 crediti report PDF']},
- {key:'business',name:'Business',price:18.99,analyses:49,pdfCredits:5,badge:'MIGLIOR VALORE',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','49 crediti','Analisi della concorrenza locale','Domanda e stagionalità','5 crediti report PDF']},
- {key:'max',name:'BizScan Max',price:23.99,analyses:62,pdfCredits:7,badge:'MASSIMA PROFONDITÀ',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','62 crediti','Matrice dei rischi','Strategie di crescita','7 crediti report PDF']}
+ {key:'starter',name:'Starter',price:4.99,analyses:13,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Strumenti del piano Base','13 crediti','Break-even mensile']},
+ {key:'smart',name:'Smart',price:6.99,analyses:18,pdfCredits:1,badge:'SCELTA INTELLIGENTE',indicatorCount:0,compare:'Base',features:['Strumenti dei piani precedenti','18 crediti','Distribuzione costi iniziali','Confronto con la media categoria','1 credito report PDF']},
+ {key:'pro',name:'Pro',price:9.99,analyses:26,pdfCredits:2,badge:'PIÙ SCELTO',indicatorCount:0,compare:'Base',features:['Strumenti dei piani precedenti','26 crediti','Cash-flow a 12 mesi','Costi fissi e variabili mensili','2 crediti report PDF']},
+ {key:'advanced',name:'Advanced',price:14.99,analyses:39,pdfCredits:3,badge:'CONSIGLIATO',indicatorCount:0,compare:'Base',features:['Strumenti dei piani precedenti','39 crediti','Fabbisogno di personale','Fornitori e autorizzazioni','3 crediti report PDF']},
+ {key:'business',name:'Business',price:18.99,analyses:49,pdfCredits:5,badge:'MIGLIOR VALORE',indicatorCount:0,compare:'Base',features:['Strumenti dei piani precedenti','49 crediti','Analisi della concorrenza locale','Domanda e stagionalità','5 crediti report PDF']},
+ {key:'max',name:'BizScan Max',price:23.99,analyses:62,pdfCredits:7,badge:'MASSIMA PROFONDITÀ',indicatorCount:0,compare:'Base',features:['Strumenti dei piani precedenti','62 crediti','Matrice dei rischi','Strategie di crescita','7 crediti report PDF']}
 ]
 const UNIT_PRICES={analysis:1.99,indicator:2.99,pdf:3.99,comparison:1.99}
 const COMPARISON_UNITS={Base:0,Dettagliato:1,Avanzato:2,Professionale:3,Completo:4}
