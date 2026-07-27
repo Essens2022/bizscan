@@ -93,7 +93,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .site-fb-marquee-wrap{overflow-x:auto;margin:16px 0 24px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);scrollbar-width:none}
 .site-fb-marquee-wrap::-webkit-scrollbar{display:none}
 .site-fb-marquee{display:flex;gap:14px;width:max-content}
-.site-fb-card{flex:0 0 280px;border:1px solid rgba(255,180,0,.3);border-radius:14px;background:#0e1622;padding:16px;display:flex;flex-direction:column;gap:10px}
+.site-fb-card{flex:0 0 260px;border:1px solid rgba(255,180,0,.3);border-radius:14px;background:#0e1622;padding:16px;display:flex;flex-direction:column;gap:10px}
 .site-fb-actions{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:780px){.site-fb-actions{grid-template-columns:1fr}}
 .page-title{padding:26px 0 12px}.page-title h1{font-size:34px;margin:0 0 5px}.page-title p{margin:0;color:var(--muted)}.search-results{margin-top:16px}.compare-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:720px}.comparison-full{margin-top:12px}.comparison-table{display:grid;grid-template-columns:1.3fr repeat(2,1fr);font-size:10px}.comparison-table>*{padding:9px;border-bottom:1px solid var(--line)}.empty{padding:60px 20px;text-align:center;color:var(--muted)}
