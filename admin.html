@@ -590,11 +590,12 @@ textarea{min-height:92px;resize:vertical}
   <section id="feedbackPanel" class="panel">
     <div class="grid">
       <div class="card">
-        <h2>Recensioni sulle analisi</h2><p class="section-intro">Gestisci tutte le recensioni lasciate dagli utenti — modifica o elimina se necessario</p>
+        <h2>Recensioni sulle analisi</h2><p class="section-intro">Gestisci tutte le recensioni lasciate dagli utenti — modifica, rispondi o elimina</p>
         <div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px">
           <h3 style="margin:0 0 10px;font-size:14px">Aggiungi una recensione</h3>
           <label>Analisi<select id="fbNewAnalysis"></select></label>
-          <label>Nome (lascia vuoto per "Amministrazione BizScan" con spunta blu)<input id="fbNewName" placeholder="Es. Marco R."></label>
+          <label>Nome<input id="fbNewName" placeholder="Es. Marco R. (obbligatorio se non pubblichi come Amministrazione)"></label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:8px 0"><input type="checkbox" id="fbNewIsOfficial" checked onchange="document.getElementById('fbNewName').placeholder=this.checked?'Lascia vuoto per \\'Amministrazione BizScan\\', oppure scrivi un nome':'Nome della persona (obbligatorio)'"> Pubblica come Amministrazione (con spunta blu di verifica)</label>
           <label>Messaggio<textarea id="fbNewMessage" rows="2"></textarea></label>
           <div class="two">
             <label>Stelle<select id="fbNewStars">${[5,4,3,2,1].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label>
@@ -602,17 +603,19 @@ textarea{min-height:92px;resize:vertical}
           </div>
           <button class="btn primary" onclick="addAdminFeedback()">Aggiungi recensione</button>
         </div>
-        <div id="feedbackList">Caricamento…</div>
+        <input id="fbSearchName" placeholder="🔍 Cerca per nome cliente…" style="width:100%;padding:10px;border-radius:10px;margin-bottom:10px" oninput="filterFeedbackList()">
+        <div id="feedbackList" style="max-height:420px;overflow-y:auto;padding-right:4px">Caricamento…</div>
       </div>
       <div class="card">
         <h2>Suggerimenti degli utenti</h2><p class="section-intro">Messaggi inviati da chiunque su cosa migliorare nel sito</p>
-        <div id="suggestionsList">Caricamento…</div>
+        <div id="suggestionsList" style="max-height:420px;overflow-y:auto;padding-right:4px">Caricamento…</div>
       </div>
       <div class="card">
         <h2>Feedback generale su BizScan</h2><p class="section-intro">Recensioni generali sul sito (homepage) — non legate a un'analisi specifica</p>
         <div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px">
           <h3 style="margin:0 0 10px;font-size:14px">Aggiungi un feedback</h3>
-          <label>Nome (lascia vuoto per "Amministrazione BizScan" con spunta blu)<input id="siteFbNewName" placeholder="Es. Marco R."></label>
+          <label>Nome<input id="siteFbNewName" placeholder="Es. Marco R. (obbligatorio se non pubblichi come Amministrazione)"></label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:8px 0"><input type="checkbox" id="siteFbNewIsOfficial" checked onchange="document.getElementById('siteFbNewName').placeholder=this.checked?'Lascia vuoto per \\'Amministrazione BizScan\\', oppure scrivi un nome':'Nome della persona (obbligatorio)'"> Pubblica come Amministrazione (con spunta blu di verifica)</label>
           <label>Messaggio<textarea id="siteFbNewMessage" rows="2"></textarea></label>
           <div class="two">
             <label>Stelle<select id="siteFbNewStars">${[5,4,3,2,1].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label>
@@ -620,7 +623,8 @@ textarea{min-height:92px;resize:vertical}
           </div>
           <button class="btn primary" onclick="addAdminSiteFeedback()">Aggiungi feedback</button>
         </div>
-        <div id="siteFeedbackList">Caricamento…</div>
+        <input id="siteFbSearchName" placeholder="🔍 Cerca per nome cliente…" style="width:100%;padding:10px;border-radius:10px;margin-bottom:10px" oninput="filterSiteFeedbackList()">
+        <div id="siteFeedbackList" style="max-height:420px;overflow-y:auto;padding-right:4px">Caricamento…</div>
       </div>
     </div>
   </section>
@@ -753,8 +757,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607262238"></script>
-<script src="app.js?v=202607262238"></script>
+ <script src="supabase-data.js?v=202607270034"></script>
+<script src="app.js?v=202607270034"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -913,44 +917,67 @@ window.saveCarouselTransition=async()=>{
   const{error}=await supabaseClient.rpc("admin_set_hero_settings",{p_carousel_transition:val,p_carousel_seconds:secs})
   if(error)alert("Errore: "+error.message)
 }
+let _sfbCache=[]
 async function loadSiteFeedbackList(){
   const now=new Date()
   const nowLocal=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16)
   const dateInput=document.getElementById("siteFbNewDate")
   if(dateInput&&!dateInput.value)dateInput.value=nowLocal
-  const host=document.getElementById("siteFeedbackList")
   try{
     const{data,error}=await supabaseClient.rpc("admin_list_site_feedback")
     if(error)throw error
-    if(!data||!data.length){host.innerHTML='<div class="empty">Nessun feedback generale ancora</div>';return}
-    host.innerHTML=data.map(f=>{
-      const dt=new Date(f.created_at)
-      const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
-      return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px">
-        <small style="color:#8d99aa">${f.is_official?'✓ ufficiale · ':''}${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small>
-        <input data-sfb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
-        <textarea data-sfb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <label style="font-size:11px">Stelle <select data-sfb="${f.id}" data-field="stars" style="padding:6px">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===f.stars?'selected':''}>${n}</option>`).join('')}</select></label>
-          <label style="font-size:11px">Data <input type="datetime-local" data-sfb="${f.id}" data-field="created_at" value="${dtLocal}" style="padding:6px"></label>
-          <label style="font-size:11px"><input type="checkbox" data-sfb="${f.id}" data-field="is_hidden" ${f.is_hidden?'checked':''}> Nascondi</label>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn primary" style="padding:6px 14px" onclick="saveSiteFeedbackEdit('${f.id}')">Salva</button>
-          <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteSiteFeedback('${f.id}')">Elimina</button>
-        </div>
-      </div>`
-    }).join('')
-  }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+    _sfbCache=data||[]
+    renderSiteFeedbackList(_sfbCache)
+  }catch(e){document.getElementById("siteFeedbackList").innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+}
+function renderSiteFeedbackList(data){
+  const host=document.getElementById("siteFeedbackList")
+  if(!data||!data.length){host.innerHTML='<div class="empty">Nessun feedback trovato</div>';return}
+  host.innerHTML=data.map(f=>{
+    const dt=new Date(f.created_at)
+    const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
+    return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px;margin-bottom:10px">
+      <small style="color:#8d99aa">${f.is_official?'✓ ufficiale · ':''}${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small>
+      <input data-sfb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
+      <textarea data-sfb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:11px">Stelle <select data-sfb="${f.id}" data-field="stars" style="padding:6px">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===f.stars?'selected':''}>${n}</option>`).join('')}</select></label>
+        <label style="font-size:11px">Data <input type="datetime-local" data-sfb="${f.id}" data-field="created_at" value="${dtLocal}" style="padding:6px"></label>
+        <label style="font-size:11px"><input type="checkbox" data-sfb="${f.id}" data-field="is_hidden" ${f.is_hidden?'checked':''}> Nascondi</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" style="padding:6px 14px" onclick="saveSiteFeedbackEdit('${f.id}')">Salva</button>
+        <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteSiteFeedback('${f.id}')">Elimina</button>
+      </div>
+      <div style="width:100%;border-top:1px solid var(--line);padding-top:8px;margin-top:2px">
+        <label style="font-size:11px;color:#8d99aa">Risposta di BizScan (visibile pubblicamente sotto il feedback)</label>
+        <textarea id="sfbreply-${f.id}" rows="2" style="width:100%;padding:8px;border-radius:8px" placeholder="Scrivi una risposta…">${f.admin_reply||''}</textarea>
+        <button class="btn dark" style="padding:6px 14px;margin-top:6px" onclick="replyToSiteFeedback('${f.id}')">Salva risposta</button>
+      </div>
+    </div>`
+  }).join('')
+}
+function filterSiteFeedbackList(){
+  const q=document.getElementById("siteFbSearchName").value.trim().toLowerCase()
+  renderSiteFeedbackList(q?_sfbCache.filter(f=>(f.display_name||'').toLowerCase().includes(q)):_sfbCache)
+}
+async function replyToSiteFeedback(id){
+  const reply=document.getElementById("sfbreply-"+id).value.trim()
+  const{error}=await supabaseClient.rpc("admin_reply_site_feedback",{p_id:id,p_reply:reply})
+  if(error){alert("Errore: "+error.message);return}
+  alert("Risposta salvata")
+  loadSiteFeedbackList()
 }
 async function addAdminSiteFeedback(){
   const name=document.getElementById("siteFbNewName").value.trim()
+  const isOfficial=document.getElementById("siteFbNewIsOfficial").checked
   const message=document.getElementById("siteFbNewMessage").value.trim()
   const stars=Number(document.getElementById("siteFbNewStars").value)
   const dateVal=document.getElementById("siteFbNewDate").value
   if(!message){alert("Scrivi un messaggio");return}
+  if(!isOfficial&&!name){alert("Inserisci il nome della persona, oppure spunta 'Pubblica come Amministrazione'");return}
   const createdAt=dateVal?new Date(dateVal).toISOString():new Date().toISOString()
-  const{error}=await supabaseClient.rpc("admin_add_site_feedback",{p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt})
+  const{error}=await supabaseClient.rpc("admin_add_site_feedback",{p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt,p_is_official:isOfficial})
   if(error){alert("Errore: "+error.message);return}
   document.getElementById("siteFbNewName").value=""
   document.getElementById("siteFbNewMessage").value=""
@@ -979,6 +1006,7 @@ async function deleteSiteFeedback(id){
   if(error){alert("Errore: "+error.message);return}
   loadSiteFeedbackList()
 }
+let _fbCache=[]
 async function loadFeedbackList(){
   const sel=document.getElementById("fbNewAnalysis")
   if(sel&&!sel.dataset.loaded){
@@ -989,40 +1017,62 @@ async function loadFeedbackList(){
   const nowLocal=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16)
   const dateInput=document.getElementById("fbNewDate")
   if(dateInput&&!dateInput.value)dateInput.value=nowLocal
-  const host=document.getElementById("feedbackList")
   try{
     const{data,error}=await supabaseClient.rpc("admin_list_all_feedback")
     if(error)throw error
-    if(!data||!data.length){host.innerHTML='<div class="empty">Nessuna recensione ancora</div>';return}
-    host.innerHTML=data.map(f=>{
-      const dt=new Date(f.created_at)
-      const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
-      return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px">
-        <div style="display:flex;justify-content:space-between;width:100%"><b>${f.analysis_title}</b><small style="color:#8d99aa">${f.is_official?'✓ ufficiale · ':''}${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small></div>
-        <input data-fb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
-        <textarea data-fb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <label style="font-size:11px">Stelle <select data-fb="${f.id}" data-field="stars" style="padding:6px">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===f.stars?'selected':''}>${n}</option>`).join('')}</select></label>
-          <label style="font-size:11px">Data <input type="datetime-local" data-fb="${f.id}" data-field="created_at" value="${dtLocal}" style="padding:6px"></label>
-          <label style="font-size:11px"><input type="checkbox" data-fb="${f.id}" data-field="is_hidden" ${f.is_hidden?'checked':''}> Nascondi</label>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn primary" style="padding:6px 14px" onclick="saveFeedbackEdit('${f.id}')">Salva</button>
-          <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteFeedback('${f.id}')">Elimina</button>
-        </div>
-      </div>`
-    }).join('')
-  }catch(e){host.innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+    _fbCache=data||[]
+    renderFeedbackList(_fbCache)
+  }catch(e){document.getElementById("feedbackList").innerHTML='<div class="empty">Errore nel caricamento</div>';console.error(e)}
+}
+function renderFeedbackList(data){
+  const host=document.getElementById("feedbackList")
+  if(!data||!data.length){host.innerHTML='<div class="empty">Nessuna recensione trovata</div>';return}
+  host.innerHTML=data.map(f=>{
+    const dt=new Date(f.created_at)
+    const dtLocal=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16)
+    return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:8px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;width:100%"><b>${f.analysis_title}</b><small style="color:#8d99aa">${f.is_official?'✓ ufficiale · ':''}${f.is_hidden?'🚫 nascosto':'✓ visibile'}</small></div>
+      <input data-fb="${f.id}" data-field="display_name" value="${(f.display_name||'').replace(/"/g,'&quot;')}" placeholder="Nome" style="width:100%;padding:8px;border-radius:8px">
+      <textarea data-fb="${f.id}" data-field="message" rows="2" style="width:100%;padding:8px;border-radius:8px">${f.message||''}</textarea>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:11px">Stelle <select data-fb="${f.id}" data-field="stars" style="padding:6px">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===f.stars?'selected':''}>${n}</option>`).join('')}</select></label>
+        <label style="font-size:11px">Data <input type="datetime-local" data-fb="${f.id}" data-field="created_at" value="${dtLocal}" style="padding:6px"></label>
+        <label style="font-size:11px"><input type="checkbox" data-fb="${f.id}" data-field="is_hidden" ${f.is_hidden?'checked':''}> Nascondi</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" style="padding:6px 14px" onclick="saveFeedbackEdit('${f.id}')">Salva</button>
+        <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteFeedback('${f.id}')">Elimina</button>
+      </div>
+      <div style="width:100%;border-top:1px solid var(--line);padding-top:8px;margin-top:2px">
+        <label style="font-size:11px;color:#8d99aa">Risposta di BizScan (visibile pubblicamente sotto la recensione)</label>
+        <textarea id="reply-${f.id}" rows="2" style="width:100%;padding:8px;border-radius:8px" placeholder="Scrivi una risposta…">${f.admin_reply||''}</textarea>
+        <button class="btn dark" style="padding:6px 14px;margin-top:6px" onclick="replyToFeedback('${f.id}')">Salva risposta</button>
+      </div>
+    </div>`
+  }).join('')
+}
+function filterFeedbackList(){
+  const q=document.getElementById("fbSearchName").value.trim().toLowerCase()
+  renderFeedbackList(q?_fbCache.filter(f=>(f.display_name||'').toLowerCase().includes(q)):_fbCache)
+}
+async function replyToFeedback(id){
+  const reply=document.getElementById("reply-"+id).value.trim()
+  const{error}=await supabaseClient.rpc("admin_reply_feedback",{p_id:id,p_reply:reply})
+  if(error){alert("Errore: "+error.message);return}
+  alert("Risposta salvata")
+  loadFeedbackList()
 }
 async function addAdminFeedback(){
   const analysisId=document.getElementById("fbNewAnalysis").value
   const name=document.getElementById("fbNewName").value.trim()
+  const isOfficial=document.getElementById("fbNewIsOfficial").checked
   const message=document.getElementById("fbNewMessage").value.trim()
   const stars=Number(document.getElementById("fbNewStars").value)
   const dateVal=document.getElementById("fbNewDate").value
   if(!message){alert("Scrivi un messaggio");return}
+  if(!isOfficial&&!name){alert("Inserisci il nome della persona, oppure spunta 'Pubblica come Amministrazione'");return}
   const createdAt=dateVal?new Date(dateVal).toISOString():new Date().toISOString()
-  const{error}=await supabaseClient.rpc("admin_add_feedback",{p_analysis_id:analysisId,p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt})
+  const{error}=await supabaseClient.rpc("admin_add_feedback",{p_analysis_id:analysisId,p_display_name:name,p_message:message,p_stars:stars,p_created_at:createdAt,p_is_official:isOfficial})
   if(error){alert("Errore: "+error.message);return}
   document.getElementById("fbNewName").value=""
   document.getElementById("fbNewMessage").value=""
@@ -2427,5 +2477,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607262238"></script></body>
+<script src="shell-ui.js?v=202607270034"></script></body>
 </html>
