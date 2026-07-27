@@ -521,6 +521,7 @@ document.addEventListener('click',e=>{
   document.querySelectorAll('.emoji-panel.open').forEach(p=>p.classList.remove('open'));
  }
 });
+const VERIFIED_BADGE='<svg class="verified-badge" viewBox="0 0 16 16" width="14" height="14" aria-label="Verificato"><circle cx="8" cy="8" r="8" fill="#1d9bf0"/><path d="M4.5 8.2l2.2 2.2 4.8-4.8" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 function renderStars(n){const full='★'.repeat(Math.round(n));const empty='☆'.repeat(5-Math.round(n));return full+empty}
 function timeAgo(iso){
  const d=new Date(iso),now=new Date(),diffDays=Math.floor((now-d)/86400000);
@@ -548,7 +549,7 @@ async function initFeedbackSection(slug){
   const carousel=document.getElementById('feedbackCarousel');
   if(carousel){
    if(top&&top.length){
-    carousel.innerHTML=top.map(f=>`<div class="feedback-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?' <svg class="verified-badge" viewBox="0 0 24 24" width="13" height="13" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><small class="feedback-date">${timeAgo(f.created_at)}</small>${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan <svg class="verified-badge" viewBox="0 0 24 24" width="12" height="12" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`).join('');
+    carousel.innerHTML=top.map(f=>`<div class="feedback-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?' ${VERIFIED_BADGE}':''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p><small class="feedback-date">${timeAgo(f.created_at)}</small>${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan ${VERIFIED_BADGE}</b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`).join('');
    }
   }
   const formCard=document.getElementById('feedbackFormCard');
@@ -632,8 +633,8 @@ async function initSiteFeedback(){
   const {data:top}=await supabaseClient.rpc('public_top_site_feedback',{p_limit:15});
   const marquee=document.getElementById('siteFbMarquee');
   if(marquee&&top&&top.length){
-   const badge=' <svg class="verified-badge" viewBox="0 0 24 24" width="13" height="13" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-   const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?badge:''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p>${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan <svg class="verified-badge" viewBox="0 0 24 24" width="12" height="12" fill="#1d9bf0" aria-label="Verificato"><path d="M12 1.5l2.6 1.3 2.9-.4 1.3 2.6 2.6 1.3-.4 2.9 1.3 2.6-1.9 2.2.4 2.9-2.9.4-1.9 2.2-2.6-1.3-2.9.4-1.3-2.6-2.6-1.3.4-2.9-1.3-2.6 1.9-2.2-.4-2.9 2.9-.4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`;
+   const badge=' ${VERIFIED_BADGE}';
+   const cardHtml=f=>`<div class="site-fb-card"><div class="feedback-name">${esc(f.display_name)}${f.is_official?badge:''}</div><div class="feedback-card-stars">${renderStars(f.stars)}</div><p class="feedback-card-msg">${esc(f.message)}</p>${f.admin_reply?`<div class="feedback-reply"><b>Amministrazione BizScan ${VERIFIED_BADGE}</b><p>${esc(f.admin_reply)}</p></div>`:''}</div>`;
    const row=top.map(cardHtml).join('');
    // Duplichiamo il contenuto solo se ci sono abbastanza elementi da riempire lo schermo -
    // con pochi elementi (1-3), duplicarli sembrerebbe un errore visivo (lo stesso feedback due volte visibile insieme)
