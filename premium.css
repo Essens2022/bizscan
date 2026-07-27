@@ -59,7 +59,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-stars-row small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .feedback-star-picker{display:flex;gap:6px;cursor:pointer}
 .btn.full{width:100%;display:flex;align-items:center;justify-content:center}
-.feedback-star-picker span{color:#333d4d;transition:color .12s;display:grid;place-items:center;padding:2px}
+.feedback-star-picker span{color:rgba(255,180,0,.45);transition:color .12s;display:grid;place-items:center;padding:2px}
 .feedback-star-picker span svg path{fill:none;transition:fill .12s}
 .feedback-star-picker span.filled{color:var(--gold)}
 .feedback-star-picker span.filled svg path{fill:currentColor}
