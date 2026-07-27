@@ -1123,17 +1123,7 @@ function renderPricing(){
  const purpose={
   single:'Per conoscere una singola attività',starter:'Per valutare alcune alternative',smart:'Per confrontare con dati più profondi',pro:'Per scegliere con strumenti finanziari completi',advanced:'Per una decisione approfondita',business:'Per analizzare più opportunità in modo professionale',max:'Per utilizzare tutti gli strumenti BizScan'
  }
- const benefits=p=>{
-  const items=[`${p.analyses} ${p.analyses===1?'analisi interattiva':'analisi interattive'}`]
-  if(p.indicatorCount)items.push(`${p.indicatorCount} ${p.indicatorCount===1?'indicatore premium':'indicatori premium'}`)
-  if(p.pdfCredits)items.push(`${p.pdfCredits} ${p.pdfCredits===1?'credito report PDF':'crediti report PDF'}`)
-  if(p.compare&&p.compare!=='Base')items.push(`Confronto ${String(p.compare).toLowerCase()}`)
-  if(p.key==='single')items.push('Indicatori essenziali')
-  if(p.key==='starter')items.push('Libreria personale')
-  if(p.key==='business')items.push('Checklist investimento')
-  if(p.key==='max')items.push('Tutte le funzioni BizScan')
-  return items.slice(0,5)
- }
+ const benefits=p=>p.features&&p.features.length?p.features.slice(0,6):[`${p.analyses} crediti`]
  const PRICE_CARD_COLOR=PLAN_TIER_COLOR
  const cards=PACKAGES.map(p=>{
   const v=packageValue(p)
@@ -1157,7 +1147,7 @@ function renderPricing(){
   ${pdfTopups()}
  </div>`
 }
-function packageComparison(){return `<section class="pricing-section package-comparison"><div class="pricing-section-head"><small>CONFRONTO COMPLETO</small><h2>Confronta tutti i pacchetti</h2><p>Le funzioni aumentano progressivamente senza ripetizioni</p></div><div class="package-table-wrap"><table class="package-table"><thead><tr><th>Incluso</th>${PACKAGES.map(p=>`<th>${p.name}</th>`).join('')}</tr></thead><tbody><tr><th>Analisi interattive</th>${PACKAGES.map(p=>`<td>${p.analyses}</td>`).join('')}</tr><tr><th>Indicatori premium</th>${PACKAGES.map(p=>`<td>${p.indicatorCount||'—'}</td>`).join('')}</tr><tr><th>Crediti report PDF</th>${PACKAGES.map(p=>`<td>${p.pdfCredits||'—'}</td>`).join('')}</tr><tr><th>Confronto</th>${PACKAGES.map(p=>`<td>${p.compare}</td>`).join('')}</tr><tr><th>Accesso alle analisi sbloccate</th>${PACKAGES.map(()=>'<td class="best">Permanente</td>').join('')}</tr></tbody></table></div></section>`}
+function packageComparison(){return `<section class="pricing-section package-comparison"><div class="pricing-section-head"><small>CONFRONTO COMPLETO</small><h2>Confronta tutti i pacchetti</h2><p>Le funzioni aumentano progressivamente senza ripetizioni</p></div><div class="package-table-wrap"><table class="package-table"><thead><tr><th>Incluso</th>${PACKAGES.map(p=>`<th>${p.name}</th>`).join('')}</tr></thead><tbody><tr><th>Crediti</th>${PACKAGES.map(p=>`<td>${p.analyses}</td>`).join('')}</tr><tr><th>Crediti report PDF</th>${PACKAGES.map(p=>`<td>${p.pdfCredits||'—'}</td>`).join('')}</tr><tr><th>Accesso alle analisi sbloccate</th>${PACKAGES.map(()=>'<td class="best">Permanente</td>').join('')}</tr></tbody></table></div></section>`}
 function standaloneProducts(){const items=[{icon:'▣',title:'Analisi interattiva',text:'Apri una singola attività nella piattaforma',price:UNIT_PRICES.analysis,action:"chooseAddon('analysis')"},{icon:'◎',title:'Indicatore premium',text:'Sblocca un indicatore avanzato su un’analisi scelta',price:UNIT_PRICES.indicator,action:"chooseAddon('indicator')"},{icon:'PDF',title:'Report PDF completo',text:'Scarica il dossier approfondito di un’attività',price:UNIT_PRICES.pdf,action:"chooseAddon('pdf')"},{icon:'⇄',title:'Confronto avanzato',text:'Confronta due attività con metriche complete',price:UNIT_PRICES.comparison,action:"chooseAddon('comparison')"}];return `<section class="standalone-products section"><div class="section-head"><div><small>ACQUISTA SOLO CIÒ CHE TI SERVE</small><h2>Prezzi singoli trasparenti</h2><p>Questi prezzi formano il valore separato mostrato nei pacchetti</p></div></div><div class="standalone-grid">${items.map(x=>`<article class="panel standalone-card"><i>${x.icon}</i><div><h3>${x.title}</h3><p>${x.text}</p></div><strong>${euro(x.price)}</strong><button class="btn ghost full" onclick="${x.action}">Acquista singolarmente</button></article>`).join('')}</div></section>`}
 window.chooseAddon=async type=>{
  const map={analysis:['Analisi interattiva',UNIT_PRICES.analysis],indicator:['Indicatore premium',UNIT_PRICES.indicator],pdf:['Report PDF completo',UNIT_PRICES.pdf],comparison:['Confronto avanzato',UNIT_PRICES.comparison]};
