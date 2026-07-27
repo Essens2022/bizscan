@@ -359,6 +359,18 @@ function renderHome(){
    <div class="home18-steps"><article><b>01</b><div><h3>Scegli l’attività</h3><p>Cerca per nome o settore e apri la scheda che ti interessa</p></div></article><article><b>02</b><div><h3>Leggi i numeri chiave</h3><p>Valuta costi margini rischio ROI e tempo di recupero</p></div></article><article><b>03</b><div><h3>Confronta e decidi</h3><p>Metti due opportunità una accanto all’altra e scarica il dossier completo</p></div></article></div>
   </section>
 
+  <section class="home18-section home18-mission">
+   <small>PERCHÉ ESISTIAMO</small>
+   <h2>Ogni anno, migliaia di persone rischiano i risparmi di una vita su un'attività che non capiscono davvero</h2>
+   <p class="home18-mission-lead">Non per mancanza di coraggio. Per mancanza di dati reali, chiari, prima di firmare qualsiasi cosa. Noi vogliamo cambiare questo.</p>
+   <div class="home18-mission-grid">
+    <div class="home18-mission-card"><span>🎯</span><h3>La nostra missione</h3><p>Ridurre il numero di attività che falliscono per un motivo evitabile: aver deciso senza numeri veri sotto mano.</p></div>
+    <div class="home18-mission-card"><span>🔍</span><h3>Come ci arriviamo</h3><p>Dati verificati da fonti ufficiali, non opinioni. Ogni cifra che vedi ha una fonte reale dietro, non una stima a caso.</p></div>
+    <div class="home18-mission-card"><span>🤝</span><h3>Nessun conflitto di interesse</h3><p>Non vendiamo licenze, non vendiamo locali, non guadagniamo se apri un'attività specifica. Guadagniamo solo se l'informazione ti è stata utile.</p></div>
+   </div>
+   <p class="home18-mission-closing">Il nostro successo si misura in una cosa sola: quante persone hanno evitato un errore costoso, o hanno trovato con fiducia l'attività giusta per loro.</p>
+  </section>
+
   <section class="home18-faq">
    <small>DOMANDE FREQUENTI</small><h2>Tutto quello che serve sapere</h2><p>Risposte chiare prima di acquistare o aprire un’analisi</p>
    <div class="home18-faq-list"><details open><summary>Che cosa include un’analisi BizScan?<span>+</span></summary><p>Una panoramica strutturata di investimento iniziale costi ricavi profitto potenziale rischio ROI tempo di recupero e indicatori disponibili per il livello acquistato</p></details><details><summary>Devo pagare un abbonamento?<span>+</span></summary><p>No I pacchetti prevedono un pagamento unico e le analisi sbloccate restano disponibili nel tuo account</p></details><details><summary>Qual è la differenza tra analisi interattiva e report PDF?<span>+</span></summary><p>L’analisi interattiva serve per esplorare dati e confronti Il PDF è il dossier completo da conservare e consultare offline</p></details><details><summary>Posso confrontare due attività?<span>+</span></summary><p>Sì Puoi confrontare punteggio investimento profitto ROI recupero e rischio</p></details><details><summary>I dati sostituiscono una consulenza professionale?<span>+</span></summary><p>No BizScan è uno strumento informativo Prima di investire verifica dati locali contratti fiscalità autorizzazioni e condizioni specifiche con professionisti qualificati</p></details></div>
