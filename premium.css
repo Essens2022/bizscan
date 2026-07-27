@@ -34,6 +34,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-card-stars{color:var(--gold);font-size:14px;letter-spacing:1px}
 .feedback-card-msg{font-size:12px;line-height:1.5;color:#d3dae3;margin:0;flex:1;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .feedback-name{display:flex;align-items:center;gap:4px;color:var(--gold);font-weight:800;font-size:12.5px;margin-bottom:6px}
+.feedback-source-tag{display:block;color:var(--muted);font-size:10px;font-style:italic;margin-top:4px}
 .home18-mission{text-align:center;padding:56px 0}
 .home18-mission>small{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .home18-mission>h2{margin:10px auto 14px;font-size:32px;line-height:1.25;max-width:760px;letter-spacing:-.02em}
