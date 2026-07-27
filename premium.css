@@ -48,7 +48,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .feedback-reply{margin-top:8px;padding:8px 10px;border-left:2px solid var(--gold);background:rgba(255,180,0,.06);border-radius:0 8px 8px 0}
 .feedback-reply b{display:flex;align-items:center;gap:4px;font-size:10px;color:#fff;margin-bottom:3px}
 .feedback-reply p{margin:0;font-size:11px;color:#c7d0dd;line-height:1.4}
-.verified-badge{vertical-align:middle;margin-left:2px;position:relative;top:-1px}
+.verified-badge{flex-shrink:0;display:inline-block}
 .feedback-date{color:var(--muted);font-size:10px;display:block;margin-top:6px}
 .feedback-form-card{margin:20px auto 0;border:1px solid var(--line);border-radius:14px;background:#0a121e;padding:20px;max-width:520px;text-align:center}
 .feedback-form-card h3{margin:0 0 14px;font-size:15px;text-align:center}
