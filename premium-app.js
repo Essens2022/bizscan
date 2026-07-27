@@ -1141,9 +1141,9 @@ function renderPricing(){
  }).join('')
  host.innerHTML=`<div class="pricing-page">
   <section class="pricing-hero-clean"><small>PAGAMENTO UNICO · NESSUN ABBONAMENTO</small><h1>Scegli il livello di analisi più adatto alla tua decisione</h1><p>Tutti i pacchetti mostrano chiaramente analisi strumenti premium report PDF e risparmio incluso</p><div class="pricing-promises"><span>Analisi sbloccate senza scadenza</span><span>Crediti conservati nel conto</span><span>Upgrade possibile in seguito</span></div></section>
+  <section class="pricing-section"><div class="value-explainer"><div><small>COME È FORMATO IL VALORE</small><h2>Ogni credito ha un prezzo fisso</h2><p>Ogni pacchetto vale esattamente credito × 1,99 € più eventuali crediti PDF</p></div><div class="value-units"><span><b>${euro(UNIT_PRICES.analysis)}</b><em>1 credito</em></span><span><b>${euro(pdfBulkValue(1))}</b><em>1 report PDF</em></span></div></div></section>
   <div class="pricing-grid">${cards}</div>
   ${packageComparison()}
-  <section class="pricing-section"><div class="value-explainer"><div><small>COME È FORMATO IL VALORE</small><h2>Ogni componente ha un prezzo individuale</h2><p>Il valore separato somma soltanto prodotti acquistabili singolarmente nella pagina BizScan</p></div><div class="value-units"><span><b>${euro(UNIT_PRICES.analysis)}</b><em>Analisi interattiva</em></span><span><b>${euro(UNIT_PRICES.indicator)}</b><em>Indicatore premium</em></span><span><b>${euro(UNIT_PRICES.pdf)}</b><em>Report PDF completo</em></span><span><b>${euro(UNIT_PRICES.comparison)}</b><em>Confronto avanzato</em></span></div></div></section>
   ${pdfTopups()}
  </div>`
 }
