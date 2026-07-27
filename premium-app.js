@@ -6,20 +6,31 @@ try{
  }
 }catch(_){}
 let PACKAGES=[
- {key:'single',name:'Analisi Singola',price:1.99,analyses:1,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['1 analisi interattiva','Indicatori essenziali','Accesso permanente','Report PDF acquistabile separatamente']},
- {key:'starter',name:'Starter',price:4.99,analyses:3,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['3 analisi interattive','Indicatori essenziali','Libreria personale','Report PDF acquistabili separatamente']},
- {key:'smart',name:'Smart',price:6.99,analyses:5,pdfCredits:1,badge:'SCELTA INTELLIGENTE',indicatorCount:1,compare:'Base',features:['5 analisi interattive','Break-even sbloccato','Confronto tra analisi','1 credito report PDF']},
- {key:'pro',name:'Pro',price:9.99,analyses:8,pdfCredits:2,badge:'PIÙ SCELTO',indicatorCount:3,compare:'Dettagliato',features:['8 analisi interattive','Break-even','Scenari finanziari','Distribuzione dei costi','2 crediti report PDF']},
- {key:'advanced',name:'Advanced',price:14.99,analyses:12,pdfCredits:3,badge:'CONSIGLIATO',indicatorCount:6,compare:'Avanzato',features:['12 analisi interattive','Tutto Pro','Cash-flow e capitale circolante','Benchmark e test di stress','3 crediti report PDF']},
- {key:'business',name:'Business',price:18.99,analyses:16,pdfCredits:5,badge:'MIGLIOR VALORE',indicatorCount:10,compare:'Professionale',features:['16 analisi interattive','10 indicatori avanzati','Filtri e confronti professionali','Checklist investimento','5 crediti report PDF']},
- {key:'max',name:'BizScan Max',price:23.99,analyses:20,pdfCredits:7,badge:'ESPERIENZA COMPLETA',indicatorCount:12,compare:'Completo',features:['20 analisi interattive','Tutti i 12 indicatori','Tutti i grafici e filtri','Confronti completi','7 crediti report PDF']}
+ {key:'single',name:'Base',price:1.99,analyses:5,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Indicatori chiave gratis','5 crediti','Scenari di profitto']},
+ {key:'starter',name:'Starter',price:4.99,analyses:13,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Tutto del piano Base','13 crediti','Break-even mensile']},
+ {key:'smart',name:'Smart',price:6.99,analyses:18,pdfCredits:1,badge:'SCELTA INTELLIGENTE',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','18 crediti','Distribuzione costi iniziali','Confronto con la media categoria','1 credito report PDF']},
+ {key:'pro',name:'Pro',price:9.99,analyses:26,pdfCredits:2,badge:'PIÙ SCELTO',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','26 crediti','Cash-flow a 12 mesi','Costi fissi e variabili mensili','2 crediti report PDF']},
+ {key:'advanced',name:'Advanced',price:14.99,analyses:39,pdfCredits:3,badge:'CONSIGLIATO',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','39 crediti','Fabbisogno di personale','Fornitori e autorizzazioni','3 crediti report PDF']},
+ {key:'business',name:'Business',price:18.99,analyses:49,pdfCredits:5,badge:'MIGLIOR VALORE',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','49 crediti','Analisi della concorrenza locale','Domanda e stagionalità','5 crediti report PDF']},
+ {key:'max',name:'BizScan Max',price:23.99,analyses:62,pdfCredits:7,badge:'MASSIMA PROFONDITÀ',indicatorCount:0,compare:'Base',features:['Tutto dei piani precedenti','62 crediti','Matrice dei rischi','Strategie di crescita','7 crediti report PDF']}
 ]
 const UNIT_PRICES={analysis:1.99,indicator:2.99,pdf:3.99,comparison:1.99}
 const COMPARISON_UNITS={Base:0,Dettagliato:1,Avanzato:2,Professionale:3,Completo:4}
+const PDF_BULK_PRICES={1:1.99,3:4.99,5:6.99,10:11.99}
+function pdfBulkValue(n){
+ if(!n)return 0
+ if(PDF_BULK_PRICES[n])return PDF_BULK_PRICES[n]
+ const pts=Object.keys(PDF_BULK_PRICES).map(Number).sort((a,b)=>a-b)
+ for(let i=0;i<pts.length-1;i++){
+  const a=pts[i],b=pts[i+1]
+  if(n>a&&n<b)return Math.round((PDF_BULK_PRICES[a]+(n-a)/(b-a)*(PDF_BULK_PRICES[b]-PDF_BULK_PRICES[a]))*100)/100
+ }
+ return Math.round(n*(PDF_BULK_PRICES[10]/10)*100)/100
+}
 function packageValue(p){
  const analysisValue=p.analyses*UNIT_PRICES.analysis
  const indicatorValue=p.indicatorCount*UNIT_PRICES.indicator
- const pdfValue=p.pdfCredits*UNIT_PRICES.pdf
+ const pdfValue=pdfBulkValue(p.pdfCredits)
  const comparisonValue=(COMPARISON_UNITS[p.compare]||0)*UNIT_PRICES.comparison
  const total=analysisValue+indicatorValue+pdfValue+comparisonValue
  return {analysisValue,indicatorValue,pdfValue,comparisonValue,total,saving:Math.max(0,total-p.price),resources:p.analyses+p.indicatorCount+p.pdfCredits+(COMPARISON_UNITS[p.compare]||0)}
