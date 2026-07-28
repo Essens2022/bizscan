@@ -589,6 +589,12 @@ textarea{min-height:92px;resize:vertical}
 
   <section id="feedbackPanel" class="panel">
     <div class="grid">
+      <div class="card" style="grid-column:1/-1">
+        <h2>📄 Importa feedback da file CSV</h2><p class="section-intro">Carica un file .csv con colonne: nome, testo, stelle, produs (slug del prodotto — lascia vuoto per la homepage)</p>
+        <input type="file" id="feedbackCsvFile" accept=".csv" style="margin-bottom:10px">
+        <button class="btn primary" onclick="importFeedbackCsv()">Importa file</button>
+        <div id="feedbackCsvResult" style="margin-top:12px;font-size:12.5px"></div>
+      </div>
       <div class="card">
         <h2>Recensioni sulle analisi</h2><p class="section-intro">Gestisci tutte le recensioni lasciate dagli utenti — modifica, rispondi o elimina</p>
         <div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px">
@@ -757,8 +763,8 @@ textarea{min-height:92px;resize:vertical}
    </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202607280801"></script>
-<script src="app.js?v=202607280801"></script>
+ <script src="supabase-data.js?v=202607280806"></script>
+<script src="app.js?v=202607280806"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 let coverData="",pdfMeta=null
@@ -1007,6 +1013,61 @@ async function deleteSiteFeedback(id){
   loadSiteFeedbackList()
 }
 let _fbCache=[]
+function parseCsvSimple(text){
+  // Parser CSV semplice ma robusto: gestisce campi tra virgolette con virgole interne
+  const lines=text.split(/\r?\n/).filter(l=>l.trim()!=="")
+  const rows=lines.map(line=>{
+    const cells=[];let cur="";let inQuotes=false
+    for(let i=0;i<line.length;i++){
+      const c=line[i]
+      if(c==='"'){inQuotes=!inQuotes}
+      else if(c===','&&!inQuotes){cells.push(cur);cur=""}
+      else{cur+=c}
+    }
+    cells.push(cur)
+    return cells.map(c=>c.trim().replace(/^"|"$/g,''))
+  })
+  return rows
+}
+async function importFeedbackCsv(){
+  const fileInput=document.getElementById("feedbackCsvFile")
+  const resultBox=document.getElementById("feedbackCsvResult")
+  const file=fileInput.files[0]
+  if(!file){resultBox.textContent="Seleziona prima un file CSV";return}
+  resultBox.textContent="Lettura file in corso…"
+  const text=await file.text()
+  const rows=parseCsvSimple(text)
+  if(!rows.length){resultBox.textContent="File vuoto";return}
+  const header=rows[0].map(h=>h.toLowerCase())
+  const idxName=header.indexOf("nome")
+  const idxMsg=header.indexOf("testo")
+  const idxStars=header.indexOf("stelle")
+  const idxSlug=header.indexOf("produs")
+  if(idxName===-1||idxMsg===-1||idxStars===-1){
+    resultBox.textContent="Intestazioni non trovate — servono le colonne: nome, testo, stelle, produs"
+    return
+  }
+  const data=rows.slice(1).map(r=>({
+    name:r[idxName]||"",
+    message:r[idxMsg]||"",
+    stars:Number(r[idxStars])||0,
+    slug:idxSlug!==-1?(r[idxSlug]||null):null
+  }))
+  resultBox.textContent=`Invio di ${data.length} righe…`
+  const{data:result,error}=await supabaseClient.rpc("admin_bulk_import_feedback",{p_rows:data})
+  if(error){resultBox.innerHTML=`<span style="color:#ff8a8a">Errore: ${error.message}</span>`;return}
+  const r=result[0]
+  let html=`<b style="color:#7ee787">${r.inserted_count} feedback importati con successo</b>`
+  if(r.skipped_count>0){
+    html+=`<br><span style="color:#ffb300">${r.skipped_count} righe scartate:</span><ul style="margin:6px 0 0;padding-left:18px">`
+    r.skipped_reasons.forEach(reason=>{html+=`<li>${reason}</li>`})
+    html+=`</ul>`
+  }
+  resultBox.innerHTML=html
+  fileInput.value=""
+  loadFeedbackList()
+  loadSiteFeedbackList()
+}
 async function loadFeedbackList(){
   const sel=document.getElementById("fbNewAnalysis")
   if(sel&&!sel.dataset.loaded){
@@ -2477,5 +2538,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202607280801"></script></body>
+<script src="shell-ui.js?v=202607280806"></script></body>
 </html>
