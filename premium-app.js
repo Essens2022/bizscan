@@ -619,25 +619,22 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
- if(window.innerWidth<=680)return; // su mobile lo scroll manuale funziona bene - l'animazione automatica resta solo su desktop, dove è confermata stabile
- let paused=false,direction=1,pos=0,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
- // Ricalcola il limite reale solo ogni mezzo secondo, non a ogni frame - su mobile
- // scrollWidth/clientWidth possono oscillare leggermente (barra indirizzi che si nasconde/appare)
- // e ricalcolare 60 volte al secondo amplifica quel rumore invece di ignorarlo
- setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},500)
- function step(){
-  if(maxScroll<=2){requestAnimationFrame(step);return} // nessuno spazio reale per scorrere (contenuto entra tutto a schermo largo)
+ let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
+ setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},1000)
+ // Uso setInterval invece di requestAnimationFrame: su mobile rAF viene spesso sospeso/rallentato
+ // durante lo scroll della pagina, causando ritardi visibili prima dell'inversione di direzione.
+ // setInterval con timing fisso si comporta in modo più prevedibile in quello scenario.
+ setInterval(()=>{
+  if(maxScroll<=2)return; // nessuno spazio reale per scorrere (contenuto entra tutto a schermo largo)
   if(!paused){
-   pos+=1.2*direction;
+   pos+=2.4*direction;
    if(pos>=maxScroll){pos=maxScroll;direction=-1}
    else if(pos<=0){pos=0;direction=1}
    el.scrollLeft=pos;
   }else{
    pos=Math.min(el.scrollLeft,maxScroll); // se l'utente ha scrollato manualmente mentre in pausa, riparte da lì
   }
-  requestAnimationFrame(step);
- }
- requestAnimationFrame(step);
+ },30)
  const pause=()=>{paused=true};
  const resume=()=>{setTimeout(()=>{paused=false},1500)};
  el.addEventListener('touchstart',pause,{passive:true});
