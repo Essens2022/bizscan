@@ -89,19 +89,54 @@ function getSessionCache(key){
 function setSessionCache(key,v){
  try{sessionStorage.setItem('cache:'+key,JSON.stringify({t:Date.now(),v}))}catch(e){}
 }
+const CACHE_MAX_AGE_MS=24*60*60*1000; // 24 ore - oltre questo, i dati sono troppo vecchi anche per uno "stale" iniziale
+function getSessionCache(key,maxAge=CACHE_MAX_AGE_MS){
+ try{
+  const raw=sessionStorage.getItem('cache:'+key);
+  if(!raw)return null;
+  const {t,v}=JSON.parse(raw);
+  if(Date.now()-t>maxAge)return null;
+  return v;
+ }catch(e){return null}
+}
+function setSessionCache(key,v){
+ try{sessionStorage.setItem('cache:'+key,JSON.stringify({t:Date.now(),v}))}catch(e){}
+}
+async function fetchFreshPublicDataInBackground(){
+ // Aggiorna sempre la cache in background, indipendentemente dal fatto che sia stata usata una versione
+ // già in cache per il rendering iniziale - così la PROSSIMA navigazione avrà dati ancora più recenti,
+ // senza che l'utente debba MAI aspettare un caricamento lento in prima persona.
+ try{
+  const [ra,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  const freshAnalyses=ra.status==='fulfilled'?ra.value:analyses;
+  const freshData={
+   analyses:freshAnalyses,
+   heroMedia:rhm.status==='fulfilled'?rhm.value:heroMedia,
+   heroPhrases:rhp.status==='fulfilled'&&rhp.value.length?rhp.value:heroPhrases,
+   heroTransition:rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):heroTransition,
+   heroSeconds:rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):heroSeconds,
+   plansRaw:rp.status==='fulfilled'?rp.value:null
+  };
+  setSessionCache('publicData',freshData);
+ }catch(e){console.warn('Aggiornamento dati in background fallito',e)}
+}
 async function load(){
  compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
  const cachedPublicData=getSessionCache('publicData');
- let ra,rs,rp,rhm,rhp,rhs;
+ let rs;
  if(cachedPublicData){
-  // Dati pubblici (analisi, hero, piani) già recenti in cache - saltiamo del tutto quella parte della richiesta di rete
+  // Usa SUBITO i dati in cache, quale che sia la loro età (fino a 24h) - zero attesa di rete per l'utente.
+  // Aggiorna comunque tutto in background per la prossima volta.
   ({analyses,heroMedia,heroPhrases,heroTransition,heroSeconds}=cachedPublicData);
   applyDbPlans(cachedPublicData.plansRaw);
-  preloadCardImages(); // non blocchiamo, tanto le immagini sono quasi certamente già in cache del browser
+  preloadCardImages();
+  fetchFreshPublicDataInBackground();
   const [rsOnly]=await Promise.allSettled([BizScanData.accessSummary()]);
   rs=rsOnly;
  }else{
-  [ra,rs,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  // Prima visita in questa sessione: nessuna cache, dobbiamo aspettare la rete questa unica volta
+  const [ra,rsFresh,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  rs=rsFresh;
   if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
   await preloadCardImages();
   if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
