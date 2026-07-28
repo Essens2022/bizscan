@@ -330,9 +330,8 @@ function initHeroRotation(){
   },4500);
  }
 }
-async function renderHome(){
+function renderHome(){
  const host=$('#homeContent');if(!host)return
- await ensureStatsLoaded()
  const featuredOnly=analyses.filter(p=>p.featured)
  const allFeatured=(featuredOnly.length?featuredOnly:analyses).slice(0,12)
  const featured=filterHomeAnalyses(allFeatured,homeFilter).slice(0,6)
@@ -436,6 +435,13 @@ async function renderHome(){
  </div>`
  initHeroRotation()
  initSiteFeedback()
+ ensureStatsLoaded().then(()=>{
+  const carousel=document.getElementById('homeFeaturedCarousel');
+  if(carousel){
+   const freshFeatured=filterHomeAnalyses(allFeatured,homeFilter).slice(0,6);
+   carousel.innerHTML=freshFeatured.length?freshFeatured.map(card).join(''):'<div class="home18-filter-empty">Nessuna analisi disponibile per questo filtro</div>';
+  }
+ });
 }
 window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.html?q='+encodeURIComponent(q)};
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
@@ -477,8 +483,7 @@ function costLegend(items){
    return `<span><i class="c${i+1}"></i>${esc(x.label)} <b>${pct}% · ${esc(amtLabel)}</b></span>`;
  }).join('')}</div></div>`;
 }
-async function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};
- await ensureStatsLoaded();
+function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};
  document.title=`${p.title} - Investimento, Rischio e Profitto | BizScan`;
  const metaDesc=document.querySelector('meta[name="description"]');
  const descText=`${p.title}: ${p.summary||'analisi completa'}. Investimento ${p.investment||'-'}, ROI ${p.roi||'-'}, tempo di recupero ${p.payback||'-'}. Scopri se conviene aprire questa attività su BizScan.`.slice(0,300);
@@ -502,7 +507,15 @@ async function renderAnalysis(){const host=$('#analysisContent');if(!host)return
   mainEntityOfPage:{'@type':'WebPage','@id':`https://bizscan.it/analysis.html?slug=${p.slug}`}
  });
  if(p.video_url)attachVideoSchema(p);
- host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button><button class="btn ghost" onclick="document.getElementById('feedbackAnchor').scrollIntoView({behavior:'smooth',block:'start'})">💬 Feedback</button><span class="analysis-rating analysis-rating-lg">${(()=>{const s=statsCache&&statsCache[p.id];return(s&&s.review_count>0)?`${s.avg_stars} ${renderStarsPartial(s.avg_stars)} (${s.review_count})`:''})()}</span></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div><section class="panel feedback-section" id="feedbackAnchor"><div class="feedback-unified-box"><div class="feedback-header"><div><h2>Cosa dicono gli utenti</h2><p>Condividi la tua esperienza con questa analisi</p></div><div class="feedback-avg" id="feedbackAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div><div class="feedback-list-wrap"><div class="feedback-list" id="feedbackCarousel"><div class="feedback-empty">Ancora nessuna recensione. Sii il primo a lasciarne una!</div></div></div></div><div class="feedback-form-card" id="feedbackFormCard"><h3>Lascia il tuo feedback</h3><div class="feedback-form-row feedback-stars-row"><small>La tua valutazione</small><div class="feedback-star-picker" id="feedbackStarPicker" data-value="0">${starPickerHtml()}</div></div><div class="feedback-form-row"><input type="text" id="feedbackName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="feedbackMessage" placeholder="Racconta la tua esperienza…" maxlength="500" rows="3" oninput="updateCharCounter('feedbackMessage')"></textarea><div class="char-counter-row">${charCounter('feedbackMessage',500)}${emojiRow('feedbackMessage')}</div></div><button class="btn gold full" id="feedbackSubmitBtn" onclick="submitFeedback('${p.slug}')">Invia recensione</button><p class="feedback-form-msg" id="feedbackFormMsg"></p></div></section><section class="panel suggestion-section"><h3>Aiutaci a migliorare BizScan</h3><p>Hai un'idea, hai trovato un problema, o vuoi suggerirci qualcosa? Scrivilo qui — leggiamo ogni messaggio.</p><textarea id="suggestionMessage" placeholder="Cosa possiamo migliorare o aggiungere?" maxlength="1000" rows="3" oninput="updateCharCounter('suggestionMessage')"></textarea><div class="char-counter-row">${charCounter('suggestionMessage',1000)}${emojiRow('suggestionMessage')}</div><button class="btn ghost" onclick="submitSuggestion()">Invia suggerimento</button><p class="feedback-form-msg" id="suggestionMsg"></p></section>`;bindTabs();refreshReportAccess(p.slug);initFeedbackSection(p.slug)}
+ host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button><button class="btn ghost" onclick="document.getElementById('feedbackAnchor').scrollIntoView({behavior:'smooth',block:'start'})">💬 Feedback</button><span class="analysis-rating analysis-rating-lg" id="analysisRatingMini">${(()=>{const s=statsCache&&statsCache[p.id];return(s&&s.review_count>0)?`${s.avg_stars} ${renderStarsPartial(s.avg_stars)} (${s.review_count})`:''})()}</span></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div><section class="panel feedback-section" id="feedbackAnchor"><div class="feedback-unified-box"><div class="feedback-header"><div><h2>Cosa dicono gli utenti</h2><p>Condividi la tua esperienza con questa analisi</p></div><div class="feedback-avg" id="feedbackAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div><div class="feedback-list-wrap"><div class="feedback-list" id="feedbackCarousel"><div class="feedback-empty">Ancora nessuna recensione. Sii il primo a lasciarne una!</div></div></div></div><div class="feedback-form-card" id="feedbackFormCard"><h3>Lascia il tuo feedback</h3><div class="feedback-form-row feedback-stars-row"><small>La tua valutazione</small><div class="feedback-star-picker" id="feedbackStarPicker" data-value="0">${starPickerHtml()}</div></div><div class="feedback-form-row"><input type="text" id="feedbackName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="feedbackMessage" placeholder="Racconta la tua esperienza…" maxlength="500" rows="3" oninput="updateCharCounter('feedbackMessage')"></textarea><div class="char-counter-row">${charCounter('feedbackMessage',500)}${emojiRow('feedbackMessage')}</div></div><button class="btn gold full" id="feedbackSubmitBtn" onclick="submitFeedback('${p.slug}')">Invia recensione</button><p class="feedback-form-msg" id="feedbackFormMsg"></p></div></section><section class="panel suggestion-section"><h3>Aiutaci a migliorare BizScan</h3><p>Hai un'idea, hai trovato un problema, o vuoi suggerirci qualcosa? Scrivilo qui — leggiamo ogni messaggio.</p><textarea id="suggestionMessage" placeholder="Cosa possiamo migliorare o aggiungere?" maxlength="1000" rows="3" oninput="updateCharCounter('suggestionMessage')"></textarea><div class="char-counter-row">${charCounter('suggestionMessage',1000)}${emojiRow('suggestionMessage')}</div><button class="btn ghost" onclick="submitSuggestion()">Invia suggerimento</button><p class="feedback-form-msg" id="suggestionMsg"></p></section>`;bindTabs();refreshReportAccess(p.slug);initFeedbackSection(p.slug);
+ ensureStatsLoaded().then(()=>{
+  const ratingEl=document.getElementById('analysisRatingMini');
+  const s=statsCache&&statsCache[p.id];
+  if(ratingEl&&s&&s.review_count>0){
+   ratingEl.innerHTML=`${s.avg_stars} ${renderStarsPartial(s.avg_stars)} (${s.review_count})`;
+  }
+ });
+}
 function charCounter(textareaId,maxLen){return `<span class="char-counter" id="counter-${textareaId}" data-max="${maxLen}">0/${maxLen}</span>`}
 window.updateCharCounter=function(textareaId){
  const el=document.getElementById(textareaId);
@@ -1062,13 +1075,15 @@ function catalogMatches(p,q,filter){
  if(filter==='all')return true;
  return String(p.category||'').toLowerCase()===filter;
 }
-async function renderCatalogResults(){
+function renderCatalogResults(){
  const host=$('#catalogResults');if(!host)return;
- await ensureStatsLoaded()
  const q=($('#searchBox')?.value||'').trim().toLowerCase();
  const arr=analyses.filter(p=>catalogMatches(p,q,catalogFilter));
  const count=$('#catalogCount');if(count)count.textContent=`${arr.length} ${arr.length===1?'analisi disponibile':'analisi disponibili'}`;
  host.innerHTML=arr.map(card).join('')||'<div class="catalog-empty"><strong>Nessuna analisi trovata</strong><span>Prova un altro settore o una parola diversa</span></div>';
+ ensureStatsLoaded().then(()=>{
+  if(host.isConnected)host.innerHTML=arr.map(card).join('')||'<div class="catalog-empty"><strong>Nessuna analisi trovata</strong><span>Prova un altro settore o una parola diversa</span></div>';
+ });
 }
 window.setCatalogFilter=(filter,btn)=>{
  catalogFilter=filter;
@@ -1168,9 +1183,12 @@ async function renderLibrary(){
  const subtitle=isReports?'I report PDF sbloccati e le analisi complete nel tuo account':'Le attività che hai salvato per dopo';
  const emptyMsg=isReports?'Non hai ancora sbloccato nessun report':'Non hai ancora salvato nessuna attività';
  if(!isReports){
-  await ensureStatsLoaded()
   const arr=analyses.filter(p=>favorites.includes(p.slug));
   host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="active">Preferiti</a><a href="library.html?view=reports" class="">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results">${arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`}</div>`
+  ensureStatsLoaded().then(()=>{
+   const grid=host.querySelector('.search-results');
+   if(grid)grid.innerHTML=arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;
+  });
   return;
  }
  host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="">Preferiti</a><a href="library.html?view=reports" class="active">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>`;
@@ -1348,11 +1366,14 @@ window._doChoosePackage=async key=>{
   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
  }
 };
-async function renderCompare(){const host=$('#compareContent');if(!host)return;await ensureStatsLoaded();const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);
+function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);
  if(arr.length===0){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}
- if(arr.length===1){host.innerHTML=`<div class="empty"><h1>Ne serve una seconda</h1><p>Hai selezionato <b>${esc(arr[0].title)}</b> — scegline un'altra da confrontare</p><div class="compare-cards" style="max-width:320px;margin:18px auto">${card(arr[0])}</div><a class="btn gold" href="search.html">Scegli la seconda attività</a><button class="btn dark" style="margin-top:10px" onclick="toggleCompare('${arr[0].slug}')">Rimuovi e ricomincia</button></div>`;return}
+ if(arr.length===1){host.innerHTML=`<div class="empty"><h1>Ne serve una seconda</h1><p>Hai selezionato <b>${esc(arr[0].title)}</b> — scegline un'altra da confrontare</p><div class="compare-cards" style="max-width:320px;margin:18px auto">${card(arr[0])}</div><a class="btn gold" href="search.html">Scegli la seconda attività</a><button class="btn dark" style="margin-top:10px" onclick="toggleCompare('${arr[0].slug}')">Rimuovi e ricomincia</button></div>`;
+  ensureStatsLoaded().then(()=>{const wrap=host.querySelector('.compare-cards');if(wrap)wrap.innerHTML=card(arr[0])});
+  return}
  if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}
  host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score??'—'}</b><b>${arr[1].score??'—'}</b><span>Investimento</span><b>${esc(arr[0].investment||'—')}</b><b>${esc(arr[1].investment||'—')}</b><span>Profitto</span><b>${esc(arr[0].profit||'—')}</b><b>${esc(arr[1].profit||'—')}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback||'—')}</b><b>${esc(arr[1].payback||'—')}</b><span>Rischio</span><b>${esc(arr[0].riskLabel||'—')}</b><b>${esc(arr[1].riskLabel||'—')}</b></div></section><section class="panel" id="compareAdviceSection"><h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Verifica accesso…</p></section>`;
+ ensureStatsLoaded().then(()=>{const wrap=host.querySelector('.compare-cards');if(wrap)wrap.innerHTML=arr.map(card).join('')});
  refreshCompareAdvice(arr[0],arr[1]);
 }
 function riskToNumber(label){
