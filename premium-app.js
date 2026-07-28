@@ -653,7 +653,7 @@ async function initSiteFeedback(){
     ?`<span class="feedback-avg-num">${s.avg_stars}</span><span class="feedback-avg-stars">${renderStars(s.avg_stars)}</span><small>${s.total_count} recensioni</small>`
     :`<span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>nessuna recensione</small>`;
   }
-  const {data:top}=await supabaseClient.rpc('public_top_site_feedback',{p_limit:6});
+  const {data:top}=await supabaseClient.rpc('public_top_site_feedback',{p_limit:100});
   const marquee=document.getElementById('siteFbMarquee');
   if(marquee&&top&&top.length){
    const badge=' ${VERIFIED_BADGE}';
