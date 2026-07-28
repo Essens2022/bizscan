@@ -67,10 +67,19 @@ function applyDbPlans(rows){
    features:d.features||[String(r.description||'')].filter(Boolean)};
  });
 }
+function preloadCardImages(){
+ analyses.forEach(p=>{
+  if(!p.coverUrl)return;
+  const img=new Image();
+  img.src=p.coverUrl;
+  if(img.decode)img.decode().catch(()=>{});
+ });
+}
 async function load(){
  compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
  const [ra,rs,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
  if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
+ preloadCardImages();
  if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
  if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
  heroMedia=rhm.status==='fulfilled'?rhm.value:[];
