@@ -559,7 +559,8 @@ function starPickerHtml(n){
 }
 function renderStars(n){const full='★'.repeat(Math.round(n));const empty='☆'.repeat(5-Math.round(n));return full+empty}
 function renderStarsPartial(n){
- const pct=Math.max(0,Math.min(100,(n/5)*100));
+ const rounded=Math.round(n*2)/2; // arrotonda alla mezza stella più vicina, come Amazon
+ const pct=Math.max(0,Math.min(100,(rounded/5)*100));
  return `<span style="position:relative;display:inline-block;line-height:1"><span style="color:#3a4657">★★★★★</span><span style="position:absolute;top:0;left:0;overflow:hidden;width:${pct}%;white-space:nowrap;color:var(--gold)">★★★★★</span></span>`;
 }
 function timeAgo(iso){
