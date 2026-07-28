@@ -1475,11 +1475,17 @@ function restoreScrollPosition(){
   const key='scrollpos:'+location.pathname+location.search;
   const saved=sessionStorage.getItem(key);
   if(saved!==null){
-   const y=parseInt(saved,10);
-   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+   window.scrollTo(0,parseInt(saved,10));
   }
  }catch(e){}
 }
+let __pageRevealed=false;
+function revealPage(){
+ if(__pageRevealed)return;
+ __pageRevealed=true;
+ document.documentElement.classList.remove('pre-render');
+}
+setTimeout(revealPage,2500);
 function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare();renderInvoices()}
 function searchSuggestions(query,limit=6){
  const q=String(query||'').trim().toLowerCase();
@@ -1554,7 +1560,7 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
 document.addEventListener('DOMContentLoaded',async()=>{
- await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();
+ await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
