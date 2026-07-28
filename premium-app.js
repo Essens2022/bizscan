@@ -1586,7 +1586,50 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.classList.remove('show');card.classList.add('hide')},3600);
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
+// Pre-carica silenziosamente la pagina di destinazione quando l'utente sfiora/tocca un link di navigazione,
+// PRIMA che clicchi effettivamente - browser mette già in cache l'HTML, rendendo il click successivo più veloce.
+// Tecnica standard, puramente additiva: non cambia alcun comportamento esistente.
+const __prefetchedUrls=new Set();
+function prefetchPage(url){
+ if(!url||__prefetchedUrls.has(url))return;
+ __prefetchedUrls.add(url);
+ const link=document.createElement('link');
+ link.rel='prefetch';
+ link.href=url;
+ document.head.appendChild(link);
+}
+function initLinkPrefetch(){
+ const shouldSkip=href=>!href||href.startsWith('#')||href.startsWith('http')||href.startsWith('mailto:')||href.startsWith('tel:');
+ const handler=e=>{
+  const a=e.target.closest('a[href]');
+  if(!a)return;
+  const href=a.getAttribute('href');
+  if(shouldSkip(href))return;
+  prefetchPage(href);
+ };
+ document.addEventListener('mouseover',handler,{passive:true});
+ document.addEventListener('touchstart',handler,{passive:true});
+ // Su mobile non esiste l'hover del mouse: appena un link diventa visibile sullo schermo
+ // (durante lo scroll, o già visibile al caricamento - es. la barra di navigazione in basso),
+ // il browser lo prepara automaticamente in anticipo, senza bisogno di alcun tocco.
+ if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{
+    if(entry.isIntersecting){
+     const href=entry.target.getAttribute('href');
+     if(!shouldSkip(href))prefetchPage(href);
+     io.unobserve(entry.target);
+    }
+   });
+  },{rootMargin:'50px'});
+  document.querySelectorAll('a[href]').forEach(a=>{
+   const href=a.getAttribute('href');
+   if(!shouldSkip(href))io.observe(a);
+  });
+ }
+}
 document.addEventListener('DOMContentLoaded',async()=>{
+ initLinkPrefetch();
  const hasSavedScroll=(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
  if(!hasSavedScroll)revealPage(); // navigazione normale verso una pagina nuova: nessuna posizione da ripristinare, mostra subito, niente attesa
  await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
