@@ -623,7 +623,10 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  dbg.style.cssText='position:fixed;bottom:70px;left:8px;right:8px;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:9999;border-radius:8px;font-family:monospace';
  document.body.appendChild(dbg);
  setInterval(()=>{
-  dbg.textContent=`scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} maxScroll=${el.scrollWidth-el.clientWidth} scrollLeft=${Math.round(el.scrollLeft)} cards=${inner.children.length}`;
+  const lastCard=inner.lastElementChild;
+  const lastRect=lastCard?lastCard.getBoundingClientRect():null;
+  const wrapRect=el.getBoundingClientRect();
+  dbg.textContent=`scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} innerOffsetWidth=${inner.offsetWidth} cards=${inner.children.length} lastCardRight=${lastRect?Math.round(lastRect.right-wrapRect.left):'?'} scrollLeft=${Math.round(el.scrollLeft)}`;
  },200);
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
  let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
