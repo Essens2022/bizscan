@@ -1587,6 +1587,8 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
 document.addEventListener('DOMContentLoaded',async()=>{
+ const hasSavedScroll=(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
+ if(!hasSavedScroll)revealPage(); // navigazione normale verso una pagina nuova: nessuna posizione da ripristinare, mostra subito, niente attesa
  await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
