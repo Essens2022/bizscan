@@ -1475,7 +1475,10 @@ function restoreScrollPosition(){
   const key='scrollpos:'+location.pathname+location.search;
   const saved=sessionStorage.getItem(key);
   if(saved!==null){
-   window.scrollTo(0,parseInt(saved,10));
+   const prevBehavior=document.documentElement.style.scrollBehavior;
+   document.documentElement.style.scrollBehavior='auto';
+   window.scrollTo({top:parseInt(saved,10),left:0,behavior:'instant'});
+   document.documentElement.style.scrollBehavior=prevBehavior;
   }
  }catch(e){}
 }
