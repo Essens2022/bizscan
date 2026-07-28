@@ -1475,6 +1475,7 @@ async function refreshCompareAdvice(a,b){
 }
 window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
  confirmWithdrawalWaiver('',async()=>{
+  closeModal();
   const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);
   const a=arr.find(x=>x.id===analysisIdA),b=arr.find(x=>x.id===analysisIdB);
   const result=await BizScanData.unlockCompareAdvice(analysisIdA,analysisIdB);
