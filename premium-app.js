@@ -1563,7 +1563,7 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
 document.addEventListener('DOMContentLoaded',async()=>{
- await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
+ await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
