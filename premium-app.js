@@ -618,25 +618,21 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  const el=inner.parentElement;
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
- // DEBUG TEMPORANEO: conferma quante card sono realmente presenti e la larghezza reale calcolata
- const dbg=document.createElement('div');
- dbg.style.cssText='position:fixed;bottom:70px;left:8px;right:8px;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:9999;border-radius:8px;font-family:monospace';
- document.body.appendChild(dbg);
- setInterval(()=>{
-  dbg.textContent=`cards=${inner.children.length} scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} cardWidth=${inner.children[0]?Math.round(inner.children[0].getBoundingClientRect().width):'?'}`;
- },300);
  if(!shouldLoop)return;
- let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
+ let paused=false,direction=1,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
  setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},1000);
  setInterval(()=>{
   if(maxScroll<=2)return;
+  // Rete di sicurezza rigida: controlla SEMPRE la posizione reale letta dal browser (non solo
+  // una variabile interna) - se per qualsiasi motivo (fisica del touch su mobile, timing,
+  // ecc.) ha superato il limite reale, la corregge immediatamente, indipendentemente dalla causa
+  if(el.scrollLeft>maxScroll){el.scrollLeft=maxScroll;direction=-1;return}
+  if(el.scrollLeft<0){el.scrollLeft=0;direction=1;return}
   if(!paused){
-   pos+=1.5*direction;
-   if(pos>=maxScroll){pos=maxScroll;direction=-1}
-   else if(pos<=0){pos=0;direction=1}
-   el.scrollLeft=pos;
-  }else{
-   pos=Math.min(el.scrollLeft,maxScroll);
+   const next=el.scrollLeft+1.5*direction;
+   if(next>=maxScroll){el.scrollLeft=maxScroll;direction=-1}
+   else if(next<=0){el.scrollLeft=0;direction=1}
+   else el.scrollLeft=next;
   }
  },30);
  const pause=()=>{paused=true};
