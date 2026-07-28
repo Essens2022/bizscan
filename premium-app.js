@@ -619,6 +619,7 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
+ if(window.innerWidth<=680)return; // su mobile lo scroll manuale funziona bene - l'animazione automatica resta solo su desktop, dove è confermata stabile
  let paused=false,direction=1,pos=0,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
  // Ricalcola il limite reale solo ogni mezzo secondo, non a ogni frame - su mobile
  // scrollWidth/clientWidth possono oscillare leggermente (barra indirizzi che si nasconde/appare)

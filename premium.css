@@ -82,7 +82,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .emoji-dots{display:flex;justify-content:center;gap:6px;margin-top:8px}
 .emoji-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);cursor:pointer;transition:background .15s}
 .emoji-dots i.active{background:var(--gold)}
-@media(max-width:680px){.feedback-card{flex:0 0 220px}}
+@media(max-width:680px){.feedback-card{flex:0 0 220px}.site-fb-card{flex:0 0 200px;padding:12px}.site-fb-card .feedback-card-msg{font-size:11px}}
 .suggestion-section{margin-top:12px;padding:20px;text-align:center;border:1px solid rgba(255,180,0,.3);border-radius:14px;background:#0a121e}
 .suggestion-section h3{margin:0 0 6px;font-size:15px}
 .suggestion-section p{font-size:11.5px;color:var(--muted);margin:0 0 12px}
