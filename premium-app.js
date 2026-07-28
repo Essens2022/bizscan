@@ -618,6 +618,13 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  const el=inner.parentElement; // il wrapper con overflow-x è il vero contenitore scrollabile
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
+ // DEBUG TEMPORANEO: mostra le dimensioni reali a schermo, per capire cosa succede su questo dispositivo specifico
+ const dbg=document.createElement('div');
+ dbg.style.cssText='position:fixed;bottom:70px;left:8px;right:8px;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:9999;border-radius:8px;font-family:monospace';
+ document.body.appendChild(dbg);
+ setInterval(()=>{
+  dbg.textContent=`scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} maxScroll=${el.scrollWidth-el.clientWidth} scrollLeft=${Math.round(el.scrollLeft)} cards=${inner.children.length}`;
+ },200);
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
  let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
  setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},1000)
