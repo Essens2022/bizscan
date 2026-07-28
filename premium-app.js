@@ -151,7 +151,24 @@ window.toggleCompare=slug=>{
 };
 function categories(){const m={};analyses.forEach(p=>{const k=p.category||'Altro';m[k]=(m[k]||0)+1});return Object.entries(m)}
 function scoreRing(value,size='normal'){return `<div class="score-ring ${size}" style="--v:${Number(value)||0}"><div><b>${Number(value)||0}</b><small>/100</small></div></div>`}
-function card(p){const url=`analysis.html?slug=${encodeURIComponent(p.slug)}`;return `<article class="business-card"><div class="business-cover business-cover-link" role="link" tabindex="0" aria-label="Apri ${esc(p.title)}" onclick="location.href='${url}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='${url}'}">${image(p)}<div class="card-tools"><button aria-label="Confronta" onclick="event.preventDefault();event.stopPropagation();toggleCompare('${p.slug}')" data-compare-slug="${p.slug}">${compare.includes(p.slug)?'✓':'⇄'}</button><button aria-label="Salva" data-fav-slug="${p.slug}" onclick="event.preventDefault();event.stopPropagation();toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥':'♡'}</button></div></div><a href="${url}" class="business-body"><div class="business-title-row"><div><h3>${esc(p.title)}</h3><div class="category">${esc(p.category||'Business')}</div></div><span class="card-open-arrow">→</span></div><div class="card-metrics">${scoreRing(p.score,'small')}<div class="metric-list"><span><em>Investimento</em><b>${esc(p.investment||'—')}</b></span><span><em>Profitto annuo</em><b>${esc(p.profit||'—')}</b></span><span><em>Rischio</em><b class="${riskClass(p)}">${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></span></div></div></a></article>`}
+async function applyCardStats(){
+ try{
+  const supabaseClient=await BizScanData.getSupabaseClient();
+  const {data}=await supabaseClient.rpc('get_all_analyses_stats');
+  if(!data)return;
+  const map={};
+  data.forEach(s=>{map[s.analysis_id]=s});
+  document.querySelectorAll('[data-stats-field="rating"]').forEach(el=>{
+   const s=map[el.dataset.statsId];
+   if(s&&s.review_count>0)el.innerHTML=`${s.avg_stars} ${renderStars(s.avg_stars)} (${s.review_count})`;
+  });
+  document.querySelectorAll('[data-stats-field="purchases"]').forEach(el=>{
+   const s=map[el.dataset.statsId];
+   if(s)el.textContent=`${s.purchase_count} acquisti`;
+  });
+ }catch(e){console.warn('Errore caricamento statistiche card',e)}
+}
+function card(p){const url=`analysis.html?slug=${encodeURIComponent(p.slug)}`;return `<article class="business-card"><div class="business-cover business-cover-link" role="link" tabindex="0" aria-label="Apri ${esc(p.title)}" onclick="location.href='${url}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='${url}'}">${image(p)}<div class="card-purchases-badge" data-stats-id="${p.id}" data-stats-field="purchases"></div><div class="card-tools"><button aria-label="Confronta" onclick="event.preventDefault();event.stopPropagation();toggleCompare('${p.slug}')" data-compare-slug="${p.slug}">${compare.includes(p.slug)?'✓':'⇄'}</button><button aria-label="Salva" data-fav-slug="${p.slug}" onclick="event.preventDefault();event.stopPropagation();toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥':'♡'}</button></div></div><a href="${url}" class="business-body"><div class="business-title-row"><div><h3>${esc(p.title)}</h3><div class="category-row"><span class="category">${esc(p.category||'Business')}</span><span class="card-rating" data-stats-id="${p.id}" data-stats-field="rating"></span></div></div><span class="card-open-arrow">→</span></div><div class="card-metrics">${scoreRing(p.score,'small')}<div class="metric-list"><span><em>Investimento</em><b>${esc(p.investment||'—')}</b></span><span><em>Profitto annuo</em><b>${esc(p.profit||'—')}</b></span><span><em>Rischio</em><b class="${riskClass(p)}">${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></span></div></div></a></article>`}
 function categoryIcons(name){
  const key=String(name||'').trim().toLowerCase();
  const icons={
@@ -398,6 +415,7 @@ function renderHome(){
  </div>`
  initHeroRotation()
  initSiteFeedback()
+ applyCardStats()
 }
 window.runSearch=()=>{const q=$('#homeSearch')?.value||'';location.href='search.html?q='+encodeURIComponent(q)};
 function findCurrent(){const slug=new URLSearchParams(location.search).get('slug');return analyses.find(x=>x.slug===slug)||analyses[0]||null}
@@ -1041,6 +1059,7 @@ function renderCatalogResults(){
  const arr=analyses.filter(p=>catalogMatches(p,q,catalogFilter));
  const count=$('#catalogCount');if(count)count.textContent=`${arr.length} ${arr.length===1?'analisi disponibile':'analisi disponibili'}`;
  host.innerHTML=arr.map(card).join('')||'<div class="catalog-empty"><strong>Nessuna analisi trovata</strong><span>Prova un altro settore o una parola diversa</span></div>';
+ applyCardStats();
 }
 window.setCatalogFilter=(filter,btn)=>{
  catalogFilter=filter;
@@ -1142,6 +1161,7 @@ async function renderLibrary(){
  if(!isReports){
   const arr=analyses.filter(p=>favorites.includes(p.slug));
   host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="active">Preferiti</a><a href="library.html?view=reports" class="">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results">${arr.map(card).join('')||`<div class="empty"><h2>${emptyMsg}</h2><p>Salva un'attività o sblocca un'analisi completa</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`}</div>`
+  applyCardStats();
   return;
  }
  host.innerHTML=`<section class="page-title"><div class="library-tabs"><a href="library.html?view=favorites" class="">Preferiti</a><a href="library.html?view=reports" class="active">I miei report</a></div><h1>${title}</h1><p>${subtitle}</p></section><div class="business-grid search-results"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>`;
@@ -1324,6 +1344,7 @@ function renderCompare(){const host=$('#compareContent');if(!host)return;const a
  if(arr.length===1){host.innerHTML=`<div class="empty"><h1>Ne serve una seconda</h1><p>Hai selezionato <b>${esc(arr[0].title)}</b> — scegline un'altra da confrontare</p><div class="compare-cards" style="max-width:320px;margin:18px auto">${card(arr[0])}</div><a class="btn gold" href="search.html">Scegli la seconda attività</a><button class="btn dark" style="margin-top:10px" onclick="toggleCompare('${arr[0].slug}')">Rimuovi e ricomincia</button></div>`;return}
  if(arr.length!==2){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}
  host.innerHTML=`<section class="page-title"><h1>Confronto attività</h1><p>Decisione basata sugli stessi indicatori e sulle stesse fonti</p></section><div class="compare-cards">${arr.map(card).join('')}</div><section class="panel comparison-full"><div class="comparison-table"><b>Indicatore</b><b>${esc(arr[0].title)}</b><b>${esc(arr[1].title)}</b><span>BizScan Score</span><b>${arr[0].score??'—'}</b><b>${arr[1].score??'—'}</b><span>Investimento</span><b>${esc(arr[0].investment||'—')}</b><b>${esc(arr[1].investment||'—')}</b><span>Profitto</span><b>${esc(arr[0].profit||'—')}</b><b>${esc(arr[1].profit||'—')}</b><span>ROI</span><b>${esc(arr[0].roi||'—')}</b><b>${esc(arr[1].roi||'—')}</b><span>Recupero</span><b>${esc(arr[0].payback||'—')}</b><b>${esc(arr[1].payback||'—')}</b><span>Rischio</span><b>${esc(arr[0].riskLabel||'—')}</b><b>${esc(arr[1].riskLabel||'—')}</b></div></section><section class="panel" id="compareAdviceSection"><h3>Il consiglio di BizScan</h3><p style="color:var(--muted);font-size:12px;margin:2px 0 12px">Verifica accesso…</p></section>`;
+ applyCardStats();
  refreshCompareAdvice(arr[0],arr[1]);
 }
 function riskToNumber(label){
