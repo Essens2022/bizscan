@@ -955,11 +955,14 @@ window.unlockTool=async(toolKey)=>{
 window._doUnlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
  closeModal();
+ const loadingWrap=document.getElementById(`toolwrap-${toolKey}`);
+ if(loadingWrap)loadingWrap.style.opacity='0.55';
  try{
   const c=await BizScanData.getSupabaseClient();
   const{data,error}=await c.rpc('unlock_tool_with_credit',{p_analysis_id:p.id,p_tool_key:toolKey});
   if(error)throw error;
   if(!data?.success){
+   if(loadingWrap)loadingWrap.style.opacity='1';
    if(data?.reason==='no_credits'){modal('Crediti esauriti','<p>Non hai più crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
    if(data?.reason==='plan_too_low'){
     const tool=toolKey?({scenario:'Scenari di profitto',break_even:'Break-even',benchmark:'Confronto categoria',distribuzione_costi:'Distribuzione costi',cash_flow:'Cash-flow 12 mesi',costi_fissi_variabili:'Costi fissi/variabili',personale:'Fabbisogno personale',fornitori:'Fornitori e autorizzazioni',concorrenza_locale:'Concorrenza locale',stagionalita:'Stagionalità',matrice_rischi:'Matrice dei rischi',strategie_crescita:'Strategie di crescita'}[toolKey]||toolKey):'questo strumento';
@@ -992,6 +995,7 @@ window._doUnlockTool=async(toolKey)=>{
    renderAnalysis();
   }
  }catch(e){
+  if(loadingWrap)loadingWrap.style.opacity='1';
   console.error('unlock error',e);
   toast(e?.message||'Errore, riprova');
  }
