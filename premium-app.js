@@ -1586,7 +1586,31 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.classList.remove('show');card.classList.add('hide')},3600);
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
+// Pre-carica silenziosamente la pagina di destinazione quando l'utente sfiora/tocca un link di navigazione,
+// PRIMA che clicchi effettivamente - browser mette già in cache l'HTML, rendendo il click successivo più veloce.
+// Tecnica standard, puramente additiva: non cambia alcun comportamento esistente.
+const __prefetchedUrls=new Set();
+function prefetchPage(url){
+ if(!url||__prefetchedUrls.has(url))return;
+ __prefetchedUrls.add(url);
+ const link=document.createElement('link');
+ link.rel='prefetch';
+ link.href=url;
+ document.head.appendChild(link);
+}
+function initLinkPrefetch(){
+ const handler=e=>{
+  const a=e.target.closest('a[href]');
+  if(!a)return;
+  const href=a.getAttribute('href');
+  if(!href||href.startsWith('#')||href.startsWith('http')||href.startsWith('mailto:')||href.startsWith('tel:'))return;
+  prefetchPage(href);
+ };
+ document.addEventListener('mouseover',handler,{passive:true});
+ document.addEventListener('touchstart',handler,{passive:true});
+}
 document.addEventListener('DOMContentLoaded',async()=>{
+ initLinkPrefetch();
  const hasSavedScroll=(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
  if(!hasSavedScroll)revealPage(); // navigazione normale verso una pagina nuova: nessuna posizione da ripristinare, mostra subito, niente attesa
  await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
