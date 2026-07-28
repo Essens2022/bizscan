@@ -231,7 +231,21 @@ function filterHomeAnalyses(items,filter){
  if(filter==='online') return arr.filter(p=>String(p.category||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('online')||String(p.title||'').toLowerCase().includes('e-commerce'))
  return arr.sort((a,b)=>(Number(a.order_index)||0)-(Number(b.order_index)||0))
 }
-window.setHomeFilter=filter=>{homeFilter=filter;renderHome();document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})}
+window.setHomeFilter=filter=>{
+ homeFilter=filter;
+ const featuredOnly=analyses.filter(p=>p.featured)
+ const allFeatured=(featuredOnly.length?featuredOnly:analyses).slice(0,12)
+ const featured=filterHomeAnalyses(allFeatured,homeFilter).slice(0,6)
+ const carousel=document.getElementById('homeFeaturedCarousel');
+ if(carousel){
+  carousel.innerHTML=featured.length?featured.map(card).join(''):'<div class="home18-filter-empty">Nessuna analisi disponibile per questo filtro</div>';
+  applyCardStats();
+ }
+ document.querySelectorAll('.home18-filters button').forEach(btn=>{
+  btn.classList.toggle('active',btn.getAttribute('onclick')===`setHomeFilter('${filter}')`);
+ });
+ document.querySelector('.home18-filters')?.scrollIntoView({block:'nearest'})
+}
 const SEGMENT_SIZE_EM={small:0.72,medium:1,large:1.28};
 function sizeToEm(size){
  if(typeof size==='number')return size;
