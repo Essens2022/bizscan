@@ -615,38 +615,21 @@ window.submitSuggestion=async function(){
  box.value='';
 };
 function initMarqueeAutoScroll(inner,shouldLoop){
- const el=inner.parentElement; // il wrapper con overflow-x è il vero contenitore scrollabile
+ const el=inner.parentElement;
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
- // DEBUG TEMPORANEO: mostra le dimensioni reali a schermo, per capire cosa succede su questo dispositivo specifico
- const dbg=document.createElement('div');
- dbg.style.cssText='position:fixed;bottom:70px;left:8px;right:8px;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:9999;border-radius:8px;font-family:monospace';
- document.body.appendChild(dbg);
- setInterval(()=>{
-  const lastCard=inner.lastElementChild;
-  const lastRect=lastCard?lastCard.getBoundingClientRect():null;
-  const wrapRect=el.getBoundingClientRect();
-  dbg.textContent=`scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} innerOffsetWidth=${inner.offsetWidth} cards=${inner.children.length} lastCardRight=${lastRect?Math.round(lastRect.right-wrapRect.left):'?'} scrollLeft=${Math.round(el.scrollLeft)}`;
- },200);
- if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
- let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
- setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},1000)
- // Uso setInterval invece di requestAnimationFrame: su mobile rAF viene spesso sospeso/rallentato
- // durante lo scroll della pagina, causando ritardi visibili prima dell'inversione di direzione.
- // setInterval con timing fisso si comporta in modo più prevedibile in quello scenario.
- setInterval(()=>{
-  if(maxScroll<=2)return; // nessuno spazio reale per scorrere (contenuto entra tutto a schermo largo)
-  if(!paused){
-   pos+=2.4*direction;
-   if(pos>=maxScroll){pos=maxScroll;direction=-1}
-   else if(pos<=0){pos=0;direction=1}
-   el.scrollLeft=pos;
-  }else{
-   pos=Math.min(el.scrollLeft,maxScroll); // se l'utente ha scrollato manualmente mentre in pausa, riparte da lì
-  }
- },30)
- const pause=()=>{paused=true};
- const resume=()=>{setTimeout(()=>{paused=false},1500)};
+ if(!shouldLoop)return; // pochi elementi: resta statico, senza animazione
+ // Animazione basata su CSS transform (GPU, non tocca lo scroll nativo) - molto più affidabile
+ // su mobile rispetto a manipolare scrollLeft via JS, che si comporta in modo incoerente tra dispositivi
+ requestAnimationFrame(()=>{
+  const distance=inner.scrollWidth-el.clientWidth;
+  if(distance<=2)return; // il contenuto entra già tutto, nessuna animazione necessaria
+  const duration=Math.max(6,distance/40); // velocità proporzionale alla distanza reale da percorrere
+  inner.style.setProperty('--marquee-distance',`-${distance}px`);
+  inner.style.animation=`marqueePingPong ${duration}s ease-in-out infinite alternate`;
+ });
+ const pause=()=>{inner.style.animationPlayState='paused'};
+ const resume=()=>{setTimeout(()=>{inner.style.animationPlayState='running'},1500)};
  el.addEventListener('touchstart',pause,{passive:true});
  el.addEventListener('touchend',resume,{passive:true});
  el.addEventListener('mouseenter',pause);
