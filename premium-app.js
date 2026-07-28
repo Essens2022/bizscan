@@ -76,17 +76,42 @@ function preloadCardImages(){
  });
  return Promise.all(promises);
 }
+const CACHE_TTL_MS=45000; // 45 secondi - abbastanza per navigazione rapida tra pagine, ma si aggiorna presto
+function getSessionCache(key){
+ try{
+  const raw=sessionStorage.getItem('cache:'+key);
+  if(!raw)return null;
+  const {t,v}=JSON.parse(raw);
+  if(Date.now()-t>CACHE_TTL_MS)return null;
+  return v;
+ }catch(e){return null}
+}
+function setSessionCache(key,v){
+ try{sessionStorage.setItem('cache:'+key,JSON.stringify({t:Date.now(),v}))}catch(e){}
+}
 async function load(){
  compare=JSON.parse(localStorage.getItem('bizscan_compare')||'[]');
- const [ra,rs,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
- if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
- await preloadCardImages();
+ const cachedPublicData=getSessionCache('publicData');
+ let ra,rs,rp,rhm,rhp,rhs;
+ if(cachedPublicData){
+  // Dati pubblici (analisi, hero, piani) già recenti in cache - saltiamo del tutto quella parte della richiesta di rete
+  ({analyses,heroMedia,heroPhrases,heroTransition,heroSeconds}=cachedPublicData);
+  applyDbPlans(cachedPublicData.plansRaw);
+  preloadCardImages(); // non blocchiamo, tanto le immagini sono quasi certamente già in cache del browser
+  const [rsOnly]=await Promise.allSettled([BizScanData.accessSummary()]);
+  rs=rsOnly;
+ }else{
+  [ra,rs,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
+  await preloadCardImages();
+  if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
+  heroMedia=rhm.status==='fulfilled'?rhm.value:[];
+  heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
+  heroTransition=rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):'fade';
+  heroSeconds=rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):5;
+  setSessionCache('publicData',{analyses,heroMedia,heroPhrases,heroTransition,heroSeconds,plansRaw:rp.status==='fulfilled'?rp.value:null});
+ }
  if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
- if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
- heroMedia=rhm.status==='fulfilled'?rhm.value:[];
- heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
- heroTransition=rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):'fade';
- heroSeconds=rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):5;
  // I preferiti sono dati personali dell'account: l'unica fonte di verità è il server.
  // Un ospite non autenticato non ha una lista di preferiti locale che poi "eredita" al login.
  if(access.authenticated){
