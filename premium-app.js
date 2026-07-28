@@ -562,7 +562,7 @@ async function initFeedbackSection(slug){
     avgBox.innerHTML=`<span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>nessuna recensione</small>`;
    }
   }
-  const {data:top}=await supabaseClient.rpc('public_top_feedback',{p_analysis_id:p.id,p_limit:10});
+  const {data:top}=await supabaseClient.rpc('public_top_feedback',{p_analysis_id:p.id,p_limit:200});
   const carousel=document.getElementById('feedbackCarousel');
   if(carousel){
    if(top&&top.length){
