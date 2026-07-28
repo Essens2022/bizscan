@@ -90,7 +90,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .home18-testimonials .home18-head{flex-direction:column;align-items:center;text-align:center;gap:14px}
 .home18-testimonials .home18-head>div>small{display:block}
 .site-fb-avg{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid rgba(255,180,0,.3);border-radius:12px;background:rgba(255,180,0,.05);flex-shrink:0}
-.site-fb-marquee-wrap{overflow-x:auto;margin:16px 0 24px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 1.5%,#000 98.5%,transparent);mask-image:linear-gradient(90deg,transparent,#000 1.5%,#000 98.5%,transparent);scrollbar-width:none;scroll-behavior:auto}
+.site-fb-marquee-wrap{overflow-x:auto;margin:16px 0 24px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 1.5%,#000 98.5%,transparent);mask-image:linear-gradient(90deg,transparent,#000 1.5%,#000 98.5%,transparent);scrollbar-width:none;scroll-behavior:auto;overscroll-behavior-x:contain}
 .site-fb-marquee-wrap::-webkit-scrollbar{display:none}
 .site-fb-marquee{display:flex;gap:14px;width:max-content}
 .site-fb-card{flex:0 0 260px;border:1px solid rgba(255,180,0,.3);border-radius:14px;background:#0e1622;padding:16px;display:flex;flex-direction:column;gap:10px}
