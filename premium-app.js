@@ -1599,15 +1599,34 @@ function prefetchPage(url){
  document.head.appendChild(link);
 }
 function initLinkPrefetch(){
+ const shouldSkip=href=>!href||href.startsWith('#')||href.startsWith('http')||href.startsWith('mailto:')||href.startsWith('tel:');
  const handler=e=>{
   const a=e.target.closest('a[href]');
   if(!a)return;
   const href=a.getAttribute('href');
-  if(!href||href.startsWith('#')||href.startsWith('http')||href.startsWith('mailto:')||href.startsWith('tel:'))return;
+  if(shouldSkip(href))return;
   prefetchPage(href);
  };
  document.addEventListener('mouseover',handler,{passive:true});
  document.addEventListener('touchstart',handler,{passive:true});
+ // Su mobile non esiste l'hover del mouse: appena un link diventa visibile sullo schermo
+ // (durante lo scroll, o già visibile al caricamento - es. la barra di navigazione in basso),
+ // il browser lo prepara automaticamente in anticipo, senza bisogno di alcun tocco.
+ if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{
+    if(entry.isIntersecting){
+     const href=entry.target.getAttribute('href');
+     if(!shouldSkip(href))prefetchPage(href);
+     io.unobserve(entry.target);
+    }
+   });
+  },{rootMargin:'50px'});
+  document.querySelectorAll('a[href]').forEach(a=>{
+   const href=a.getAttribute('href');
+   if(!shouldSkip(href))io.observe(a);
+  });
+ }
 }
 document.addEventListener('DOMContentLoaded',async()=>{
  initLinkPrefetch();
