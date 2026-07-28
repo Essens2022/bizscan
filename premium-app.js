@@ -618,18 +618,29 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  const el=inner.parentElement;
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
- if(!shouldLoop)return; // pochi elementi: resta statico, senza animazione
- // Animazione basata su CSS transform (GPU, non tocca lo scroll nativo) - molto più affidabile
- // su mobile rispetto a manipolare scrollLeft via JS, che si comporta in modo incoerente tra dispositivi
- requestAnimationFrame(()=>{
-  const distance=inner.scrollWidth-el.clientWidth;
-  if(distance<=2)return; // il contenuto entra già tutto, nessuna animazione necessaria
-  const duration=Math.max(6,distance/40); // velocità proporzionale alla distanza reale da percorrere
-  inner.style.setProperty('--marquee-distance',`-${distance}px`);
-  inner.style.animation=`marqueePingPong ${duration}s ease-in-out infinite alternate`;
- });
- const pause=()=>{inner.style.animationPlayState='paused'};
- const resume=()=>{setTimeout(()=>{inner.style.animationPlayState='running'},1500)};
+ // DEBUG TEMPORANEO: conferma quante card sono realmente presenti e la larghezza reale calcolata
+ const dbg=document.createElement('div');
+ dbg.style.cssText='position:fixed;bottom:70px;left:8px;right:8px;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:9999;border-radius:8px;font-family:monospace';
+ document.body.appendChild(dbg);
+ setInterval(()=>{
+  dbg.textContent=`cards=${inner.children.length} scrollWidth=${el.scrollWidth} clientWidth=${el.clientWidth} cardWidth=${inner.children[0]?Math.round(inner.children[0].getBoundingClientRect().width):'?'}`;
+ },300);
+ if(!shouldLoop)return;
+ let paused=false,direction=1,pos=el.scrollLeft,maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
+ setInterval(()=>{maxScroll=Math.max(0,el.scrollWidth-el.clientWidth)},1000);
+ setInterval(()=>{
+  if(maxScroll<=2)return;
+  if(!paused){
+   pos+=1.5*direction;
+   if(pos>=maxScroll){pos=maxScroll;direction=-1}
+   else if(pos<=0){pos=0;direction=1}
+   el.scrollLeft=pos;
+  }else{
+   pos=Math.min(el.scrollLeft,maxScroll);
+  }
+ },30);
+ const pause=()=>{paused=true};
+ const resume=()=>{setTimeout(()=>{paused=false},1500)};
  el.addEventListener('touchstart',pause,{passive:true});
  el.addEventListener('touchend',resume,{passive:true});
  el.addEventListener('mouseenter',pause);
