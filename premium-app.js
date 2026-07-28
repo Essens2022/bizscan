@@ -867,8 +867,7 @@ window._pendingWithdrawalConfirm=null;
 window._runWithdrawalConfirm=function(){
  const fn=window._pendingWithdrawalConfirm;
  window._pendingWithdrawalConfirm=null;
- closeModal();
- if(typeof fn==='function')fn();
+ if(typeof fn==='function')fn(); // il modale resta aperto: la funzione stessa aggiorna il contenuto (niente chiusura/riapertura, zero flicker)
 };
 function confirmWithdrawalWaiver(priceLabel,onConfirm){
  window._pendingWithdrawalConfirm=onConfirm;
@@ -888,6 +887,7 @@ window.unlockTool=async(toolKey)=>{
 }
 window._doUnlockTool=async(toolKey)=>{
  const p=findCurrent();if(!p?.id)return;
+ closeModal();
  try{
   const c=await BizScanData.getSupabaseClient();
   const{data,error}=await c.rpc('unlock_tool_with_credit',{p_analysis_id:p.id,p_tool_key:toolKey});
