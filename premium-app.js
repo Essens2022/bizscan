@@ -1464,6 +1464,22 @@ window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
   await refreshCompareAdvice(a,b);
  });
 }
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+function saveScrollPosition(){
+ try{sessionStorage.setItem('scrollpos:'+location.pathname+location.search,String(window.scrollY))}catch(e){}
+}
+window.addEventListener('beforeunload',saveScrollPosition);
+window.addEventListener('pagehide',saveScrollPosition);
+function restoreScrollPosition(){
+ try{
+  const key='scrollpos:'+location.pathname+location.search;
+  const saved=sessionStorage.getItem(key);
+  if(saved!==null){
+   const y=parseInt(saved,10);
+   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+  }
+ }catch(e){}
+}
 function renderRoute(){renderHome();renderAnalysis();renderSearch();renderLibrary();renderPricing();renderCompare();renderInvoices()}
 function searchSuggestions(query,limit=6){
  const q=String(query||'').trim().toLowerCase();
@@ -1538,7 +1554,7 @@ function celebrateCheckoutSuccess(planName){
  setTimeout(()=>{card.remove();box.remove()},4300);
 }
 document.addEventListener('DOMContentLoaded',async()=>{
- await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();
+ await load();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
