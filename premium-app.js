@@ -925,10 +925,10 @@ function renderLockedToolCard(title,description,toolKey){
 }
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
- if(!has)return renderLockedToolCard(title,fallback,key);
+ if(!has)return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
  const visual=toolVisual(key);
  const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
- return `<section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section>`;
+ return `<div id="toolwrap-${esc(key)}"><section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section></div>`;
 }
 window._pendingWithdrawalConfirm=null;
 window._runWithdrawalConfirm=function(){
@@ -977,7 +977,16 @@ window._doUnlockTool=async(toolKey)=>{
   updateShell();
   const activeTabBtn=document.querySelector('.tabs button.active');
   const content=document.getElementById('analysisTabContent');
-  if(activeTabBtn&&content){
+  const targetWrap=document.getElementById(`toolwrap-${toolKey}`);
+  if(targetWrap&&activeTabBtn){
+   // Aggiornamento mirato: sostituisce SOLO il blocco appena sbloccato, lasciando intatti gli altri strumenti sulla stessa scheda
+   const freshTabHtml=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+   const temp=document.createElement('div');
+   temp.innerHTML=freshTabHtml;
+   const freshWrap=temp.querySelector(`#toolwrap-${toolKey}`);
+   if(freshWrap)targetWrap.outerHTML=freshWrap.outerHTML;
+   else if(content)content.innerHTML=freshTabHtml;
+  }else if(activeTabBtn&&content){
    content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
   }else{
    renderAnalysis();
