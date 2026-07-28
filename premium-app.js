@@ -619,14 +619,17 @@ function initMarqueeAutoScroll(inner,shouldLoop){
  if(!el||el.dataset.marqueeInit)return;
  el.dataset.marqueeInit='1';
  if(!shouldLoop)return; // pochi elementi: resta un semplice scroll manuale, nessun avvio automatico
- let paused=false,direction=1;
+ let paused=false,direction=1,pos=0;
  function step(){
-  const maxScroll=el.scrollWidth-el.clientWidth;
+  const maxScroll=Math.max(0,el.scrollWidth-el.clientWidth);
   if(maxScroll<=2){requestAnimationFrame(step);return} // nessuno spazio reale per scorrere (contenuto entra tutto a schermo largo)
   if(!paused){
-   el.scrollLeft+=1.2*direction;
-   if(el.scrollLeft>=maxScroll)direction=-1;
-   else if(el.scrollLeft<=0)direction=1;
+   pos+=1.2*direction;
+   if(pos>=maxScroll){pos=maxScroll;direction=-1}
+   else if(pos<=0){pos=0;direction=1}
+   el.scrollLeft=pos;
+  }else{
+   pos=el.scrollLeft; // se l'utente ha scrollato manualmente mentre in pausa, riparte da lì
   }
   requestAnimationFrame(step);
  }
