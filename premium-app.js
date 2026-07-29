@@ -1556,6 +1556,8 @@ window.addEventListener('beforeunload',saveScrollPosition);
 window.addEventListener('pagehide',saveScrollPosition);
 function restoreScrollPosition(){
  try{
+  const navType=performance.getEntriesByType('navigation')[0]?.type||'navigate';
+  if(navType!=='reload')return; // click su un link (anche verso una pagina già visitata): sempre in cima, non ripristinare nulla
   const key='scrollpos:'+location.pathname+location.search;
   const saved=sessionStorage.getItem(key);
   if(saved!==null){
@@ -1690,8 +1692,10 @@ function initLinkPrefetch(){
 }
 document.addEventListener('DOMContentLoaded',async()=>{
  initLinkPrefetch();
- const hasSavedScroll=(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
- if(!hasSavedScroll)revealPage(); // navigazione normale verso una pagina nuova: nessuna posizione da ripristinare, mostra subito, niente attesa
+ const navType=(()=>{try{return performance.getEntriesByType('navigation')[0]?.type||'navigate'}catch(e){return 'navigate'}})();
+ const isReload=navType==='reload';
+ const hasSavedScroll=isReload&&(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
+ if(!hasSavedScroll)revealPage(); // navigazione normale (click su un link) verso qualunque pagina, anche già visitata: sempre in cima, nessuna attesa
  await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
