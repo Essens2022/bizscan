@@ -215,7 +215,6 @@ function renderNotifBadge(){
 
 async function initNotifications(){
  if(!access.authenticated)return;
- ensureNotifBellButton();
  try{
   const c=await BizScanData.getSupabaseClient();
   const{data,error}=await c.rpc('get_my_notifications');
@@ -1731,6 +1730,7 @@ window.addEventListener('pageshow', async(event) => {
   const fresh = await BizScanData.accessSummary();
   Object.assign(access, fresh);
   updateShell();
+  if(access.authenticated)ensureNotifBellButton();
   initNotifications();
  }catch(e){}
 });
@@ -1881,7 +1881,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
  const isReload=navType==='reload';
  const hasSavedScroll=isReload&&(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
  if(!hasSavedScroll)revealPage(); // navigazione normale (click su un link) verso qualunque pagina, anche già visitata: sempre in cima, nessuna attesa
- await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();initNotifications();
+ await load();if(access.authenticated)ensureNotifBellButton();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();initNotifications();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
