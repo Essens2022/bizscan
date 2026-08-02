@@ -189,8 +189,8 @@ let notifPanelOpen=false;
 
 function ensureNotifBellButton(){
  if(document.getElementById('notifBellBtn'))return;
- const heart=document.querySelector('.top-actions a[aria-label="Preferiti"]');
- if(!heart)return;
+ const profileBtn=document.querySelector('.top-actions a[aria-label="Profilo"], .top-actions [aria-label="Profilo"]');
+ if(!profileBtn)return;
  const btn=document.createElement('button');
  btn.type='button';
  btn.id='notifBellBtn';
@@ -198,7 +198,7 @@ function ensureNotifBellButton(){
  btn.setAttribute('aria-label','Notifiche');
  btn.innerHTML='🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>';
  btn.onclick=toggleNotificationPanel;
- heart.insertAdjacentElement('afterend',btn);
+ profileBtn.insertAdjacentElement('beforebegin',btn);
 }
 
 function renderNotifBadge(){
