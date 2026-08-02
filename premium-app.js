@@ -1692,7 +1692,12 @@ function initLinkPrefetch(){
  }
 }
 document.addEventListener('DOMContentLoaded',async()=>{
- initLinkPrefetch();
+ // initLinkPrefetch() disabilitato: dal momento in cui è stata attivata l'ottimizzazione
+ // "pre-caricamento della pagina successiva" di Cloudflare, questo prefetch personalizzato via
+ // JavaScript genera richieste che ricevono risposta 503 (Service Unavailable) - probabilmente un
+ // conflitto tra i due meccanismi di prefetch che operano contemporaneamente. Cloudflare gestisce
+ // ora la stessa ottimizzazione a livello di rete, rendendo questo codice ridondante.
+ // initLinkPrefetch()
  const navType=(()=>{try{return performance.getEntriesByType('navigation')[0]?.type||'navigate'}catch(e){return 'navigate'}})();
  const isReload=navType==='reload';
  const hasSavedScroll=isReload&&(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
