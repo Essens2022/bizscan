@@ -791,8 +791,18 @@ textarea{min-height:92px;resize:vertical}
   <section id="notificationsPanel" class="panel">
     <div class="card">
       <h2>Crea una nuova notifica</h2>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Verrà mostrata a tutti gli utenti registrati nel campanello in alto.</p>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Scegli se inviarla a tutti gli utenti oppure a una sola persona specifica.</p>
       <div style="max-width:520px">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Destinatario</label>
+        <select id="notifTargetMode" onchange="toggleNotifTargetFields()" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+          <option value="all">Tutti gli utenti registrati</option>
+          <option value="personal">Una persona specifica (via email)</option>
+        </select>
+        <div id="notifTargetEmailField" style="display:none">
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Email della persona</label>
+          <input id="notifTargetEmail" type="email" placeholder="esempio@email.com" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+        </div>
+
         <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Titolo</label>
         <input id="notifTitle" type="text" placeholder="Es. Buone feste da BizScan!" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
 
@@ -835,8 +845,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608022201"></script>
-<script src="app.js?v=202608022201"></script>
+ <script src="supabase-data.js?v=202608022210"></script>
+<script src="app.js?v=202608022210"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -891,6 +901,11 @@ function toggleNotifActionFields(){
   document.getElementById("notifLinkFields").style.display = type === "link" ? "block" : "none"
 }
 
+function toggleNotifTargetFields(){
+  const mode = document.getElementById("notifTargetMode").value
+  document.getElementById("notifTargetEmailField").style.display = mode === "personal" ? "block" : "none"
+}
+
 let notifImageDataUrl = null
 document.addEventListener("change", (e) => {
   if (e.target.id !== "notifImageFile") return
@@ -918,6 +933,8 @@ async function uploadNotifImage(notificationId){
 
 async function createNotification(){
   const msgEl = document.getElementById("notifCreateMessage")
+  const targetMode = document.getElementById("notifTargetMode").value
+  const targetEmail = document.getElementById("notifTargetEmail").value.trim()
   const title = document.getElementById("notifTitle").value.trim()
   const message = document.getElementById("notifMessage").value.trim()
   const actionType = document.getElementById("notifActionType").value
@@ -936,32 +953,44 @@ async function createNotification(){
     msgEl.style.color = "#ff5c6c"
     return
   }
+  if (targetMode === "personal" && !targetEmail) {
+    msgEl.textContent = "Inserisci l'email della persona"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
 
   msgEl.textContent = "Pubblicazione in corso..."
   msgEl.style.color = ""
   try {
-    const notificationType = actionType === "claim_bonus" ? "bonus" : (actionType === "link" ? "promo" : "info")
-    const insertPayload = {
-      title, message,
-      notification_type: notificationType,
-      action_type: actionType,
-      bonus_analysis_credits: actionType === "claim_bonus" ? bonusAnalysis : 0,
-      bonus_pdf_credits: actionType === "claim_bonus" ? bonusPdf : 0,
-      action_link_url: actionType === "link" ? linkUrl : null,
-      expires_at: expiresAtRaw ? new Date(expiresAtRaw).toISOString() : null
+    // Prima creiamo la notifica SENZA immagine (serve l'id per il path di storage), poi la aggiorniamo.
+    const { data: result, error: createError } = await supabaseClient.rpc("admin_create_notification", {
+      p_title: title,
+      p_message: message,
+      p_image_url: null,
+      p_action_type: actionType,
+      p_bonus_analysis_credits: actionType === "claim_bonus" ? bonusAnalysis : 0,
+      p_bonus_pdf_credits: actionType === "claim_bonus" ? bonusPdf : 0,
+      p_action_link_url: actionType === "link" ? linkUrl : null,
+      p_expires_at: expiresAtRaw ? new Date(expiresAtRaw).toISOString() : null,
+      p_target_email: targetMode === "personal" ? targetEmail : null
+    })
+    if (createError) throw createError
+    if (!result?.success) {
+      const reasons = { not_admin: "Non hai i permessi di amministratore", user_not_found: "Nessun utente trovato con questa email — verifica che si sia già registrato" }
+      msgEl.textContent = reasons[result?.reason] || "Operazione non riuscita"
+      msgEl.style.color = "#ff5c6c"
+      return
     }
-    const { data: inserted, error: insertError } = await supabaseClient.from("notifications").insert(insertPayload).select().single()
-    if (insertError) throw insertError
 
     if (document.getElementById("notifImageFile").files[0]) {
-      const imageUrl = await uploadNotifImage(inserted.id)
+      const imageUrl = await uploadNotifImage(result.id)
       if (imageUrl) {
-        const { error: updateError } = await supabaseClient.from("notifications").update({ image_url: imageUrl }).eq("id", inserted.id)
+        const { error: updateError } = await supabaseClient.from("notifications").update({ image_url: imageUrl }).eq("id", result.id)
         if (updateError) throw updateError
       }
     }
 
-    msgEl.textContent = "✓ Notifica pubblicata con successo"
+    msgEl.textContent = result.is_personal ? "✓ Notifica personale inviata con successo" : "✓ Notifica pubblicata con successo a tutti"
     msgEl.style.color = "#7ef2c9"
     document.getElementById("notifTitle").value = ""
     document.getElementById("notifMessage").value = ""
@@ -971,6 +1000,9 @@ async function createNotification(){
     document.getElementById("notifBonusPdf").value = "0"
     document.getElementById("notifLinkUrl").value = ""
     document.getElementById("notifExpiresAt").value = ""
+    document.getElementById("notifTargetEmail").value = ""
+    document.getElementById("notifTargetMode").value = "all"
+    toggleNotifTargetFields()
     loadNotificationsList()
   } catch (e) {
     msgEl.textContent = e.message || "Errore imprevisto"
@@ -999,19 +1031,22 @@ async function loadNotificationsList(){
     if (!list || !list.length) { host.innerHTML = '<p style="color:var(--muted);font-size:13px">Nessuna notifica ancora inviata.</p>'; return }
 
     const rows = await Promise.all(list.map(async (n) => {
-      let stats = { seen_count: 0, claimed_count: 0, total_users: 0 }
+      let stats = { seen_count: 0, claimed_count: 0, total_users: 0, target_email: null }
       try {
         const { data: s } = await supabaseClient.rpc("admin_notification_stats", { p_notification_id: n.id })
         if (s?.success) stats = s
       } catch (_) {}
       const statusBadge = n.is_active ? '<span style="color:#7ef2c9;font-size:11px;font-weight:800">ATTIVA</span>' : '<span style="color:var(--muted);font-size:11px;font-weight:800">DISATTIVATA</span>'
       const bonusInfo = n.action_type === "claim_bonus" ? ` · Bonus: ${n.bonus_analysis_credits} analisi + ${n.bonus_pdf_credits} PDF` : ""
+      const targetBadge = n.target_user_id
+        ? `<span style="color:#ffb400;font-size:11px;font-weight:800">PERSONALE${stats.target_email ? ' · ' + esc(stats.target_email) : ''}</span>`
+        : '<span style="color:var(--muted);font-size:11px;font-weight:800">GLOBALE</span>'
       return `<div style="padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
           <div>
-            <b style="font-size:13.5px">${esc(n.title)}</b> ${statusBadge}
+            <b style="font-size:13.5px">${esc(n.title)}</b> ${statusBadge} ${targetBadge}
             <p style="color:var(--muted);font-size:12.5px;margin:4px 0">${esc(n.message)}</p>
-            <p style="color:var(--muted);font-size:11.5px">Visualizzata: ${stats.seen_count} · Riscossa: ${stats.claimed_count} · Utenti totali: ${stats.total_users}${bonusInfo}</p>
+            <p style="color:var(--muted);font-size:11.5px">Visualizzata: ${stats.seen_count} · Riscossa: ${stats.claimed_count} · Destinatari: ${stats.total_users}${bonusInfo}</p>
           </div>
           ${n.is_active ? `<button class="btn ghost" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="deactivateNotification('${n.id}')">Disattiva</button>` : ""}
         </div>
@@ -2795,5 +2830,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022201"></script></body>
+<script src="shell-ui.js?v=202608022210"></script></body>
 </html>
