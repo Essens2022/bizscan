@@ -5,6 +5,16 @@ try{
   if(chipEl)chipEl.textContent=`Crediti: ${cached.n} · PDF: ${cached.pdfN}`;
  }
 }catch(_){}
+try{
+ const cachedUnseen=parseInt(localStorage.getItem('bizscan_last_unseen_notifs')||'0',10);
+ if(cachedUnseen>0){
+  const badgeEl=document.getElementById('notifBadge');
+  if(badgeEl){
+   badgeEl.textContent=cachedUnseen>9?'9+':String(cachedUnseen);
+   badgeEl.style.display='flex';
+  }
+ }
+}catch(_){}
 let PACKAGES=[
  {key:'single',name:'Base',price:1.99,analyses:5,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Indicatori chiave gratis','5 crediti','Scenari di profitto']},
  {key:'starter',name:'Starter',price:4.99,analyses:13,pdfCredits:0,badge:'',indicatorCount:0,compare:'Base',features:['Tutti gli strumenti del piano Base','13 crediti','Break-even mensile']},
@@ -191,6 +201,7 @@ function renderNotifBadge(){
  const badge=document.getElementById('notifBadge');
  if(!badge)return;
  const unseenCount=notifications.filter(n=>!n.seen_at).length;
+ try{localStorage.setItem('bizscan_last_unseen_notifs',String(unseenCount))}catch(_){}
  if(unseenCount>0){
   badge.textContent=unseenCount>9?'9+':String(unseenCount);
   badge.style.display='flex';
@@ -211,8 +222,6 @@ async function initNotifications(){
   renderNotifBadge();
   const hasNewUnseen=notifications.some(n=>!n.seen_at && !previousUnseenIds.has(n.id));
   if(hasNewUnseen && !wasEmpty){
-   const bell=document.getElementById('notifBellBtn');
-   if(bell){bell.classList.add('has-new');setTimeout(()=>bell.classList.remove('has-new'),4300)}
    if(navigator.vibrate)navigator.vibrate(25);
   }
   // Sottoscrizione realtime: nuove notifiche appaiono senza bisogno di ricaricare la pagina.
