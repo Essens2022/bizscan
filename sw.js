@@ -24,6 +24,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = event.request.url;
+  // Non intercettare MAI richieste verso altri domini (es. CDN esterni come jsdelivr.net
+  // per Supabase JS) - lasciale gestire normalmente dal browser, senza passare dalla
+  // cache di questo service worker, che è pensata solo per gli asset di bizscan.it
+  if (new URL(url).origin !== self.location.origin) return;
   const isVersionedAsset = url.includes('?v=');
 
   if (isVersionedAsset) {
