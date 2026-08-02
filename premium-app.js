@@ -241,7 +241,7 @@ function notifItemHtml(n){
  }else if(n.action_type==='link' && n.action_link_url){
   actionHtml=`<a class="notif-item-btn is-link" href="${esc(n.action_link_url)}">Scopri di più</a>`;
  }
- return `<div class="notif-item${unseen?' is-unseen':''}" data-notif-id="${n.id}">${img}<div class="notif-item-body"><p class="notif-item-title">${esc(n.title)}</p><p class="notif-item-msg">${esc(n.message)}</p>${actionHtml}</div></div>`;
+ return `<details class="notif-item${unseen?' is-unseen':''}" data-notif-id="${n.id}"><summary class="notif-item-summary"><span class="notif-item-title">${esc(n.title)}</span><svg class="notif-item-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="notif-item-body">${img}<p class="notif-item-msg">${esc(n.message)}</p>${actionHtml}</div></details>`;
 }
 
 function renderNotifPanel(){
