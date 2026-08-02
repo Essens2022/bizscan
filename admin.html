@@ -61,6 +61,7 @@ textarea{min-height:92px;resize:vertical}
 .admin-back{width:34px;height:34px;min-width:34px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text);font-size:17px;cursor:pointer;margin-right:10px;transition:border-color .18s,background .18s}
 .admin-back:hover{border-color:#6f55a9;background:#111a28}
 @media(max-width:900px){.homepage-editor-layout{grid-template-columns:1fr!important}.homepage-editor-preview{position:static!important}}
+@media(max-width:720px){.customer-detail-grid{grid-template-columns:1fr!important}}
 </style>
 
 <style>
@@ -304,6 +305,7 @@ textarea{min-height:92px;resize:vertical}
     <button class="tab" onclick="showTab('homepage',this)">Pagina principale <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('credits',this)">Crediti <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('notifications',this)">Notifiche <span class="tab-help">?</span></button>
+    <button class="tab" onclick="showTab('customers',this)">Clienti <span class="tab-help">?</span></button>
   </nav>
 
   <section id="dashboardPanel" class="panel active">
@@ -844,9 +846,51 @@ textarea{min-height:92px;resize:vertical}
       <div id="notifList" style="margin-top:12px">Caricamento…</div>
     </div>
   </section>
+
+  <section id="customersPanel" class="panel">
+    <div class="card">
+      <h2>Cerca un cliente</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Cerca per email o nome. Utile per verificare acquisti in caso di richieste o contestazioni.</p>
+      <div style="max-width:420px;display:flex;gap:8px">
+        <input id="customerSearchInput" type="text" placeholder="Email o nome..." onkeydown="if(event.key==='Enter')searchCustomers()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+        <button class="btn primary" style="white-space:nowrap" onclick="searchCustomers()">Cerca</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Risultati</h2>
+      <div id="customerSearchResults" style="margin-top:12px"><p style="color:var(--muted);font-size:13px">Digita un\'email o un nome e premi Cerca — oppure premi Cerca senza testo per vedere gli ultimi clienti registrati.</p></div>
+    </div>
+
+    <div class="card" id="customerDetailCard" style="margin-top:16px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <h2 id="customerDetailName">—</h2>
+          <p id="customerDetailEmail" style="color:var(--muted);font-size:13px;margin-top:2px"></p>
+        </div>
+        <button class="btn ghost" style="font-size:11px" onclick="document.getElementById(\'customerDetailCard\').style.display=\'none\'">Chiudi</button>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">
+        <div style="background:#0d1420;border:1px solid var(--line);border-radius:10px;padding:10px 16px"><small style="color:var(--muted);font-size:11px">CREDITI ANALISI DISPONIBILI</small><br><b id="customerAvailAnalysis" style="font-size:18px">0</b></div>
+        <div style="background:#0d1420;border:1px solid var(--line);border-radius:10px;padding:10px 16px"><small style="color:var(--muted);font-size:11px">CREDITI PDF DISPONIBILI</small><br><b id="customerAvailPdf" style="font-size:18px">0</b></div>
+        <div style="background:#0d1420;border:1px solid var(--line);border-radius:10px;padding:10px 16px"><small style="color:var(--muted);font-size:11px">REGISTRATO IL</small><br><b id="customerRegisteredAt" style="font-size:13px">—</b></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px" class="customer-detail-grid">
+        <div>
+          <h3 style="font-size:14px;margin-bottom:8px">📦 Pacchetti acquistati</h3>
+          <div id="customerOrdersList" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+        <div>
+          <h3 style="font-size:14px;margin-bottom:8px">🔓 Cosa ha sbloccato con i crediti</h3>
+          <div id="customerUsageList" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
- <script src="supabase-data.js?v=202608022230"></script>
-<script src="app.js?v=202608022230"></script>
+ <script src="supabase-data.js?v=202608022315"></script>
+<script src="app.js?v=202608022315"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1018,6 +1062,79 @@ async function deactivateNotification(id){
     loadNotificationsList()
   } catch (e) {
     alert(e.message || "Errore")
+  }
+}
+
+async function searchCustomers(){
+  const query = document.getElementById("customerSearchInput").value.trim()
+  const host = document.getElementById("customerSearchResults")
+  host.innerHTML = "Ricerca in corso…"
+  try {
+    const { data: results, error } = await supabaseClient.rpc("admin_search_customers", { p_query: query || null })
+    if (error) throw error
+    if (!results || !results.length) { host.innerHTML = '<p style="color:var(--muted);font-size:13px">Nessun cliente trovato.</p>'; return }
+    host.innerHTML = results.map(c => {
+      const name = (c.first_name || c.last_name) ? `${c.first_name || ""} ${c.last_name || ""}`.trim() : "(nome non impostato)"
+      const regDate = new Date(c.registered_at).toLocaleDateString("it-IT")
+      return `<div onclick="openCustomerDetail('${c.user_id}')" style="padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px" onmouseover="this.style.borderColor='#6f55a9'" onmouseout="this.style.borderColor=''">
+        <div><b style="font-size:13px">${esc(name)}</b><br><span style="color:var(--muted);font-size:12px">${esc(c.email)}</span></div>
+        <div style="text-align:right;white-space:nowrap"><span style="font-size:12px;font-weight:800;color:var(--gold)">${c.total_orders} ordini · ${Number(c.total_spent).toFixed(2)}€</span><br><span style="color:var(--muted);font-size:11px">dal ${regDate}</span></div>
+      </div>`
+    }).join("")
+  } catch (e) {
+    host.innerHTML = `<p style="color:#ff5c6c;font-size:13px">${esc(e.message || "Errore nella ricerca")}</p>`
+  }
+}
+
+async function openCustomerDetail(userId){
+  const card = document.getElementById("customerDetailCard")
+  card.style.display = "block"
+  card.scrollIntoView({behavior:"smooth", block:"start"})
+  document.getElementById("customerDetailName").textContent = "Caricamento…"
+  document.getElementById("customerOrdersList").innerHTML = ""
+  document.getElementById("customerUsageList").innerHTML = ""
+  try {
+    const { data, error } = await supabaseClient.rpc("admin_customer_detail", { p_user_id: userId })
+    if (error) throw error
+    const p = data.profile
+    const name = (p.first_name || p.last_name) ? `${p.first_name || ""} ${p.last_name || ""}`.trim() : "(nome non impostato)"
+    document.getElementById("customerDetailName").textContent = name
+    document.getElementById("customerDetailEmail").textContent = p.email
+    document.getElementById("customerAvailAnalysis").textContent = p.available_analysis_credits
+    document.getElementById("customerAvailPdf").textContent = p.available_pdf_credits
+    document.getElementById("customerRegisteredAt").textContent = new Date(p.registered_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+
+    const ordersHost = document.getElementById("customerOrdersList")
+    if (!data.orders.length) {
+      ordersHost.innerHTML = '<p style="color:var(--muted);font-size:12.5px">Nessun acquisto registrato.</p>'
+    } else {
+      ordersHost.innerHTML = data.orders.map(o => {
+        const dt = new Date(o.paid_at || o.created_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+        const statusColor = o.status === "paid" ? "#7ef2c9" : (o.status === "refunded" ? "#ff5c6c" : "var(--muted)")
+        return `<div style="padding:10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between"><b style="font-size:12.5px">${esc(o.plan_name || "Pacchetto")}</b><b style="font-size:12.5px">${Number(o.amount).toFixed(2)} ${esc((o.currency||"EUR").toUpperCase())}</b></div>
+          <p style="font-size:11.5px;color:var(--muted);margin:3px 0">${dt}</p>
+          <span style="font-size:10.5px;font-weight:800;color:${statusColor}">${esc((o.status||"").toUpperCase())}</span>
+        </div>`
+      }).join("")
+    }
+
+    const usageHost = document.getElementById("customerUsageList")
+    if (!data.usage.length) {
+      usageHost.innerHTML = '<p style="color:var(--muted);font-size:12.5px">Nessuno sblocco registrato.</p>'
+    } else {
+      usageHost.innerHTML = data.usage.map(u => {
+        const dt = new Date(u.when).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+        return `<div style="padding:10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
+          <span style="font-size:10.5px;font-weight:800;color:var(--gold)">${esc(u.kind.toUpperCase())}</span>
+          <p style="font-size:12.5px;margin:3px 0">${esc(u.item)}</p>
+          <p style="font-size:11.5px;color:var(--muted)">${dt}</p>
+        </div>`
+      }).join("")
+    }
+  } catch (e) {
+    document.getElementById("customerDetailName").textContent = "Errore"
+    document.getElementById("customerDetailEmail").textContent = e.message || "Impossibile caricare i dati"
   }
 }
 
@@ -1864,6 +1981,7 @@ function showTab(name,btn){
   if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
   if(name==="feedback"){loadFeedbackList();loadSuggestionsList();loadSiteFeedbackList()}
   if(name==="notifications"){loadNotificationsList()}
+  if(name==="customers"){searchCustomers()}
 }
 
 
@@ -2857,5 +2975,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022230"></script></body>
+<script src="shell-ui.js?v=202608022315"></script></body>
 </html>
