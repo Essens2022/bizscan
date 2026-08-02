@@ -302,6 +302,7 @@ textarea{min-height:92px;resize:vertical}
     <button class="tab" onclick="showTab('plans',this)">Piani <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('data',this)">Importa esporta <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('homepage',this)">Pagina principale <span class="tab-help">?</span></button>
+    <button class="tab" onclick="showTab('credits',this)">Crediti <span class="tab-help">?</span></button>
   </nav>
 
   <section id="dashboardPanel" class="panel active">
@@ -762,11 +763,80 @@ textarea{min-height:92px;resize:vertical}
     </div>
    </div>
   </section>
+
+  <section id="creditsPanel" class="panel">
+    <div class="card">
+      <h2>Regala crediti a un utente</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Inserisci l'email esatta dell'account che vuoi rifornire (deve avere già effettuato la registrazione).</p>
+      <div style="max-width:420px">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Email dell'utente</label>
+        <input id="creditGrantEmail" type="email" placeholder="esempio@email.com" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Tipo di credito</label>
+        <select id="creditGrantType" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+          <option value="analysis">Crediti analisi/indicatori</option>
+          <option value="pdf">Crediti report PDF</option>
+        </select>
+
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Quantità</label>
+        <input id="creditGrantQuantity" type="number" min="1" value="10" style="width:100%;padding:12px;margin-bottom:16px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+
+        <button class="btn primary full" onclick="grantCreditsToUser()">Regala i crediti</button>
+        <p id="creditGrantMessage" style="margin-top:12px;font-size:13px"></p>
+      </div>
+    </div>
+  </section>
 </main>
- <script src="supabase-data.js?v=202608022027"></script>
-<script src="app.js?v=202608022027"></script>
+ <script src="supabase-data.js?v=202608022106"></script>
+<script src="app.js?v=202608022106"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+async function grantCreditsToUser(){
+  const msgEl = document.getElementById("creditGrantMessage")
+  const email = document.getElementById("creditGrantEmail").value.trim()
+  const creditType = document.getElementById("creditGrantType").value
+  const quantity = parseInt(document.getElementById("creditGrantQuantity").value, 10)
+  if (!email) {
+    msgEl.textContent = "Inserisci un'email"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  if (!quantity || quantity <= 0) {
+    msgEl.textContent = "Inserisci una quantità valida"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  msgEl.textContent = "Invio in corso..."
+  msgEl.style.color = ""
+  try {
+    const c = await BizScanData.getSupabaseClient()
+    const { data, error } = await c.rpc("admin_grant_credits", {
+      p_email: email,
+      p_credit_type: creditType,
+      p_quantity: quantity
+    })
+    if (error) throw error
+    if (!data?.success) {
+      const reasons = {
+        not_admin: "Non hai i permessi di amministratore",
+        invalid_credit_type: "Tipo di credito non valido",
+        invalid_quantity: "Quantità non valida",
+        user_not_found: "Nessun utente trovato con questa email — verifica che si sia già registrato"
+      }
+      msgEl.textContent = reasons[data?.reason] || "Operazione non riuscita"
+      msgEl.style.color = "#ff5c6c"
+      return
+    }
+    msgEl.textContent = `✓ ${quantity} crediti (${creditType === 'pdf' ? 'PDF' : 'analisi'}) aggiunti con successo a ${email}`
+    msgEl.style.color = "#7ef2c9"
+    document.getElementById("creditGrantEmail").value = ""
+  } catch (e) {
+    msgEl.textContent = e.message || "Errore imprevisto"
+    msgEl.style.color = "#ff5c6c"
+  }
+}
+
 let coverData="",pdfMeta=null
 const emojiGroups={
   "Tutti":["🍕","🍔","☕","🚗","🏨","✂️","🍦","🥐","🍝","🏪","🛒","💻","📱","🏠","🔧","🧼","💇","🍺","🐶","📊","💶","🚚","🏋️","🧁","🧑‍🍳","🍷","🥩","🍣","🥗","🛏️","🏢","🏭","🚘","⛽","🛠️","📦","🚲","🛵","🚌","✈️","🚤","🌴","🏖️","🎓","📚","🧑‍⚕️","💊","🦷","👓","👗","👟","💍","🎁","🎮","🎥","📸","🎨","🌿","🌸","🐾","🧸","🧹","🔑","💡","⚡","☀️","❄️"],
@@ -2538,5 +2608,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022027"></script></body>
+<script src="shell-ui.js?v=202608022106"></script></body>
 </html>
