@@ -30,14 +30,17 @@ body{display:flex;flex-direction:column;height:100dvh}
   var slug=params.get('slug');
   var title=params.get('title');
   var backBtn=document.getElementById('backBtn');
-  if(history.length>1){
+  if(slug){
+    var returnUrl='analysis.html?slug='+encodeURIComponent(slug);
+    backBtn.removeAttribute('href');
+    backBtn.style.cursor='pointer';
+    backBtn.addEventListener('click',function(e){e.preventDefault();location.replace(returnUrl)});
+    backBtn.textContent='← Torna al prodotto';
+  }else if(history.length>1){
     backBtn.removeAttribute('href');
     backBtn.style.cursor='pointer';
     backBtn.addEventListener('click',function(e){e.preventDefault();history.back()});
     backBtn.textContent='← Indietro';
-  }else if(slug){
-    backBtn.href='analysis.html?slug='+encodeURIComponent(slug);
-    backBtn.textContent='← Torna al prodotto';
   }
   if(title)document.getElementById('pdfTitleLabel').textContent=title;
   var downloadBtn=document.getElementById('downloadBtn');
