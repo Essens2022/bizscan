@@ -2,6 +2,8 @@ const SUPABASE_URL="https://fafedftoyztptdiubjmx.supabase.co";
 const SUPABASE_KEY="sb_publishable_Xv8QeF_A5ShMEqhxqB1jgQ_mLZGx5KJ";
 let _client;
 let _clientPromise;
+let _isPasswordRecovery=false;
+function isPasswordRecoverySession(){return _isPasswordRecovery}
 
 async function getSupabaseClient(){
   if(_client)return _client;
@@ -9,6 +11,12 @@ async function getSupabaseClient(){
     _clientPromise=(async()=>{
       const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
       _client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      // Registriamo il listener PRIMA di scambiare il codice qui sotto: exchangeCodeForSession
+      // emette l'evento PASSWORD_RECOVERY in modo sincrono durante lo scambio stesso, quindi il
+      // listener deve già esistere quando lo scambio avviene, non dopo (altrimenti l'evento
+      // passa inosservato e la persona che clicca il link di reset finisce loggata direttamente
+      // invece di vedere il modulo per impostare la nuova password).
+      _client.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY")_isPasswordRecovery=true});
       // Conferma email (e altri magic link) usano il flusso PKCE: l'URL di ritorno contiene
       // un parametro ?code=... che va scambiato esplicitamente per una sessione attiva.
       // Senza questo passaggio, detectSessionInUrl (pensato per il vecchio flusso a hash)
@@ -114,4 +122,4 @@ async function fetchHeroMedia(){const c=await getSupabaseClient();const{data,err
 async function fetchHeroPhrases(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_list_hero_phrases");if(error)throw error;return data||[]}
 async function fetchHeroSettings(){const c=await getSupabaseClient();const{data,error}=await c.rpc("public_get_hero_settings");if(error)throw error;return data||{carousel_transition:'fade'}}
 async function fetchMyOrders(){const c=await getSupabaseClient();const{data,error}=await c.rpc("get_my_orders");if(error)throw error;return data||[]}
-window.BizScanData={getSupabaseClient,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders,getCompareAdviceStatus,unlockCompareAdvice,fetchMyPdfReports};
+window.BizScanData={getSupabaseClient,isPasswordRecoverySession,fetchPublishedAnalyses,fetchAnalysisBySlug,fetchAttachments,fetchCategories,fetchPlans,session,currentUser,fetchFavorites,setFavorite,accessSummary,hasAccess,unlockWithCredit,fetchSections,requestPdfAccess,getPdfAccessStatus,savePdfAccessRule,signedAttachmentUrl,fetchHeroMedia,fetchHeroPhrases,fetchHeroSettings,fetchMyOrders,getCompareAdviceStatus,unlockCompareAdvice,fetchMyPdfReports};
