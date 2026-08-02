@@ -1560,6 +1560,19 @@ function saveScrollPosition(){
 }
 window.addEventListener('beforeunload',saveScrollPosition);
 window.addEventListener('pagehide',saveScrollPosition);
+// Quando il browser ripristina la pagina dalla bfcache (es. dopo il tasto "indietro"), il DOM e lo
+// stato JS restano quelli di PRIMA che l'utente lasciasse la pagina - inclusi i crediti mostrati nella
+// barra in alto, che possono essere diventati vecchi nel frattempo (es. un tool sbloccato nel mezzo).
+// event.persisted=true indica esattamente questo scenario: ricarichiamo i crediti reali e aggiorniamo
+// la barra, senza toccare il resto della pagina già renderizzata.
+window.addEventListener('pageshow', async(event) => {
+ if (!event.persisted) return;
+ try{
+  const fresh = await BizScanData.accessSummary();
+  Object.assign(access, fresh);
+  updateShell();
+ }catch(e){}
+});
 function restoreScrollPosition(){
  try{
   const navType=performance.getEntriesByType('navigation')[0]?.type||'navigate';
