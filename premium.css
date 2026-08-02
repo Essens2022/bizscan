@@ -367,7 +367,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 @media(max-width:430px){.home18-hero h1{font-size:37px}.home18-head h2{font-size:26px}.home18-score-top{gap:12px}.home18-categories{grid-template-columns:1fr}.home18-how h2{font-size:29px}.home18-faq h2{font-size:30px}}
 .home18-head-icon{height:34px;width:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:#070d17;color:#d6dce5;font-size:16px}
 
-.notif-bell-btn{position:relative;cursor:pointer;font-family:inherit;padding:0;margin:0;-webkit-appearance:none;appearance:none}
+.notif-bell-btn{position:relative;cursor:pointer;font-family:inherit;padding:0;margin:0 8px 0 0;-webkit-appearance:none;appearance:none}
 .notif-badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#ff5c6c;color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 0 0 2px #070d17}
 .notif-bell-btn.has-new{animation:notifPulse 1.4s ease-in-out 3}
 @keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,92,108,.55)}50%{box-shadow:0 0 0 7px rgba(255,92,108,0)}}
