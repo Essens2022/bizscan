@@ -1036,6 +1036,11 @@ window._doUnlockTool=async(toolKey)=>{
   if(!p.unlocked_tool_keys.includes(toolKey))p.unlocked_tool_keys.push(toolKey);
   if(typeof access.available_credits==='number')access.available_credits=Math.max(0,access.available_credits-1);
   if(typeof access.credits==='number')access.credits=Math.max(0,access.credits-1);
+  // Invalida la cache 'publicData' (24h) usata per il caricamento rapido: senza questo, se l'utente
+  // torna su questa pagina più tardi (es. da una navigazione verso il PDF e ritorno), vedrebbe lo
+  // strumento appena sbloccato tornare "bloccato", perché il rendering iniziale userebbe ancora la
+  // versione in cache precedente allo sblocco, prima che l'aggiornamento in background la sostituisca.
+  try{sessionStorage.removeItem('cache:publicData')}catch(e){}
   toast('Strumento sbloccato con successo');
   updateShell();
   const activeTabBtn=document.querySelector('.tabs button.active');
