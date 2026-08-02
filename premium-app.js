@@ -1141,9 +1141,9 @@ window._doDownloadReport=async slug=>{
   const isStandaloneApp=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
   if(isStandaloneApp){
    location.href=viewerUrl;
-  }else{
-   window.open(viewerUrl,'_blank','noopener');
+   return;
   }
+  window.open(viewerUrl,'_blank','noopener');
   if(!result.is_free){
    toast('✓ PDF sbloccato — credito utilizzato');
    try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
