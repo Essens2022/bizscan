@@ -894,8 +894,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608022334"></script>
-<script src="app.js?v=202608022334"></script>
+ <script src="supabase-data.js?v=202608022343"></script>
+<script src="app.js?v=202608022343"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1145,15 +1145,24 @@ async function openCustomerDetail(userId){
     if (!data.usage.length) {
       usageHost.innerHTML = '<p style="color:var(--muted);font-size:12.5px">Nessuno sblocco registrato.</p>'
     } else {
+      // Stessa mappa colori strumento->piano già usata in pricing.html e sull'analisi, per coerenza
+      // visiva col resto del sito (non colori inventati a parte qui).
+      const TOOL_MIN_PLAN_KEY = {scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'}
+      const PLAN_TIER_COLOR = {single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'}
       const kindStyle = {
         "Analisi sbloccata": { icon: "📊", color: "#60A5FA" },
-        "Strumento sbloccato": { icon: "🔧", color: "#c39bff" },
         "Report PDF sbloccato": { icon: "📄", color: "#ffb400" },
         "Confronto avanzato": { icon: "⇄", color: "#4ADE80" }
       }
       usageHost.innerHTML = data.usage.map(u => {
         const dt = new Date(u.when).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
-        const style = kindStyle[u.kind] || { icon: "•", color: "var(--gold)" }
+        let style
+        if (u.kind === "Strumento sbloccato" && u.tool_key) {
+          const planKey = TOOL_MIN_PLAN_KEY[u.tool_key]
+          style = { icon: "🔧", color: (planKey && PLAN_TIER_COLOR[planKey]) || "#c39bff" }
+        } else {
+          style = kindStyle[u.kind] || { icon: "•", color: "var(--gold)" }
+        }
         return `<div style="padding:10px;border:1px solid var(--line);border-left:3px solid ${style.color};border-radius:9px;margin-bottom:8px">
           <span style="font-size:10.5px;font-weight:800;color:${style.color}">${style.icon} ${esc(u.kind.toUpperCase())}</span>
           <p style="font-size:12.5px;margin:3px 0;font-weight:600">${esc(u.item)}</p>
@@ -3004,5 +3013,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022334"></script></body>
+<script src="shell-ui.js?v=202608022343"></script></body>
 </html>
