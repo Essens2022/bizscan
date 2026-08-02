@@ -845,8 +845,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608022223"></script>
-<script src="app.js?v=202608022223"></script>
+ <script src="supabase-data.js?v=202608022230"></script>
+<script src="app.js?v=202608022230"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1021,6 +1021,31 @@ async function deactivateNotification(id){
   }
 }
 
+async function loadNotifViewers(notificationId, detailsEl){
+  const host = detailsEl.querySelector(".notif-viewers-list")
+  if (!host || host.dataset.loaded === "1") return
+  host.dataset.loaded = "1"
+  try {
+    const { data: viewers, error } = await supabaseClient.rpc("admin_notification_viewers", { p_notification_id: notificationId })
+    if (error) throw error
+    if (!viewers || !viewers.length) {
+      host.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0">Nessuno l\'ha ancora vista.</p>'
+      return
+    }
+    host.innerHTML = viewers.map(v => {
+      const name = (v.first_name || v.last_name) ? `${v.first_name || ""} ${v.last_name || ""}`.trim() : "—"
+      const seenDate = v.seen_at ? new Date(v.seen_at).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"
+      const claimedTag = v.claimed_at ? '<span style="color:#7ef2c9;font-size:10.5px;font-weight:800">✓ RISCOSSO</span>' : ""
+      return `<div style="padding:8px 0;border-bottom:1px solid #17202f;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div><b style="font-size:12.5px">${esc(name)}</b> ${claimedTag}<br><span style="color:var(--muted);font-size:11.5px">${esc(v.email)}</span></div>
+        <span style="color:var(--muted);font-size:11px;white-space:nowrap">${seenDate}</span>
+      </div>`
+    }).join("")
+  } catch (e) {
+    host.innerHTML = `<p style="color:#ff5c6c;font-size:12px;padding:8px 0">${esc(e.message || "Errore nel caricamento")}</p>`
+  }
+}
+
 async function loadNotificationsList(){
   const host = document.getElementById("notifList")
   if (!host) return
@@ -1041,16 +1066,18 @@ async function loadNotificationsList(){
       const targetBadge = n.target_user_id
         ? `<span style="color:#ffb400;font-size:11px;font-weight:800">PERSONALE${stats.target_email ? ' · ' + esc(stats.target_email) : ''}</span>`
         : '<span style="color:var(--muted);font-size:11px;font-weight:800">GLOBALE</span>'
-      return `<div style="padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:start;gap:10px">
+      const deactivateBtn = n.is_active ? `<button class="btn ghost" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="event.preventDefault();event.stopPropagation();deactivateNotification('${n.id}')">Disattiva</button>` : ""
+      return `<details style="border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden" ontoggle="if(this.open)loadNotifViewers('${n.id}',this)">
+        <summary style="padding:12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:start;gap:10px">
           <div>
             <b style="font-size:13.5px">${esc(n.title)}</b> ${statusBadge} ${targetBadge}
             <p style="color:var(--muted);font-size:12.5px;margin:4px 0">${esc(n.message)}</p>
-            <p style="color:var(--muted);font-size:11.5px">Visualizzata: ${stats.seen_count} · Riscossa: ${stats.claimed_count} · Destinatari: ${stats.total_users}${bonusInfo}</p>
+            <p style="color:var(--muted);font-size:11.5px">Visualizzata: ${stats.seen_count} · Riscossa: ${stats.claimed_count} · Destinatari: ${stats.total_users}${bonusInfo} · <span style="color:var(--gold)">tocca per vedere chi ha visto ↓</span></p>
           </div>
-          ${n.is_active ? `<button class="btn ghost" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="deactivateNotification('${n.id}')">Disattiva</button>` : ""}
-        </div>
-      </div>`
+          ${deactivateBtn}
+        </summary>
+        <div class="notif-viewers-list" style="border-top:1px solid var(--line);max-height:220px;overflow-y:auto;padding:8px 12px">Caricamento…</div>
+      </details>`
     }))
     host.innerHTML = rows.join("")
   } catch (e) {
@@ -2830,5 +2857,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022223"></script></body>
+<script src="shell-ui.js?v=202608022230"></script></body>
 </html>
