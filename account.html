@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608022012"><link rel="stylesheet" href="premium.css?v=202608022012"></head><body><div class="app">
+<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608022020"><link rel="stylesheet" href="premium.css?v=202608022020"></head><body><div class="app">
 <header class="topbar"><a class="brand" href="/" onclick="try{sessionStorage.removeItem('scrollpos:/')}catch(e){}"><img src="favicon.png" alt="BizScan"><span class="brand-word"><strong>Biz</strong><b>Scan</b></span></a><nav class="nav"><a class="" href="/">Dashboard</a><a href="search.html">Categorie</a><a class="" href="search.html">Esplora</a><a class="" href="compare.html">Confronta</a><a class="" href="library.html">Preferiti</a><a href="library.html?view=reports">I miei report</a></nav><div class="top-actions"><span class="chip">Crediti: 0 · PDF: 0</span><a class="chip purple" href="pricing.html">Pacchetti</a><a class="home18-head-icon" href="library.html" aria-label="Preferiti">♡</a><a class="home18-head-icon" href="search.html" aria-label="Menu">☰</a><a class="icon-btn" href="account.html" aria-label="Profilo"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></a></div></header><div class="page-back-row"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='/'}">←</button></div>
 
 <section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
@@ -139,11 +139,38 @@
 <div class="modal" id="globalModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box" id="globalModalContent"></div>
 </div>
-<script defer src="supabase-data.js?v=202608022012"></script>
-<script defer src="premium-app.js?v=202608022012"></script>
+<script defer src="supabase-data.js?v=202608022020"></script>
+<script defer src="premium-app.js?v=202608022020"></script>
 
 <script>
 let supabaseClient=null
+function translateAuthError(msg){
+  if (!msg) return msg
+  const m = msg.toLowerCase()
+  const map = [
+    [/new password should be different from the old password/, "La nuova password deve essere diversa da quella attuale"],
+    [/password should be at least (\d+) characters/, "La password deve contenere almeno $1 caratteri"],
+    [/invalid login credentials/, "Email o password non corretti"],
+    [/email not confirmed/, "Email non ancora confermata. Controlla la tua casella di posta"],
+    [/user already registered/, "Esiste già un account con questa email"],
+    [/unable to validate email address/, "Indirizzo email non valido"],
+    [/for security purposes, you can only request this after (\d+) seconds?/, "Per sicurezza, puoi riprovare tra $1 secondi"],
+    [/rate limit/, "Troppi tentativi. Riprova tra qualche minuto"],
+    [/network/, "Problema di connessione. Verifica la tua rete e riprova"],
+    [/token has expired or is invalid/, "Il link è scaduto o non è più valido. Richiedine uno nuovo"],
+    [/session.*not found|invalid.*session/, "Sessione non valida. Prova ad accedere di nuovo"],
+  ]
+  for (const [pattern, replacement] of map) {
+    const match = msg.match(pattern)
+    if (match) {
+      let out = replacement
+      if (match[1]) out = out.replace('$1', match[1])
+      return out
+    }
+  }
+  return msg // fallback: mostra il messaggio originale se non riconosciuto, meglio di niente
+}
+
 function togglePasswordField(id,btn){
   var el=document.getElementById(id)
   var showing=el.type==='text'
@@ -152,6 +179,49 @@ function togglePasswordField(id,btn){
   btn.querySelector('.eye-closed').style.display=showing?'none':''
   btn.setAttribute('aria-label',showing?'Mostra password':'Nascondi password')
 }
+
+const EYE_ICON_SVG = '<svg class="eye-open" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.8 21.8 0 0 1 5.06-6.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+
+function addPasswordToggle(input){
+  if (input.closest('.password-field')) return // già presente (es. login/signup)
+  const wrap = document.createElement('div')
+  wrap.className = 'password-field'
+  input.parentNode.insertBefore(wrap, input)
+  wrap.appendChild(input)
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.className = 'password-toggle'
+  btn.setAttribute('aria-label', 'Mostra password')
+  btn.innerHTML = EYE_ICON_SVG
+  btn.onclick = () => togglePasswordField(input.id, btn)
+  wrap.appendChild(btn)
+}
+
+function addMatchIndicator(passwordId, confirmId){
+  const pwEl = document.getElementById(passwordId)
+  const confirmEl = document.getElementById(confirmId)
+  if (!pwEl || !confirmEl) return
+  const indicator = document.createElement('div')
+  indicator.style.cssText = 'height:3px;border-radius:2px;margin:-4px 0 8px;transition:background .2s'
+  confirmEl.closest('.password-field').insertAdjacentElement('afterend', indicator)
+  const update = () => {
+    if (!confirmEl.value) { indicator.style.background = 'transparent'; return }
+    indicator.style.background = (pwEl.value === confirmEl.value) ? '#4ADE80' : '#ff5c6c'
+  }
+  pwEl.addEventListener('input', update)
+  confirmEl.addEventListener('input', update)
+}
+
+function initPasswordUX(){
+  ['newPassword','newPasswordConfirm','changePassword','changePasswordConfirm'].forEach(id => {
+    const el = document.getElementById(id)
+    if (el) addPasswordToggle(el)
+  })
+  addMatchIndicator('newPassword', 'newPasswordConfirm')
+  addMatchIndicator('changePassword', 'changePasswordConfirm')
+}
+document.addEventListener('DOMContentLoaded', initPasswordUX)
+
 async function waitForSupabase() {
   if(!supabaseClient){
     supabaseClient=await BizScanData.getSupabaseClient()
@@ -217,7 +287,7 @@ async function requestPasswordReset(){
         setAuthMessage(`Per sicurezza, puoi riprovare tra ${secondsLeft} secondi`, true)
       }, 1000)
     } else {
-      setAuthMessage(error.message, true)
+      setAuthMessage(translateAuthError(error.message), true)
     }
     return
   }
@@ -239,7 +309,7 @@ async function updatePasswordSupabase(){
   setAuthMessage("Salvataggio in corso...")
   const { error } = await supabaseClient.auth.updateUser({ password: newPassword })
   if (error) {
-    setAuthMessage(error.message, true)
+    setAuthMessage(translateAuthError(error.message), true)
     return
   }
   setAuthMessage("Password aggiornata con successo! Ora puoi accedere.")
@@ -342,7 +412,7 @@ async function signupSupabase() {
 })
 
   if (error) {
-    message.textContent = error.message; message.style.color='#ff5c6c'
+    message.textContent = translateAuthError(error.message); message.style.color='#ff5c6c'
     return
   }
 
@@ -410,7 +480,7 @@ async function changePasswordSupabase(){
   msgEl.style.color = ""
   const { error } = await supabaseClient.auth.updateUser({ password: newPassword })
   if (error) {
-    msgEl.textContent = error.message
+    msgEl.textContent = translateAuthError(error.message)
     msgEl.style.color = "#ff5c6c"
     return
   }
@@ -568,5 +638,5 @@ async function deleteAccountNextStep(){
 document.addEventListener('DOMContentLoaded', () => { updateAuthView() })
 </script>
 
-<script defer src="shell-ui.js?v=202608022012"></script><script defer src="cookie-consent.js?v=202608022012"></script></body>
+<script defer src="shell-ui.js?v=202608022020"></script><script defer src="cookie-consent.js?v=202608022020"></script></body>
 </html>
