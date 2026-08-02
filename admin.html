@@ -894,8 +894,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608022323"></script>
-<script src="app.js?v=202608022323"></script>
+ <script src="supabase-data.js?v=202608022334"></script>
+<script src="app.js?v=202608022334"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1145,11 +1145,18 @@ async function openCustomerDetail(userId){
     if (!data.usage.length) {
       usageHost.innerHTML = '<p style="color:var(--muted);font-size:12.5px">Nessuno sblocco registrato.</p>'
     } else {
+      const kindStyle = {
+        "Analisi sbloccata": { icon: "📊", color: "#60A5FA" },
+        "Strumento sbloccato": { icon: "🔧", color: "#c39bff" },
+        "Report PDF sbloccato": { icon: "📄", color: "#ffb400" },
+        "Confronto avanzato": { icon: "⇄", color: "#4ADE80" }
+      }
       usageHost.innerHTML = data.usage.map(u => {
         const dt = new Date(u.when).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
-        return `<div style="padding:10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
-          <span style="font-size:10.5px;font-weight:800;color:var(--gold)">${esc(u.kind.toUpperCase())}</span>
-          <p style="font-size:12.5px;margin:3px 0">${esc(u.item)}</p>
+        const style = kindStyle[u.kind] || { icon: "•", color: "var(--gold)" }
+        return `<div style="padding:10px;border:1px solid var(--line);border-left:3px solid ${style.color};border-radius:9px;margin-bottom:8px">
+          <span style="font-size:10.5px;font-weight:800;color:${style.color}">${style.icon} ${esc(u.kind.toUpperCase())}</span>
+          <p style="font-size:12.5px;margin:3px 0;font-weight:600">${esc(u.item)}</p>
           <p style="font-size:11.5px;color:var(--muted)">${dt}</p>
         </div>`
       }).join("")
@@ -2997,5 +3004,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022323"></script></body>
+<script src="shell-ui.js?v=202608022334"></script></body>
 </html>
