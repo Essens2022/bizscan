@@ -187,20 +187,6 @@ function updateShell(){
 let notifications=[];
 let notifPanelOpen=false;
 
-function ensureNotifBellButton(){
- if(document.getElementById('notifBellBtn'))return;
- const profileBtn=document.querySelector('.top-actions a[aria-label="Profilo"], .top-actions [aria-label="Profilo"]');
- if(!profileBtn)return;
- const btn=document.createElement('button');
- btn.type='button';
- btn.id='notifBellBtn';
- btn.className='home18-head-icon notif-bell-btn';
- btn.setAttribute('aria-label','Notifiche');
- btn.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge" id="notifBadge" style="display:none">0</span>';
- btn.onclick=toggleNotificationPanel;
- profileBtn.insertAdjacentElement('beforebegin',btn);
-}
-
 function renderNotifBadge(){
  const badge=document.getElementById('notifBadge');
  if(!badge)return;
@@ -1730,7 +1716,6 @@ window.addEventListener('pageshow', async(event) => {
   const fresh = await BizScanData.accessSummary();
   Object.assign(access, fresh);
   updateShell();
-  if(access.authenticated)ensureNotifBellButton();
   initNotifications();
  }catch(e){}
 });
@@ -1881,7 +1866,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
  const isReload=navType==='reload';
  const hasSavedScroll=isReload&&(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
  if(!hasSavedScroll)revealPage(); // navigazione normale (click su un link) verso qualunque pagina, anche già visitata: sempre in cima, nessuna attesa
- await load();if(access.authenticated)ensureNotifBellButton();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();initNotifications();
+ await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();initNotifications();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
