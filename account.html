@@ -25,6 +25,17 @@
     <a href="invoices.html"><span>🧾</span><b>Fatturazione</b><small>Storico acquisti</small></a>
     <a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b><small>Le tue analisi salvate</small></a>
     <a href="library.html?view=reports"><span>📄</span><b>I miei report</b><small>PDF scaricati</small></a>
+    <a href="javascript:void(0)" onclick="toggleChangePasswordPanel()"><span>🔒</span><b>Cambia password</b><small>Aggiorna la tua password di accesso</small></a>
+  </div>
+
+  <div class="account-card" id="changePasswordCard" style="display:none">
+    <p>Imposta una nuova password</p>
+    <input id="changePassword" type="password" placeholder="Nuova password (almeno 6 caratteri)"
+           style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+    <input id="changePasswordConfirm" type="password" placeholder="Conferma nuova password"
+           style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+    <button class="btn primary full" onclick="changePasswordSupabase()">Salva nuova password</button>
+    <p id="changePasswordMessage" style="margin-top:8px"></p>
   </div>
 
   <div class="account-card account-danger-card">
@@ -374,6 +385,41 @@ function setMailButtonForEmail(emailAddr){
 }
   
   
+function toggleChangePasswordPanel(){
+  const card = document.getElementById("changePasswordCard")
+  card.style.display = card.style.display === "none" ? "block" : "none"
+  if (card.style.display === "block") card.scrollIntoView({behavior:"smooth", block:"center"})
+}
+
+async function changePasswordSupabase(){
+  await waitForSupabase()
+  const msgEl = document.getElementById("changePasswordMessage")
+  const newPassword = document.getElementById("changePassword").value
+  const confirmPassword = document.getElementById("changePasswordConfirm").value
+  if (!newPassword || newPassword.length < 6) {
+    msgEl.textContent = "La password deve contenere almeno 6 caratteri"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  if (newPassword !== confirmPassword) {
+    msgEl.textContent = "Le due password non coincidono"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  msgEl.textContent = "Salvataggio in corso..."
+  msgEl.style.color = ""
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword })
+  if (error) {
+    msgEl.textContent = error.message
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  msgEl.textContent = "Password aggiornata con successo!"
+  msgEl.style.color = "#7ef2c9"
+  document.getElementById("changePassword").value = ""
+  document.getElementById("changePasswordConfirm").value = ""
+}
+
 async function logoutSupabase() {
   await waitForSupabase()
   await supabaseClient.auth.signOut()
