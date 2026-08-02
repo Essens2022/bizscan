@@ -876,6 +876,11 @@ textarea{min-height:92px;resize:vertical}
         <div style="background:#0d1420;border:1px solid var(--line);border-radius:10px;padding:10px 16px"><small style="color:var(--muted);font-size:11px">REGISTRATO IL</small><br><b id="customerRegisteredAt" style="font-size:13px">—</b></div>
       </div>
 
+      <div style="margin-top:20px">
+        <h3 style="font-size:14px;margin-bottom:8px">💳 Storico crediti ricevuti <span style="color:var(--muted);font-weight:400;font-size:11.5px">(acquisti pagati + regali amministratore)</span></h3>
+        <div id="customerCreditGrantsList" style="max-height:220px;overflow-y:auto"></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px" class="customer-detail-grid">
         <div>
           <h3 style="font-size:14px;margin-bottom:8px">📦 Pacchetti acquistati</h3>
@@ -889,8 +894,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608022315"></script>
-<script src="app.js?v=202608022315"></script>
+ <script src="supabase-data.js?v=202608022323"></script>
+<script src="app.js?v=202608022323"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1092,6 +1097,7 @@ async function openCustomerDetail(userId){
   card.scrollIntoView({behavior:"smooth", block:"start"})
   document.getElementById("customerDetailName").textContent = "Caricamento…"
   document.getElementById("customerOrdersList").innerHTML = ""
+  document.getElementById("customerCreditGrantsList").innerHTML = ""
   document.getElementById("customerUsageList").innerHTML = ""
   try {
     const { data, error } = await supabaseClient.rpc("admin_customer_detail", { p_user_id: userId })
@@ -1103,6 +1109,22 @@ async function openCustomerDetail(userId){
     document.getElementById("customerAvailAnalysis").textContent = p.available_analysis_credits
     document.getElementById("customerAvailPdf").textContent = p.available_pdf_credits
     document.getElementById("customerRegisteredAt").textContent = new Date(p.registered_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+
+    const grantsHost = document.getElementById("customerCreditGrantsList")
+    if (!data.credit_grants.length) {
+      grantsHost.innerHTML = '<p style="color:var(--muted);font-size:12.5px">Nessun credito ricevuto.</p>'
+    } else {
+      grantsHost.innerHTML = data.credit_grants.map(g => {
+        const dt = new Date(g.created_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+        const typeLabel = g.credit_type === "pdf" ? "crediti PDF" : "crediti analisi"
+        const sourceLabel = g.is_paid_order
+          ? '<span style="color:#7ef2c9;font-size:10.5px;font-weight:800">✓ ACQUISTO PAGATO</span>'
+          : '<span style="color:#ffb400;font-size:10.5px;font-weight:800">🎁 REGALO AMMINISTRATORE</span>'
+        return `<div style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div><b style="font-size:12.5px">+${g.quantity} ${esc(typeLabel)}</b> ${sourceLabel}<br><span style="color:var(--muted);font-size:11px">${dt}</span></div>
+        </div>`
+      }).join("")
+    }
 
     const ordersHost = document.getElementById("customerOrdersList")
     if (!data.orders.length) {
@@ -2975,5 +2997,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608022315"></script></body>
+<script src="shell-ui.js?v=202608022323"></script></body>
 </html>
