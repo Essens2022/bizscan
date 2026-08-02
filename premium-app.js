@@ -182,6 +182,166 @@ function updateShell(){
  applyAccountIconColor();
  setTimeout(applyAccountIconColor,400);
 }
+
+// ===== Sistema notifiche =====
+let notifications=[];
+let notifPanelOpen=false;
+
+function ensureNotifBellButton(){
+ if(document.getElementById('notifBellBtn'))return;
+ const heart=document.querySelector('.top-actions a[aria-label="Preferiti"]');
+ if(!heart)return;
+ const btn=document.createElement('button');
+ btn.type='button';
+ btn.id='notifBellBtn';
+ btn.className='home18-head-icon notif-bell-btn';
+ btn.setAttribute('aria-label','Notifiche');
+ btn.innerHTML='🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>';
+ btn.onclick=toggleNotificationPanel;
+ heart.insertAdjacentElement('afterend',btn);
+}
+
+function renderNotifBadge(){
+ const badge=document.getElementById('notifBadge');
+ if(!badge)return;
+ const unseenCount=notifications.filter(n=>!n.seen_at).length;
+ if(unseenCount>0){
+  badge.textContent=unseenCount>9?'9+':String(unseenCount);
+  badge.style.display='flex';
+ }else{
+  badge.style.display='none';
+ }
+}
+
+async function initNotifications(){
+ if(!access.authenticated)return;
+ ensureNotifBellButton();
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  const{data,error}=await c.rpc('get_my_notifications');
+  if(error)throw error;
+  const wasEmpty=notifications.length===0;
+  const previousUnseenIds=new Set(notifications.filter(n=>!n.seen_at).map(n=>n.id));
+  notifications=Array.isArray(data)?data:[];
+  renderNotifBadge();
+  const hasNewUnseen=notifications.some(n=>!n.seen_at && !previousUnseenIds.has(n.id));
+  if(hasNewUnseen && !wasEmpty){
+   const bell=document.getElementById('notifBellBtn');
+   if(bell){bell.classList.add('has-new');setTimeout(()=>bell.classList.remove('has-new'),4300)}
+   if(navigator.vibrate)navigator.vibrate(25);
+  }
+  // Sottoscrizione realtime: nuove notifiche appaiono senza bisogno di ricaricare la pagina.
+  if(!window.__notifRealtimeSub){
+   window.__notifRealtimeSub=c.channel('notifications-changes').on('postgres_changes',
+    {event:'INSERT',schema:'public',table:'notifications'},
+    ()=>{initNotifications()}
+   ).subscribe();
+  }
+ }catch(e){console.warn('initNotifications',e)}
+}
+
+function notifItemHtml(n){
+ const unseen=!n.seen_at;
+ const img=n.image_url?`<img class="notif-item-img" src="${esc(n.image_url)}" alt="" loading="lazy">`:'';
+ let actionHtml='';
+ if(n.action_type==='claim_bonus'){
+  if(n.claimed_at){
+   actionHtml='<button class="notif-item-btn is-claimed" disabled>✓ Già riscosso</button>';
+  }else{
+   const parts=[];
+   if(n.bonus_analysis_credits>0)parts.push(`${n.bonus_analysis_credits} crediti`);
+   if(n.bonus_pdf_credits>0)parts.push(`${n.bonus_pdf_credits} PDF`);
+   actionHtml=`<button class="notif-item-btn" onclick="claimNotificationBonus('${n.id}')">Riscuoti ${esc(parts.join(' + '))}</button>`;
+  }
+ }else if(n.action_type==='link' && n.action_link_url){
+  actionHtml=`<a class="notif-item-btn is-link" href="${esc(n.action_link_url)}">Scopri di più</a>`;
+ }
+ return `<div class="notif-item${unseen?' is-unseen':''}" data-notif-id="${n.id}">${img}<div class="notif-item-body"><p class="notif-item-title">${esc(n.title)}</p><p class="notif-item-msg">${esc(n.message)}</p>${actionHtml}</div></div>`;
+}
+
+function renderNotifPanel(){
+ let panel=document.getElementById('notifPanel');
+ if(!panel){
+  panel=document.createElement('div');
+  panel.id='notifPanel';
+  panel.className='notif-panel';
+  document.body.appendChild(panel);
+ }
+ panel.innerHTML=`<div class="notif-panel-head"><strong>Notifiche</strong><button type="button" onclick="markAllNotificationsSeenUI()">Segna tutte come lette</button></div><div class="notif-panel-list">${notifications.length?notifications.map(notifItemHtml).join(''):'<div class="notif-empty">Nessuna notifica al momento</div>'}</div>`;
+}
+
+function positionNotifPanel(){
+ const panel=document.getElementById('notifPanel');
+ const trigger=document.getElementById('notifBellBtn');
+ if(!panel||!trigger)return;
+ const r=trigger.getBoundingClientRect();
+ const width=Math.min(340,window.innerWidth-20);
+ panel.style.width=width+'px';
+ panel.style.left=Math.min(window.innerWidth-width-10,Math.max(10,r.right-width))+'px';
+ panel.style.top=Math.min(window.innerHeight-20,r.bottom+9)+'px';
+}
+
+async function toggleNotificationPanel(){
+ renderNotifPanel();
+ positionNotifPanel();
+ const panel=document.getElementById('notifPanel');
+ notifPanelOpen=!notifPanelOpen;
+ panel.classList.toggle('is-open',notifPanelOpen);
+ if(notifPanelOpen){
+  const unseenIds=notifications.filter(n=>!n.seen_at).map(n=>n.id);
+  if(unseenIds.length){
+   try{
+    const c=await BizScanData.getSupabaseClient();
+    await Promise.all(unseenIds.map(id=>c.rpc('mark_notification_seen',{p_notification_id:id})));
+    notifications=notifications.map(n=>unseenIds.includes(n.id)?{...n,seen_at:n.seen_at||new Date().toISOString()}:n);
+    renderNotifBadge();
+   }catch(e){console.warn('mark_notification_seen',e)}
+  }
+ }
+}
+
+async function markAllNotificationsSeenUI(){
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  await c.rpc('mark_all_notifications_seen');
+  notifications=notifications.map(n=>({...n,seen_at:n.seen_at||new Date().toISOString()}));
+  renderNotifBadge();
+  renderNotifPanel();
+ }catch(e){console.warn('markAllNotificationsSeenUI',e)}
+}
+
+window.claimNotificationBonus=async(notifId)=>{
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  const{data,error}=await c.rpc('claim_notification_bonus',{p_notification_id:notifId});
+  if(error)throw error;
+  if(!data?.success){
+   const reasons={already_claimed:'Hai già riscosso questo bonus',not_found_or_expired:'Questa notifica non è più disponibile',not_a_bonus_notification:'Questa notifica non prevede un bonus'};
+   toast(reasons[data?.reason]||'Non è stato possibile riscuotere il bonus');
+   return;
+  }
+  if(typeof access.available_credits==='number')access.available_credits+=(data.bonus_analysis_credits||0);
+  if(typeof access.credits==='number')access.credits+=(data.bonus_analysis_credits||0);
+  if(typeof access.available_pdf_credits==='number')access.available_pdf_credits+=(data.bonus_pdf_credits||0);
+  updateShell();
+  notifications=notifications.map(n=>n.id===notifId?{...n,claimed_at:new Date().toISOString(),seen_at:n.seen_at||new Date().toISOString()}:n);
+  renderNotifPanel();
+  renderNotifBadge();
+  toast('✓ Bonus riscosso con successo');
+ }catch(e){console.error('claimNotificationBonus',e);toast('Errore, riprova')}
+}
+
+window.markAllNotificationsSeenUI=markAllNotificationsSeenUI;
+
+document.addEventListener('click',(e)=>{
+ if(!notifPanelOpen)return;
+ const panel=document.getElementById('notifPanel');
+ const bell=document.getElementById('notifBellBtn');
+ if(panel && !panel.contains(e.target) && bell && !bell.contains(e.target)){
+  panel.classList.remove('is-open');
+  notifPanelOpen=false;
+ }
+});
 function applyAccountIconColor(){
  document.documentElement.classList.remove('maybe-logged-in');
  document.querySelectorAll('.icon-btn,.home18-head-icon[aria-label="Profilo"]').forEach(el=>{
@@ -1571,6 +1731,7 @@ window.addEventListener('pageshow', async(event) => {
   const fresh = await BizScanData.accessSummary();
   Object.assign(access, fresh);
   updateShell();
+  initNotifications();
  }catch(e){}
 });
 function restoreScrollPosition(){
@@ -1720,7 +1881,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
  const isReload=navType==='reload';
  const hasSavedScroll=isReload&&(()=>{try{return sessionStorage.getItem('scrollpos:'+location.pathname+location.search)!==null}catch(e){return false}})();
  if(!hasSavedScroll)revealPage(); // navigazione normale (click su un link) verso qualunque pagina, anche già visitata: sempre in cima, nessuna attesa
- await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();
+ await load();await ensureStatsLoaded();renderRoute();bindShellEvents();window.__bizscanSetupFooter?.();restoreScrollPosition();revealPage();initNotifications();
  window.__pageLoadingDone?.();
  const params=new URLSearchParams(location.search);
  if(params.get('checkout')==='success'){
