@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608021855"><link rel="stylesheet" href="premium.css?v=202608021855"></head><body><div class="app">
+<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608021933"><link rel="stylesheet" href="premium.css?v=202608021933"></head><body><div class="app">
 <header class="topbar"><a class="brand" href="/" onclick="try{sessionStorage.removeItem('scrollpos:/')}catch(e){}"><img src="favicon.png" alt="BizScan"><span class="brand-word"><strong>Biz</strong><b>Scan</b></span></a><nav class="nav"><a class="" href="/">Dashboard</a><a href="search.html">Categorie</a><a class="" href="search.html">Esplora</a><a class="" href="compare.html">Confronta</a><a class="" href="library.html">Preferiti</a><a href="library.html?view=reports">I miei report</a></nav><div class="top-actions"><span class="chip">Crediti: 0 · PDF: 0</span><a class="chip purple" href="pricing.html">Pacchetti</a><a class="home18-head-icon" href="library.html" aria-label="Preferiti">♡</a><a class="home18-head-icon" href="search.html" aria-label="Menu">☰</a><a class="icon-btn" href="account.html" aria-label="Profilo"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></a></div></header><div class="page-back-row"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='/'}">←</button></div>
 
 <section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
@@ -58,6 +58,30 @@
         <button class="btn primary full" onclick="loginSupabase()">
           Accedi
         </button>
+        <p style="text-align:center;margin-top:10px">
+          <a href="javascript:void(0)" onclick="showResetPasswordPanel()" style="color:#8d99aa;font-size:13px;text-decoration:underline">Password dimenticata?</a>
+        </p>
+      </div>
+
+      <div id="resetPasswordPanel" style="display:none">
+        <p>Inserisci la tua email: ti invieremo un link per reimpostare la password</p>
+        <input id="resetEmail" type="email" placeholder="Email"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <button class="btn primary full" onclick="requestPasswordReset()">
+          Invia link di reset
+        </button>
+        <p style="text-align:center;margin-top:10px">
+          <a href="javascript:void(0)" onclick="hideResetPasswordPanel()" style="color:#8d99aa;font-size:13px;text-decoration:underline">← Torna al login</a>
+        </p>
+      </div>
+
+      <div id="newPasswordPanel" style="display:none">
+        <p>Imposta la tua nuova password</p>
+        <input id="newPassword" type="password" placeholder="Nuova password (almeno 6 caratteri)"
+               style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+        <button class="btn primary full" onclick="updatePasswordSupabase()">
+          Salva nuova password
+        </button>
       </div>
 
       <div id="signupPanel" style="display:none">
@@ -102,8 +126,8 @@
 <div class="modal" id="globalModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box" id="globalModalContent"></div>
 </div>
-<script defer src="supabase-data.js?v=202608021855"></script>
-<script defer src="premium-app.js?v=202608021855"></script>
+<script defer src="supabase-data.js?v=202608021933"></script>
+<script defer src="premium-app.js?v=202608021933"></script>
 
 <script>
 let supabaseClient=null
@@ -127,8 +151,81 @@ function switchAuthTab(tab){
   document.getElementById("authTabSignup").classList.toggle('active',!isLogin)
   document.getElementById("loginPanel").style.display=isLogin?'block':'none'
   document.getElementById("signupPanel").style.display=isLogin?'none':'block'
-  document.getElementById("authMessage").textContent=''
+  document.getElementById("resetPasswordPanel").style.display='none'
+  setAuthMessage('')
   document.getElementById("signupSuccessCard").style.display='none'
+}
+
+function setAuthMessage(text, isError){
+  const message = document.getElementById("authMessage")
+  message.textContent = text
+  message.style.color = isError ? '#ff5c6c' : (text ? '#7ef2c9' : '')
+}
+
+function showResetPasswordPanel(){
+  document.getElementById("loginPanel").style.display='none'
+  document.getElementById("signupPanel").style.display='none'
+  document.getElementById("resetPasswordPanel").style.display='block'
+  setAuthMessage('')
+}
+
+function hideResetPasswordPanel(){
+  document.getElementById("resetPasswordPanel").style.display='none'
+  document.getElementById("loginPanel").style.display='block'
+  setAuthMessage('')
+}
+
+async function requestPasswordReset(){
+  await waitForSupabase()
+  const email = document.getElementById("resetEmail").value.trim()
+  if (!email) {
+    setAuthMessage("Inserisci la tua email", true)
+    return
+  }
+  setAuthMessage("Invio in corso...")
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://bizscan.it/account.html?reset=1"
+  })
+  if (error) {
+    setAuthMessage(error.message, true)
+    return
+  }
+  setAuthMessage("Se l'email esiste nel nostro sistema, riceverai a breve un link per reimpostare la password. Controlla anche la cartella spam.")
+}
+
+async function updatePasswordSupabase(){
+  await waitForSupabase()
+  const newPassword = document.getElementById("newPassword").value
+  if (!newPassword || newPassword.length < 6) {
+    setAuthMessage("La password deve contenere almeno 6 caratteri", true)
+    return
+  }
+  setAuthMessage("Salvataggio in corso...")
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword })
+  if (error) {
+    setAuthMessage(error.message, true)
+    return
+  }
+  setAuthMessage("Password aggiornata con successo! Ora puoi accedere.")
+  document.getElementById("newPasswordPanel").style.display = "none"
+  document.getElementById("authTabs").style.display = "flex"
+  document.getElementById("loginPanel").style.display = "block"
+}
+
+async function checkPasswordRecoverySession(){
+  await waitForSupabase()
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      document.getElementById("authTabs").style.display = "none"
+      document.getElementById("loginPanel").style.display = "none"
+      document.getElementById("signupPanel").style.display = "none"
+      document.getElementById("resetPasswordPanel").style.display = "none"
+      document.getElementById("newPasswordPanel").style.display = "block"
+    }
+  })
+}
+if (new URLSearchParams(location.search).get("reset") === "1") {
+  checkPasswordRecoverySession()
 }
 
 async function loginSupabase() {
@@ -138,7 +235,7 @@ async function loginSupabase() {
   const password = document.getElementById("authPassword").value
   const message = document.getElementById("authMessage")
 
-  message.textContent = "Accesso in corso..."
+  message.textContent = "Accesso in corso..."; message.style.color=''
 
   const { error } = await supabaseClient.auth.signInWithPassword({
     email,
@@ -146,11 +243,11 @@ async function loginSupabase() {
   })
 
   if (error) {
-    message.textContent = "Email o password non corretti"
+    message.textContent = "Email o password non corretti"; message.style.color='#ff5c6c'
     return
   }
 
-  message.textContent = "Accesso effettuato"
+  message.textContent = "Accesso effettuato"; message.style.color='#7ef2c9'
 await updateAuthView()
 
 const {data:isAdmin}=await supabaseClient.rpc("is_admin")
@@ -171,12 +268,12 @@ async function signupSupabase() {
   const message = document.getElementById("authMessage")
 
   if (!firstName || !lastName) {
-    message.textContent = "Inserisci nome e cognome"
+    message.textContent = "Inserisci nome e cognome"; message.style.color='#ff5c6c'
     return
   }
 
   if (!birthdate) {
-    message.textContent = "Inserisci la tua data di nascita"
+    message.textContent = "Inserisci la tua data di nascita"; message.style.color='#ff5c6c'
     return
   }
 
@@ -187,18 +284,18 @@ async function signupSupabase() {
     const monthDiff = today.getMonth() - b.getMonth()
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) age--
     if (isNaN(b.getTime()) || age < 18) {
-      message.textContent = "Devi avere almeno 18 anni per registrarti su BizScan"
+      message.textContent = "Devi avere almeno 18 anni per registrarti su BizScan"; message.style.color='#ff5c6c'
       return
     }
   }
 
   if (!email || !password) {
-    message.textContent = "Inserisci email e password"
+    message.textContent = "Inserisci email e password"; message.style.color='#ff5c6c'
     return
   }
 
   if (password.length < 6) {
-    message.textContent = "La password deve contenere almeno 6 caratteri"
+    message.textContent = "La password deve contenere almeno 6 caratteri"; message.style.color='#ff5c6c'
     return
   }
 
@@ -214,12 +311,12 @@ async function signupSupabase() {
 })
 
   if (error) {
-    message.textContent = error.message
+    message.textContent = error.message; message.style.color='#ff5c6c'
     return
   }
 
   if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-    message.textContent = "Esiste già un account con questa email. Prova ad accedere, oppure usa \"Password dimenticata\" se non la ricordi."
+    message.textContent = "Esiste già un account con questa email. Prova ad accedere, oppure usa \"Password dimenticata\" se non la ricordi."; message.style.color='#ff5c6c'
     return
   }
 
@@ -405,5 +502,5 @@ async function deleteAccountNextStep(){
 document.addEventListener('DOMContentLoaded', () => { updateAuthView() })
 </script>
 
-<script defer src="shell-ui.js?v=202608021855"></script><script defer src="cookie-consent.js?v=202608021855"></script></body>
+<script defer src="shell-ui.js?v=202608021933"></script><script defer src="cookie-consent.js?v=202608021933"></script></body>
 </html>
