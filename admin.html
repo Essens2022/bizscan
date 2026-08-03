@@ -162,8 +162,8 @@ textarea{min-height:92px;resize:vertical}
   #newPanel .grid{align-items:start}
   #newPanel .grid>.card:nth-child(2){
     position:sticky;
-    top:82px;
-    max-height:calc(100vh - 96px);
+    top:var(--admin-sticky-offset, 82px);
+    max-height:calc(100vh - var(--admin-sticky-offset, 96px) - 14px);
     overflow:auto
   }
 }
@@ -922,8 +922,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608031916"></script>
-<script src="app.js?v=202608031916"></script>
+ <script src="supabase-data.js?v=202608031927"></script>
+<script src="app.js?v=202608031927"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1376,6 +1376,8 @@ async function checkAdminAccess() {
   await Promise.all([loadSupabaseCategories(), loadSupabasePlans(), loadSupabaseHomeSections(), loadAnalyses()])
   renderAll()
   loadDashboardStats()
+  updateAdminStickyOffset()
+  setTimeout(updateAdminStickyOffset,300)
   const savedTab=(location.hash||"").replace("#","")
   if(savedTab){
     const btn=[...document.querySelectorAll(".tab")].find(t=>t.getAttribute("onclick")===`showTab('${savedTab}',this)`)
@@ -2071,6 +2073,19 @@ async function openCustomerByEmail(email){
     if(results&&results.length)openCustomerDetail(results[0].user_id)
   }catch(e){console.warn("openCustomerByEmail",e)}
 }
+
+// Misura l'altezza REALE dell'header + del gruppo sticky (stats+tabs) e la espone come
+// variabile CSS, così l'anteprima di "Nuova Analisi" si ferma esattamente sotto di essi -
+// invece di un valore fisso che si disallineerebbe se il contenuto del gruppo sticky cambia
+// (es. le statistiche vanno a capo su schermi più stretti).
+function updateAdminStickyOffset(){
+  const header=document.querySelector(".top")
+  const group=document.querySelector(".admin-sticky-group")
+  const headerH=header?header.getBoundingClientRect().height:0
+  const groupH=group?group.getBoundingClientRect().height:0
+  document.documentElement.style.setProperty("--admin-sticky-offset",(headerH+groupH)+"px")
+}
+window.addEventListener("resize",updateAdminStickyOffset)
 
 async function loadDashboardStats(){
   try{
@@ -3085,5 +3100,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608031916"></script></body>
+<script src="shell-ui.js?v=202608031927"></script></body>
 </html>
