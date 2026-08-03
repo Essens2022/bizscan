@@ -556,6 +556,24 @@ function initHeroRotation(){
 }
 function renderHome(){
  const host=$('#homeContent');if(!host)return
+ // Auto-riparazione: se al momento del rendering le immagini del carosello risultano vuote
+ // (es. la loro richiesta è fallita o è stata rallentata durante lo scambio del codice di
+ // conferma email, che avviene nello stesso istante del primo caricamento), riprova UNA volta
+ // a recuperarle in background e ri-renderizza - senza che la persona debba ricaricare a mano.
+ if(!heroMedia.length && !window.__heroMediaRetried){
+  window.__heroMediaRetried=true;
+  (async()=>{
+   try{
+    const fresh=await BizScanData.fetchHeroMedia();
+    if(Array.isArray(fresh)&&fresh.length){
+     heroMedia=fresh;
+     const cached=getSessionCache('publicData');
+     if(cached){cached.heroMedia=fresh;setSessionCache('publicData',cached)}
+     if(document.getElementById('homeContent'))renderHome();
+    }
+   }catch(e){}
+  })();
+ }
  const featuredOnly=analyses.filter(p=>p.featured)
  const allFeatured=(featuredOnly.length?featuredOnly:analyses).slice(0,12)
  const featured=filterHomeAnalyses(allFeatured,homeFilter).slice(0,6)
