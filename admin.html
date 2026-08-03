@@ -62,6 +62,19 @@ textarea{min-height:92px;resize:vertical}
 .admin-back:hover{border-color:#6f55a9;background:#111a28}
 @media(max-width:900px){.homepage-editor-layout{grid-template-columns:1fr!important}.homepage-editor-preview{position:static!important}}
 @media(max-width:720px){.customer-detail-grid{grid-template-columns:1fr!important}}
+.dash-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dash-stat{border:1px solid var(--line);border-radius:12px;background:#0d1420;padding:14px 16px}
+.dash-stat small{display:block;font-size:9.5px;font-weight:800;letter-spacing:1.2px;color:var(--muted)}
+.dash-stat strong{display:block;font-size:26px;margin-top:6px;color:var(--text)}
+.dash-stat-sub{display:block;font-size:11px;color:#7ef2c9;margin-top:3px}
+.quick-actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.quick-action{border:1px solid var(--line);border-radius:12px;background:#0d1420;padding:16px;text-align:left;cursor:pointer;color:var(--text);font-family:inherit;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,transform .15s}
+.quick-action:hover{border-color:#6f55a9;transform:translateY(-2px)}
+.qa-icon{font-size:20px}
+.quick-action b{font-size:14px}
+.quick-action small{font-size:11px;color:var(--muted)}
+#notifList{max-height:420px;overflow-y:auto;padding-right:4px}
+@media(max-width:760px){.dash-stats-grid{grid-template-columns:1fr 1fr}.quick-actions-grid{grid-template-columns:1fr 1fr}}
 </style>
 
 <style>
@@ -310,14 +323,24 @@ textarea{min-height:92px;resize:vertical}
 
   <section id="dashboardPanel" class="panel active">
     <div class="card">
-      <h2>Guida rapida</h2>
-      <div class="summary-grid">
-        <div class="summary-card"><small>Dashboard</small><strong>Controllo generale</strong></div>
-        <div class="summary-card"><small>Analisi</small><strong>Gestione contenuti</strong></div>
-        <div class="summary-card"><small>Nuova analisi</small><strong>Crea una scheda</strong></div>
-        <div class="summary-card"><small>Categorie</small><strong>Organizza il catalogo</strong></div>
-        <div class="summary-card"><small>Piani</small><strong>Modifica prezzi e pacchetti</strong></div>
-        <div class="summary-card"><small>Importa esporta</small><strong>Backup e ripristino</strong></div>
+      <h2>Panoramica</h2>
+      <div class="dash-stats-grid" id="dashStatsGrid">
+        <div class="dash-stat"><small>UTENTI REGISTRATI</small><strong id="statTotalUsers">—</strong><span id="statUsers7d" class="dash-stat-sub"></span></div>
+        <div class="dash-stat"><small>ORDINI PAGATI</small><strong id="statPaidOrders">—</strong><span class="dash-stat-sub" id="statRevenue"></span></div>
+        <div class="dash-stat"><small>INCASSO ULTIMI 30 GG</small><strong id="statRevenue30">—</strong></div>
+        <div class="dash-stat"><small>RECENSIONI</small><strong id="statReviews">—</strong><span id="statReviews7d" class="dash-stat-sub"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Azioni rapide</h2>
+      <p class="section-intro">Le sezioni più usate, a portata di click — con i numeri aggiornati.</p>
+      <div class="quick-actions-grid">
+        <button class="quick-action" onclick="openTabByName('feedback')"><span class="qa-icon">💬</span><b>Feedback</b><small id="qaFeedback">recensioni e suggerimenti</small></button>
+        <button class="quick-action" onclick="openTabByName('credits')"><span class="qa-icon">🎁</span><b>Crediti</b><small>regala crediti a un utente</small></button>
+        <button class="quick-action" onclick="openTabByName('notifications')"><span class="qa-icon">🔔</span><b>Notifiche</b><small id="qaNotifs">invia annunci e bonus</small></button>
+        <button class="quick-action" onclick="openTabByName('customers')"><span class="qa-icon">👥</span><b>Clienti</b><small id="qaCustomers">acquisti e storico</small></button>
+        <button class="quick-action" onclick="openTabByName('homepage')"><span class="qa-icon">🏠</span><b>Pagina principale</b><small>immagini e frasi della home</small></button>
+        <button class="quick-action" onclick="openTabByName('new')"><span class="qa-icon">➕</span><b>Nuova analisi</b><small>crea una scheda</small></button>
       </div>
     </div>
     <div class="dashboard-grid">
@@ -894,8 +917,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608031831"></script>
-<script src="app.js?v=202608031831"></script>
+ <script src="supabase-data.js?v=202608031847"></script>
+<script src="app.js?v=202608031847"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1347,6 +1370,7 @@ async function checkAdminAccess() {
   document.getElementById("login").style.display = "none"
   await Promise.all([loadSupabaseCategories(), loadSupabasePlans(), loadSupabaseHomeSections(), loadAnalyses()])
   renderAll()
+  loadDashboardStats()
   const savedTab=(location.hash||"").replace("#","")
   if(savedTab){
     const btn=[...document.querySelectorAll(".tab")].find(t=>t.getAttribute("onclick")===`showTab('${savedTab}',this)`)
@@ -1644,10 +1668,11 @@ async function loadSuggestionsList(){
     host.innerHTML=data.map(s=>{
       const dt=new Date(s.created_at).toLocaleString("it-IT")
       return `<div class="item" style="grid-template-columns:1fr;align-items:start;flex-direction:column;display:flex;gap:6px;${s.is_read?'opacity:.55':''}">
-        <div style="display:flex;justify-content:space-between;width:100%"><small style="color:#8d99aa">${dt} ${s.user_email?'· '+s.user_email:'· anonimo'}</small></div>
-        <p style="margin:0;font-size:13px;white-space:pre-wrap">${s.message}</p>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;justify-content:space-between;width:100%"><small style="color:#8d99aa">${dt} ${s.user_email?'· '+esc(s.user_email):'· anonimo'}</small></div>
+        <p style="margin:0;font-size:13px;white-space:pre-wrap">${esc(s.message)}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn dark" style="padding:6px 14px" onclick="toggleSuggestionRead('${s.id}',${!s.is_read})">${s.is_read?'Segna non letto':'Segna come letto'}</button>
+          ${s.user_email?`<button class="btn dark" style="padding:6px 14px;color:#7ef2c9" onclick="openCustomerByEmail('${esc(s.user_email)}')">👤 Vedi cliente</button>`:''}
           <button class="btn dark" style="padding:6px 14px;color:#ff8a8a" onclick="deleteSuggestion('${s.id}')">Elimina</button>
         </div>
       </div>`
@@ -2020,6 +2045,48 @@ function showTab(name,btn){
   if(name==="feedback"){loadFeedbackList();loadSuggestionsList();loadSiteFeedbackList()}
   if(name==="notifications"){loadNotificationsList()}
   if(name==="customers"){searchCustomers()}
+}
+
+// Apre una scheda per nome programmaticamente (usato dalle azioni rapide del dashboard),
+// riusando showTab così tutti i caricamenti per-scheda restano in un unico posto.
+function openTabByName(name){
+  const btn=[...document.querySelectorAll(".tab")].find(b=>(b.getAttribute("onclick")||"").includes("'"+name+"'"))
+  if(btn)showTab(name,btn)
+}
+
+// Dal suggerimento di un utente direttamente alla sua scheda cliente completa.
+async function openCustomerByEmail(email){
+  openTabByName("customers")
+  const input=document.getElementById("customerSearchInput")
+  if(input)input.value=email
+  try{
+    const{data:results,error}=await supabaseClient.rpc("admin_search_customers",{p_query:email})
+    if(error)throw error
+    await searchCustomers()
+    if(results&&results.length)openCustomerDetail(results[0].user_id)
+  }catch(e){console.warn("openCustomerByEmail",e)}
+}
+
+async function loadDashboardStats(){
+  try{
+    const{data:s,error}=await supabaseClient.rpc("admin_dashboard_stats")
+    if(error)throw error
+    if(!s?.success)return
+    const eur=v=>Number(v||0).toFixed(2).replace(".",",")+" €"
+    document.getElementById("statTotalUsers").textContent=s.total_users
+    document.getElementById("statUsers7d").textContent=s.users_last_7d>0?`+${s.users_last_7d} negli ultimi 7 giorni`:""
+    document.getElementById("statPaidOrders").textContent=s.paid_orders
+    document.getElementById("statRevenue").textContent=`${eur(s.revenue_total)} totali`
+    document.getElementById("statRevenue30").textContent=eur(s.revenue_last_30d)
+    document.getElementById("statReviews").textContent=s.reviews_total
+    document.getElementById("statReviews7d").textContent=s.reviews_last_7d>0?`+${s.reviews_last_7d} negli ultimi 7 giorni`:""
+    const qaN=document.getElementById("qaNotifs")
+    if(qaN&&s.active_notifications>0)qaN.textContent=`${s.active_notifications} attiv${s.active_notifications===1?'a':'e'} ora`
+    const qaF=document.getElementById("qaFeedback")
+    if(qaF&&(s.reviews_last_7d>0||s.suggestions_last_7d>0))qaF.textContent=`${s.reviews_last_7d+s.suggestions_last_7d} nuov${(s.reviews_last_7d+s.suggestions_last_7d)===1?'o':'i'} negli ultimi 7 gg`
+    const qaC=document.getElementById("qaCustomers")
+    if(qaC)qaC.textContent=`${s.total_users} registrati`
+  }catch(e){console.warn("loadDashboardStats",e)}
 }
 
 
@@ -3013,5 +3080,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608031831"></script></body>
+<script src="shell-ui.js?v=202608031847"></script></body>
 </html>
