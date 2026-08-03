@@ -1814,13 +1814,17 @@ function celebrateCheckoutSuccess(planName){
   box.appendChild(p);
  }
  document.body.appendChild(box);
+ setTimeout(()=>box.remove(),4300);
  const card=document.createElement('div');
- card.className='celebrate-card';
- card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Congratulazioni!</h3><p>Il tuo pagamento${planName?' per il pacchetto <b>'+esc(planName)+'</b> di BizScan':''} è andato a buon fine.</p>`;
+ card.className='celebrate-card celebrate-card-action';
+ const analysisN=access.available_credits??access.credits??0;
+ const pdfN=access.available_pdf_credits??0;
+ const creditsLine=(analysisN>0||pdfN>0)
+  ? `Ora hai <b>${analysisN} credit${analysisN===1?'o':'i'} analisi</b>${pdfN>0?` e <b>${pdfN} credit${pdfN===1?'o':'i'} PDF</b>`:''} disponibili.`
+  : '';
+ card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Pagamento riuscito!</h3><p>${planName?'Hai attivato <b>'+esc(planName)+'</b>. ':''}${creditsLine}</p><p class="celebrate-howto">Scegli un\\'attività qui sotto, aprila, e tocca <b>"Sblocca"</b> sull\\'indicatore o il report che ti interessa: verrà scalato un credito e vedrai subito il contenuto completo.</p><button class="btn primary full" onclick="this.closest('.celebrate-card').remove()">Ho capito, iniziamo →</button>`;
  document.body.appendChild(card);
  requestAnimationFrame(()=>card.classList.add('show'));
- setTimeout(()=>{card.classList.remove('show');card.classList.add('hide')},3600);
- setTimeout(()=>{card.remove();box.remove()},4300);
 }
 // Pre-carica silenziosamente la pagina di destinazione quando l'utente sfiora/tocca un link di navigazione,
 // PRIMA che clicchi effettivamente - browser mette già in cache l'HTML, rendendo il click successivo più veloce.
