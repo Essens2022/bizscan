@@ -1594,6 +1594,19 @@ window._doChoosePdfPack=async(count,price)=>{
 };
 window.choosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
+ if(!access.authenticated){
+  // Lo stato in memoria può essere rimasto indietro (es. login avvenuto in un'altra scheda, o
+  // pagina ripristinata dalla cache del browser prima che il refresh asincrono finisse): prima di
+  // rifiutare l'acquisto chiedendo di accedere, ricontrolliamo la sessione REALE adesso - se
+  // esiste, aggiorniamo lo stato e proseguiamo normalmente, senza costringere a un refresh manuale.
+  try{
+   const c=await BizScanData.getSupabaseClient();
+   const{data:sd}=await c.auth.getSession();
+   if(sd?.session?.access_token){
+    try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){access.authenticated=true}
+   }
+  }catch(_){}
+ }
  if(!access.authenticated){modal(p.name,'<p>Devi accedere al tuo account per acquistare un pacchetto.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi o registrati</a>');return}
  confirmWithdrawalWaiver(euro(p.price),()=>window._doChoosePackage(key));
 }
