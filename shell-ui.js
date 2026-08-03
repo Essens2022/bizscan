@@ -230,7 +230,30 @@
   document.addEventListener('DOMContentLoaded',function(){setupHeader()});
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
-      navigator.serviceWorker.register('/sw.js').catch(function(){});
+      navigator.serviceWorker.register('/sw.js').then(function(reg){
+        // Controlla subito se esiste una versione più recente, invece di aspettare il controllo
+        // periodico del browser (che può richiedere ore) - così un deploy nuovo raggiunge chi
+        // ha già l'app installata molto più rapidamente, senza bisogno di disinstallare/reinstallare.
+        reg.update().catch(function(){});
+        // Ricontrolla anche ogni volta che l'app torna in primo piano (utile per un'app installata,
+        // che spesso resta aperta in background per giorni senza mai fare un fetch "load" completo).
+        document.addEventListener('visibilitychange',function(){
+          if(document.visibilityState==='visible')reg.update().catch(function(){});
+        });
+      }).catch(function(){});
+      // Quando un nuovo service worker prende il controllo (skipWaiting + clients.claim, già
+      // presenti in sw.js), i file già in memoria in questa pagina restano comunque quelli vecchi -
+      // ricarichiamo automaticamente una sola volta, così la persona vede sempre il codice più
+      // recente senza dover disinstallare manualmente l'app. Esclusa la primissima installazione
+      // (quando non c'era ancora nessun controller precedente), per non ricaricare inutilmente
+      // al primissimo utilizzo assoluto.
+      const hadControllerBefore=!!navigator.serviceWorker.controller;
+      let alreadyReloaded=false;
+      navigator.serviceWorker.addEventListener('controllerchange',function(){
+        if(alreadyReloaded||!hadControllerBefore)return;
+        alreadyReloaded=true;
+        location.reload();
+      });
     });
   }
 
