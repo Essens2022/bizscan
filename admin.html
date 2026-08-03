@@ -786,7 +786,7 @@ textarea{min-height:92px;resize:vertical}
     </div>
     </div>
 
-    <div class="homepage-editor-preview" style="position:sticky;top:16px">
+    <div class="homepage-editor-preview" style="position:sticky;top:var(--admin-sticky-offset, 82px)">
       <div class="card" style="padding:0;overflow:hidden">
         <div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:800;font-size:12px;color:var(--muted)">ANTEPRIMA DAL VIVO — come appare sul sito ora</div>
         <div id="adminLivePreview" style="background:#050914;min-height:280px;padding:20px 14px;position:relative;overflow:hidden"></div>
@@ -922,8 +922,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608031927"></script>
-<script src="app.js?v=202608031927"></script>
+ <script src="supabase-data.js?v=202608031928"></script>
+<script src="app.js?v=202608031928"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -3100,5 +3100,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608031927"></script></body>
+<script src="shell-ui.js?v=202608031928"></script></body>
 </html>
