@@ -590,6 +590,7 @@ function renderHome(){
      return `<div class="hero-media-slide${i===0?' active':''}" data-idx="${i}">${m.link_url?`<a href="${esc(m.link_url)}">${inner}</a>`:inner}</div>`;
    }).join('')}${heroMedia.length>1?`<div class="hero-media-dots">${heroMedia.map((_,i)=>`<span class="${i===0?'active':''}" data-dot="${i}"></span>`).join('')}</div>`:''}</div>`:''}
    <h1 class="hero-rotating-h1${heroPhrases[0]&&Array.isArray(heroPhrases[0].segments)&&heroPhrases[0].segments.length&&heroPhrases[0].segments[0].x!=null?' hero-rotating-h1-canvas':''}" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
+   <p class="home18-hero-sub">Investimento, costi, guadagni e rischi reali per ogni tipo di attività — prima di aprire. <a href="come-funziona.html" class="home18-hero-how">Come funziona →</a></p>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
    <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
    <div class="home18-trust"><span>Fonti verificabili</span><span>Dati confrontabili</span><span>Pagamento unico</span></div>
@@ -1103,7 +1104,7 @@ function lockedCta(toolKey){
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
- const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Richiede piano ${esc(minPlan)}</span>`:'';
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
   return `${pill}<a href="account.html?next=${encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash))}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
@@ -1112,14 +1113,19 @@ function lockedCta(toolKey){
  const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
  const userPlanIdx=planOrder.indexOf(userPlan);
  const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
- if(minPlanKey&&userPlanIdx<minPlanIdx){
-  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Upgrade a ${esc(minPlan)}</a>`;
- }
  const n=access.available_credits??access.credits??0;
+ const creditsNote=`<small class="locked-credits-note">Hai <b>${n}</b> credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</small>`;
  if(n>0){
-  return `${pill}<button class="btn locked-upgrade-btn" type="button" style="${btnStyle}" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>`;
+  // Con crediti disponibili, lo sblocco col credito è SEMPRE la prima opzione - anche per
+  // indicatori di livello superiore al piano (regola aggiornata anche lato server). L'upgrade
+  // resta proposto come alternativa conveniente quando il piano attuale non copre il livello.
+  const upgradeAlt=(minPlanKey&&userPlanIdx<minPlanIdx)?`<a href="pricing.html" class="locked-upgrade-alt">oppure passa al piano ${esc(minPlan)} — lo include senza usare crediti</a>`:'';
+  return `${pill}<button class="btn locked-upgrade-btn" type="button" style="${btnStyle}" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>${creditsNote}${upgradeAlt}`;
  }
- return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Acquista crediti</a>`;
+ if(minPlanKey&&userPlanIdx<minPlanIdx){
+  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Upgrade a ${esc(minPlan)}</a>${creditsNote}`;
+ }
+ return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Acquista crediti</a>${creditsNote}`;
 }
 const PREMIUM_LOCK_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style="margin-bottom:6px">
 <defs>
