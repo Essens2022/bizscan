@@ -345,6 +345,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .home18-hero{margin:0;padding:38px 40px;border:1px solid #2b394e;border-radius:26px;background:radial-gradient(circle at 86% 8%,rgba(255,191,47,.17),transparent 31%),linear-gradient(145deg,#111722,#0b1119 72%);box-shadow:0 24px 60px rgba(0,0,0,.28);--hero-pad:40px}
 .home18-kicker,.home18-head small,.home18-how small,.home18-faq>small,.home18-locked small{display:block;color:#ffd25a;font-size:10px;font-weight:950;letter-spacing:.16em}
 .home18-hero h1{max-width:900px;margin:12px 0 0;font-size:clamp(44px,5.4vw,72px);line-height:.96;letter-spacing:-.058em}.home18-hero h1 span{display:block;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;color:transparent}
+.home18-hero-sub{max-width:640px;margin:14px 0 0;font-size:15px;line-height:1.5;color:#aeb9cb}
 .home18-hero-how{color:var(--gold);font-weight:700;text-decoration:none;white-space:nowrap}
 .home18-hero-how:hover{text-decoration:underline;text-underline-offset:3px}
 .home18-hero>p{max-width:720px;margin:18px 0 0;color:#a7b0bf;font-size:16px;line-height:1.55}
