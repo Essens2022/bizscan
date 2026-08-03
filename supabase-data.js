@@ -27,6 +27,12 @@ async function getSupabaseClient(){
           await _client.auth.exchangeCodeForSession(window.location.href);
           const cleanUrl=location.pathname+location.search.replace(/[?&]code=[^&]+/,"").replace(/^&/,"?")+location.hash;
           history.replaceState(null,"",cleanUrl.replace(/\?$/,""));
+          // Se qualche altro codice ha già chiamato session() PRIMA che questo scambio finisse
+          // (es. in parallelo, durante lo stesso caricamento pagina), __sessionPromise avrebbe già
+          // in cache il risultato PRE-scambio (nessuna sessione) - resettandolo qui, la prossima
+          // chiamata a session()/currentUser() rilegge lo stato vero e aggiornato, invece di restare
+          // bloccata su "non autenticato" per tutta la vita della pagina anche dopo un login riuscito.
+          __sessionPromise=null;
         }catch(e){console.warn("Scambio codice PKCE non riuscito",e)}
       }
       return _client;
