@@ -1488,7 +1488,7 @@ window.chooseAddon=async type=>{
   return;
  }
  if(!access.authenticated){modal(item[0],'<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi o registrati</a>');return}
- modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
+ modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
   let{data:sessionData}=await c.auth.getSession();
@@ -1546,7 +1546,7 @@ window.choosePdfPack=async(count,price)=>{
  confirmWithdrawalWaiver(euro(price),()=>window._doChoosePdfPack(count,price));
 }
 window._doChoosePdfPack=async(count,price)=>{
- modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
+ modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
   let{data:sessionData}=await c.auth.getSession();
@@ -1581,7 +1581,7 @@ window.choosePackage=async key=>{
 }
 window._doChoosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
- modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro con Stripe…</p>`,'');
+ modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
  try{
   const c=await BizScanData.getSupabaseClient();
   let{data:sessionData}=await c.auth.getSession();
