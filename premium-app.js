@@ -1177,7 +1177,7 @@ window._doUnlockTool=async(toolKey)=>{
   if(error)throw error;
   if(!data?.success){
    if(loadingWrap)loadingWrap.style.opacity='1';
-   if(data?.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori premium e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
+   if(data?.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
    if(data?.reason==='plan_too_low'){
     const tool=toolKey?({scenario:'Scenari di profitto',break_even:'Break-even',benchmark:'Confronto categoria',distribuzione_costi:'Distribuzione costi',cash_flow:'Cash-flow 12 mesi',costi_fissi_variabili:'Costi fissi/variabili',personale:'Fabbisogno personale',fornitori:'Fornitori e autorizzazioni',concorrenza_locale:'Concorrenza locale',stagionalita:'Stagionalità',matrice_rischi:'Matrice dei rischi',strategie_crescita:'Strategie di crescita'}[toolKey]||toolKey):'questo strumento';
     const minPlan=TOOL_MIN_PLAN_LABEL[toolKey]||'superiore';
@@ -1700,7 +1700,7 @@ window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
   const a=arr.find(x=>x.id===analysisIdA),b=arr.find(x=>x.id===analysisIdB);
   const result=await BizScanData.unlockCompareAdvice(analysisIdA,analysisIdB);
   if(!result.success){
-   if(result.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori premium e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
+   if(result.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
    modal('Sblocco non riuscito',`<p>${esc(result.reason||'Errore sconosciuto')}</p>`);return
   }
   toast('✓ Consiglio sbloccato');
