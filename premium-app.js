@@ -1280,8 +1280,8 @@ window.refreshReportAccess=async slug=>{
   if(st.allowed){note.className='report-access-note free';note.textContent=st.is_free?'Rapporto gratuito · nessun credito richiesto':'Rapporto già sbloccato · accesso permanente';btn.textContent='Scarica il rapporto'}
   else if(st.reason==='auth_required'){note.className='report-access-note locked';note.textContent='Accedi per verificare il piano e i crediti PDF';btn.textContent='Accedi per continuare'}
   else if(st.reason==='plan_not_allowed'){note.className='report-access-note locked';note.textContent='Il tuo piano non include questo rapporto';btn.textContent='Vedi i pacchetti'}
-  else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Serve un credito PDF';btn.textContent='Vedi i pacchetti'}
-  else if(st.reason==='can_unlock_with_credit'){note.className='report-access-note locked';note.textContent='Hai un credito PDF disponibile';btn.textContent='Sblocca con un credito PDF'}
+  else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Serve un credito PDF · ne hai 0 disponibili';btn.textContent='Vedi i pacchetti'}
+  else if(st.reason==='can_unlock_with_credit'){const pn=access.available_pdf_credits??0;note.className='report-access-note locked';note.textContent=`Hai ${pn} credit${pn===1?'o':'i'} PDF disponibil${pn===1?'e':'i'}`;btn.textContent='Sblocca con un credito PDF'}
   else{note.className='report-access-note locked';note.textContent='Rapporto disponibile secondo il piano acquistato';btn.textContent='Sblocca con un credito PDF'}
  }catch(e){note.className='report-access-note locked';note.textContent='Configura le regole PDF in Supabase';btn.textContent='Verifica accesso'}
 };
