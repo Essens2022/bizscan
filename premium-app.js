@@ -1822,7 +1822,7 @@ function celebrateCheckoutSuccess(planName){
  const creditsLine=(analysisN>0||pdfN>0)
   ? `Ora hai <b>${analysisN} credit${analysisN===1?'o':'i'} analisi</b>${pdfN>0?` e <b>${pdfN} credit${pdfN===1?'o':'i'} PDF</b>`:''} disponibili.`
   : '';
- card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Pagamento riuscito!</h3><p>${planName?'Hai attivato <b>'+esc(planName)+'</b>. ':''}${creditsLine}</p><p class="celebrate-howto">Scegli un\\'attività qui sotto, aprila, e tocca <b>"Sblocca"</b> sull\\'indicatore o il report che ti interessa: verrà scalato un credito e vedrai subito il contenuto completo.</p><button class="btn primary full" onclick="this.closest('.celebrate-card').remove()">Ho capito, iniziamo →</button>`;
+ card.innerHTML=`<div class="celebrate-emoji">🎉</div><h3>Pagamento riuscito!</h3><p>${planName?'Hai attivato <b>'+esc(planName)+'</b>. ':''}${creditsLine}</p><p class="celebrate-howto">Scegli un\\'attività da analizzare, aprila, e tocca <b>"Sblocca"</b> sull\\'indicatore o il report che ti interessa: verrà scalato un credito e vedrai subito il contenuto completo.</p><button class="btn primary full" onclick="location.href='search.html'">Scegli un\\'attività →</button>`;
  document.body.appendChild(card);
  requestAnimationFrame(()=>card.classList.add('show'));
 }
