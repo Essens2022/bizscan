@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608031645"><link rel="stylesheet" href="premium.css?v=202608031645"></head><body><div class="app">
+<!DOCTYPE html><html lang="it" class="pre-render"><head><meta charset="UTF-8"><style>html.pre-render{visibility:hidden}</style><noscript><style>html.pre-render{visibility:visible!important}</style></noscript><script>try{if(Object.keys(localStorage).some(k=>k.startsWith("sb-")&&k.endsWith("-auth-token")))document.documentElement.classList.add("maybe-logged-in")}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5"><title>Account BizScan</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#050914"><link rel="apple-touch-icon" href="icon-192.png"><link rel="preconnect" href="https://fafedftoyztptdiubjmx.supabase.co"><link rel="stylesheet" href="styles.css?v=202608031708"><link rel="stylesheet" href="premium.css?v=202608031708"></head><body><div class="app">
 <header class="topbar"><a class="brand" href="/" onclick="try{sessionStorage.removeItem('scrollpos:/')}catch(e){}"><img src="favicon.png" alt="BizScan"><span class="brand-word"><strong>Biz</strong><b>Scan</b></span></a><nav class="nav"><a class="" href="/">Dashboard</a><a href="search.html">Categorie</a><a class="" href="search.html">Esplora</a><a class="" href="compare.html">Confronta</a><a class="" href="library.html">Preferiti</a><a href="library.html?view=reports">I miei report</a></nav><div class="top-actions"><span class="chip">Crediti: 0 · PDF: 0</span><a class="chip purple" href="pricing.html">Pacchetti</a><button type="button" id="notifBellBtn" class="home18-head-icon notif-bell-btn" aria-label="Notifiche" onclick="toggleNotificationPanel()"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge" id="notifBadge" style="display:none">0</span></button><a class="icon-btn" href="account.html" aria-label="Profilo"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></a></div></header><div class="page-back-row"><button class="global-back" type="button" aria-label="Indietro" onclick="if(history.length>1){history.back()}else{location.href='/'}">←</button></div>
 
 <section class="hero account-hero"><div class="kicker">AREA PERSONALE</div><h1>Il tuo spazio <span>BizScan</span></h1><p>Account, crediti e piano in un unico spazio ordinato.</p></section>
@@ -26,6 +26,17 @@
     <a href="library.html?view=favorites"><span>♡</span><b>Preferiti</b><small>Le tue analisi salvate</small></a>
     <a href="library.html?view=reports"><span>📄</span><b>I miei report</b><small>PDF scaricati</small></a>
     <a href="javascript:void(0)" onclick="toggleChangePasswordPanel()"><span>🔒</span><b>Cambia password</b><small>Aggiorna la tua password di accesso</small></a>
+    <a href="javascript:void(0)" onclick="toggleEditNamePanel()"><span>✏️</span><b>Modifica nome</b><small>Correggi nome e cognome del profilo</small></a>
+  </div>
+
+  <div class="account-card" id="editNameCard" style="display:none">
+    <p>Modifica il tuo nome</p>
+    <input id="editFirstName" type="text" placeholder="Nome"
+           style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+    <input id="editLastName" type="text" placeholder="Cognome"
+           style="width:100%;padding:14px;margin:8px 0;border-radius:12px">
+    <button class="btn primary full" onclick="saveProfileName()">Salva il nome</button>
+    <p id="editNameMessage" style="margin-top:8px"></p>
   </div>
 
   <div class="account-card" id="changePasswordCard" style="display:none">
@@ -139,8 +150,8 @@
 <div class="modal" id="globalModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box" id="globalModalContent"></div>
 </div>
-<script defer src="supabase-data.js?v=202608031645"></script>
-<script defer src="premium-app.js?v=202608031645"></script>
+<script defer src="supabase-data.js?v=202608031708"></script>
+<script defer src="premium-app.js?v=202608031708"></script>
 
 <script>
 let supabaseClient=null
@@ -428,7 +439,17 @@ async function signupSupabase() {
   }
 
   if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-    message.textContent = "Esiste già un account con questa email. Prova ad accedere, oppure usa \"Password dimenticata\" se non la ricordi."; message.style.color='#ff5c6c'
+    message.textContent = "Esiste già una registrazione con questa email. Se non hai ancora confermato, controlla la tua casella (anche lo spam): ti abbiamo rinviato l'email di conferma. Attenzione: i dati inseriti ora NON sostituiscono quelli della prima registrazione. Se invece l'account è già attivo, prova ad accedere o usa \"Password dimenticata\"."; message.style.color='#ff5c6c'
+    return
+  }
+
+  // Caso account esistente ma NON ancora confermato: il sistema non crea nulla di nuovo (rispedisce
+  // solo l'email di conferma dell'account ORIGINALE) e restituisce l'utente originale - riconoscibile
+  // dal created_at vecchio. Senza questo controllo, la UI mostrava "controlla la tua email" come se
+  // fosse una nuova registrazione riuscita, facendo credere che i nuovi dati (es. un nome diverso)
+  // fossero stati accettati - quando in realtà restano quelli della prima registrazione.
+  if (data?.user?.created_at && (Date.now() - new Date(data.user.created_at).getTime()) > 2 * 60 * 1000) {
+    message.textContent = "Esiste già una registrazione con questa email, in attesa di conferma. Ti abbiamo rinviato l'email di conferma: controlla la tua casella (anche lo spam). Attenzione: i dati inseriti ora NON sostituiscono quelli della prima registrazione."; message.style.color='#ff5c6c'
     return
   }
 
@@ -470,6 +491,45 @@ function toggleChangePasswordPanel(){
   const card = document.getElementById("changePasswordCard")
   card.style.display = card.style.display === "none" ? "block" : "none"
   if (card.style.display === "block") card.scrollIntoView({behavior:"smooth", block:"center"})
+}
+
+async function toggleEditNamePanel(){
+  const card = document.getElementById("editNameCard")
+  const willOpen = card.style.display === "none"
+  card.style.display = willOpen ? "block" : "none"
+  if (willOpen) {
+    card.scrollIntoView({behavior:"smooth", block:"center"})
+    try {
+      await waitForSupabase()
+      const { data } = await supabaseClient.auth.getUser()
+      document.getElementById("editFirstName").value = data?.user?.user_metadata?.first_name || ""
+      document.getElementById("editLastName").value = data?.user?.user_metadata?.last_name || ""
+    } catch (_) {}
+  }
+}
+
+async function saveProfileName(){
+  await waitForSupabase()
+  const msgEl = document.getElementById("editNameMessage")
+  const firstName = document.getElementById("editFirstName").value.trim()
+  const lastName = document.getElementById("editLastName").value.trim()
+  if (!firstName || !lastName) {
+    msgEl.textContent = "Inserisci sia il nome che il cognome"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  msgEl.textContent = "Salvataggio..."
+  msgEl.style.color = ""
+  try {
+    const { error } = await supabaseClient.auth.updateUser({ data: { first_name: firstName, last_name: lastName } })
+    if (error) throw error
+    msgEl.textContent = "✓ Nome aggiornato con successo"
+    msgEl.style.color = "#7ef2c9"
+    setTimeout(() => location.reload(), 900)
+  } catch (e) {
+    msgEl.textContent = e.message || "Errore imprevisto"
+    msgEl.style.color = "#ff5c6c"
+  }
 }
 
 async function changePasswordSupabase(){
@@ -649,5 +709,5 @@ async function deleteAccountNextStep(){
 document.addEventListener('DOMContentLoaded', () => { updateAuthView() })
 </script>
 
-<script defer src="shell-ui.js?v=202608031645"></script><script defer src="cookie-consent.js?v=202608031645"></script></body>
+<script defer src="shell-ui.js?v=202608031708"></script><script defer src="cookie-consent.js?v=202608031708"></script></body>
 </html>
