@@ -592,7 +592,6 @@ function renderHome(){
    <h1 class="hero-rotating-h1${heroPhrases[0]&&Array.isArray(heroPhrases[0].segments)&&heroPhrases[0].segments.length&&heroPhrases[0].segments[0].x!=null?' hero-rotating-h1-canvas':''}" id="heroRotatingHeadline">${renderPhraseHtml(heroPhrases[0])}</h1>
    <p class="home18-hero-sub">Investimento, costi, guadagni e rischi reali per ogni tipo di attività — prima di aprire. <a href="come-funziona.html" class="home18-hero-how">Come funziona →</a></p>
    <div class="home18-search"><input id="homeSearch" placeholder="Cerca pizzeria franchising attività online"><button onclick="runSearch()" aria-label="Cerca">⌕</button></div>
-   <p class="hero-subtitle-small">Confronta investimento, rischio, profitto e tempi di recupero in un'unica piattaforma</p>
    <div class="home18-trust"><span>Fonti verificabili</span><span>Dati confrontabili</span><span>Pagamento unico</span></div>
   </section>
 
