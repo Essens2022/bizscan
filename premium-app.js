@@ -1177,7 +1177,7 @@ window._doUnlockTool=async(toolKey)=>{
   if(error)throw error;
   if(!data?.success){
    if(loadingWrap)loadingWrap.style.opacity='1';
-   if(data?.reason==='no_credits'){modal('Crediti esauriti','<p>Non hai più crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
+   if(data?.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
    if(data?.reason==='plan_too_low'){
     const tool=toolKey?({scenario:'Scenari di profitto',break_even:'Break-even',benchmark:'Confronto categoria',distribuzione_costi:'Distribuzione costi',cash_flow:'Cash-flow 12 mesi',costi_fissi_variabili:'Costi fissi/variabili',personale:'Fabbisogno personale',fornitori:'Fornitori e autorizzazioni',concorrenza_locale:'Concorrenza locale',stagionalita:'Stagionalità',matrice_rischi:'Matrice dei rischi',strategie_crescita:'Strategie di crescita'}[toolKey]||toolKey):'questo strumento';
     const minPlan=TOOL_MIN_PLAN_LABEL[toolKey]||'superiore';
@@ -1257,7 +1257,7 @@ window.refreshReportAccess=async slug=>{
   if(st.allowed){note.className='report-access-note free';note.textContent=st.is_free?'Rapporto gratuito · nessun credito richiesto':'Rapporto già sbloccato · accesso permanente';btn.textContent='Scarica il rapporto'}
   else if(st.reason==='auth_required'){note.className='report-access-note locked';note.textContent='Accedi per verificare il piano e i crediti PDF';btn.textContent='Accedi per continuare'}
   else if(st.reason==='plan_not_allowed'){note.className='report-access-note locked';note.textContent='Il tuo piano non include questo rapporto';btn.textContent='Vedi i pacchetti'}
-  else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Crediti PDF esauriti';btn.textContent='Acquista crediti PDF'}
+  else if(st.reason==='no_credits'){note.className='report-access-note locked';note.textContent='Serve un credito PDF';btn.textContent='Vedi i pacchetti'}
   else if(st.reason==='can_unlock_with_credit'){note.className='report-access-note locked';note.textContent='Hai un credito PDF disponibile';btn.textContent='Sblocca con un credito PDF'}
   else{note.className='report-access-note locked';note.textContent='Rapporto disponibile secondo il piano acquistato';btn.textContent='Sblocca con un credito PDF'}
  }catch(e){note.className='report-access-note locked';note.textContent='Configura le regole PDF in Supabase';btn.textContent='Verifica accesso'}
@@ -1292,7 +1292,7 @@ window._doDownloadReport=async slug=>{
   if(!result.allowed){
     if(result.reason==='auth_required'){location.href='account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search));return}
     if(result.reason==='plan_not_allowed'){modal('Rapporto non incluso','<p>Il piano attivo non consente di sbloccare questo rapporto.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
-    if(result.reason==='no_credits'){modal('Crediti PDF esauriti','<p>Hai già utilizzato tutti i crediti PDF disponibili. I rapporti già sbloccati restano accessibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti PDF</a>');return}
+    if(result.reason==='no_credits'){modal('Serve un credito PDF per sbloccare','<p>I report PDF si sbloccano usando dei crediti PDF, separati da quelli degli indicatori. Puoi procurarteli scegliendo uno dei pacchetti disponibili. I report già sbloccati restano sempre accessibili.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
     modal('Rapporto bloccato',`<p>${esc(result.message||'Questo rapporto non è disponibile per il tuo account')}</p>`,'<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return
   }
   const url=await BizScanData.signedAttachmentUrl(pdf);
@@ -1700,7 +1700,7 @@ window.unlockCompareAdvice=async(analysisIdA,analysisIdB)=>{
   const a=arr.find(x=>x.id===analysisIdA),b=arr.find(x=>x.id===analysisIdB);
   const result=await BizScanData.unlockCompareAdvice(analysisIdA,analysisIdB);
   if(!result.success){
-   if(result.reason==='no_credits'){modal('Crediti esauriti','<p>Hai già utilizzato tutti i crediti di analisi disponibili.</p>','<a class="btn gold full" href="pricing.html">Acquista crediti</a>');return}
+   if(result.reason==='no_credits'){modal('Serve un credito per sbloccare','<p>Gli indicatori e i report PDF si sbloccano usando dei crediti. Puoi procurarteli scegliendo uno dei pacchetti disponibili — ogni credito sblocca un indicatore o un report a tua scelta.</p>','<a class="btn gold full" href="pricing.html">Vedi i pacchetti</a>');return}
    modal('Sblocco non riuscito',`<p>${esc(result.reason||'Errore sconosciuto')}</p>`);return
   }
   toast('✓ Consiglio sbloccato');
