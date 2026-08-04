@@ -918,8 +918,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608041620"></script>
-<script src="app.js?v=202608041620"></script>
+ <script src="supabase-data.js?v=202608041640"></script>
+<script src="app.js?v=202608041640"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -994,8 +994,9 @@ document.addEventListener("change", (e) => {
 
 async function uploadNotifImage(notificationId){
   const fileInput = document.getElementById("notifImageFile")
-  const file = fileInput.files[0]
-  if (!file) return null
+  const fileRaw = fileInput.files[0]
+  if (!fileRaw) return null
+  const file = fileRaw.type === "image/gif" ? fileRaw : await compressImageFile(fileRaw, 1200, 0.82)
   const ext = (file.name.split(".").pop() || "png").toLowerCase()
   const path = `notifications/${notificationId}/image.${ext}`
   const { error: uploadError } = await supabaseClient.storage.from("bizscan-public").upload(path, file, { upsert: true, contentType: file.type })
@@ -3136,5 +3137,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608041620"></script></body>
+<script src="shell-ui.js?v=202608041640"></script></body>
 </html>
