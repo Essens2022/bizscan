@@ -918,8 +918,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608040834"></script>
-<script src="app.js?v=202608040834"></script>
+ <script src="supabase-data.js?v=202608040848"></script>
+<script src="app.js?v=202608040848"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -2058,7 +2058,11 @@ function showTab(name,btn){
 // riusando showTab così tutti i caricamenti per-scheda restano in un unico posto.
 function openTabByName(name){
   const btn=[...document.querySelectorAll(".tab")].find(b=>(b.getAttribute("onclick")||"").includes("'"+name+"'"))
-  if(btn)showTab(name,btn)
+  // Prima il bug: se nessun pulsante corrisponde (il caso normale ora per feedback/crediti/
+  // notifiche/clienti/pagina principale, che non hanno più un proprio tab), la funzione non
+  // faceva NULLA - showTab() veniva chiamata solo dentro l'if(btn), quindi il pannello non si
+  // apriva mai. showTab() gestisce già btn=undefined in sicurezza, quindi va chiamata sempre.
+  showTab(name,btn)
 }
 
 // Dal suggerimento di un utente direttamente alla sua scheda cliente completa.
@@ -3100,5 +3104,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608040834"></script></body>
+<script src="shell-ui.js?v=202608040848"></script></body>
 </html>
