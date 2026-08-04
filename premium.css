@@ -389,7 +389,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .notif-item.is-unseen{background:rgba(255,180,0,.05)}
 .notif-item-summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
 .notif-item-summary::-webkit-details-marker{display:none}
-.notif-item-title{flex:1 1 auto;font-size:12.5px;font-weight:800;color:var(--text)}
+.notif-item-title{flex:1 1 auto;font-size:12.5px;font-weight:800;color:#aab3c4;transition:color .15s}
+.notif-item.is-unseen .notif-item-title{color:var(--text)}
 .notif-item-chevron{flex:0 0 auto;color:var(--muted);transition:transform .2s}
 .notif-item[open] .notif-item-chevron{transform:rotate(180deg)}
 .notif-item-body{padding:0 14px 14px}

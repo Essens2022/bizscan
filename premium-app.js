@@ -289,6 +289,10 @@ async function toggleNotificationPanel(){
     await Promise.all(unseenIds.map(id=>c.rpc('mark_notification_seen',{p_notification_id:id})));
     notifications=notifications.map(n=>unseenIds.includes(n.id)?{...n,seen_at:n.seen_at||new Date().toISOString()}:n);
     renderNotifBadge();
+    // Ri-renderizza cosi' il titolo passa visibilmente da bianco (non letto) a grigio (letto) -
+    // altrimenti il cambio di stato restava invisibile finche' il pannello non veniva richiuso e
+    // riaperto, dato che il primo renderNotifPanel() sopra avviene PRIMA di questo aggiornamento.
+    renderNotifPanel();
    }catch(e){console.warn('mark_notification_seen',e)}
   }
  }
