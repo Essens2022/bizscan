@@ -918,8 +918,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608040848"></script>
-<script src="app.js?v=202608040848"></script>
+ <script src="supabase-data.js?v=202608041620"></script>
+<script src="app.js?v=202608041620"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1265,6 +1265,35 @@ async function loadNotificationsList(){
 }
 
 let coverData="",pdfMeta=null
+
+// Comprime un'immagine ridimensionandola (max width) e ricodificandola in JPEG a buona qualità,
+// restituendo un vero oggetto File pronto per l'upload - non solo un'anteprima. Video e GIF
+// vengono lasciati intatti (non ha senso comprimerli allo stesso modo, e GIF perderebbe l'animazione).
+async function compressImageFile(file, maxWidth=1600, quality=0.82){
+  if(!file || !file.type.startsWith("image/") || file.type==="image/gif")return file
+  const dataUrl = await new Promise((res,rej)=>{
+    const r=new FileReader()
+    r.onload=()=>res(r.result)
+    r.onerror=rej
+    r.readAsDataURL(file)
+  })
+  const img = await new Promise((res,rej)=>{
+    const im=new Image()
+    im.onload=()=>res(im)
+    im.onerror=rej
+    im.src=dataUrl
+  })
+  let w=img.width, h=img.height
+  if(w>maxWidth){h=Math.round(h*(maxWidth/w));w=maxWidth}
+  const canvas=document.createElement("canvas")
+  canvas.width=w;canvas.height=h
+  canvas.getContext("2d").drawImage(img,0,0,w,h)
+  const blob = await new Promise(res=>canvas.toBlob(res,"image/jpeg",quality))
+  if(!blob || blob.size>=file.size)return file // se la compressione non aiuta, tieni l'originale
+  const newName = file.name.replace(/\.[^.]+$/,"")+".jpg"
+  return new File([blob], newName, {type:"image/jpeg"})
+}
+
 const emojiGroups={
   "Tutti":["🍕","🍔","☕","🚗","🏨","✂️","🍦","🥐","🍝","🏪","🛒","💻","📱","🏠","🔧","🧼","💇","🍺","🐶","📊","💶","🚚","🏋️","🧁","🧑‍🍳","🍷","🥩","🍣","🥗","🛏️","🏢","🏭","🚘","⛽","🛠️","📦","🚲","🛵","🚌","✈️","🚤","🌴","🏖️","🎓","📚","🧑‍⚕️","💊","🦷","👓","👗","👟","💍","🎁","🎮","🎥","📸","🎨","🌿","🌸","🐾","🧸","🧹","🔑","💡","⚡","☀️","❄️"],
   "Cibo":["🍕","🍔","☕","🍦","🥐","🍝","🍷","🥩","🍣","🥗","🧁","🧑‍🍳","🍺"],
@@ -1763,8 +1792,9 @@ window.uploadHeroMediaFile=async(input)=>{
   document.getElementById("newMediaType").value=media_type
   status.textContent="Caricamento in corso…"
   try{
-    const path=`hero/${Date.now()}-${safeFileName(file.name)}`
-    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,file,{upsert:false,contentType:file.type})
+    const uploadFile = media_type==="image" ? await compressImageFile(file,1920,0.82) : file
+    const path=`hero/${Date.now()}-${safeFileName(uploadFile.name)}`
+    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
     const ok=await saveHeroMediaEntry(media_type,data.publicUrl)
@@ -1780,8 +1810,9 @@ window.replaceHeroMediaFile=async(id,input)=>{
   const m=_heroMedia.find(x=>x.id===id);if(!m)return
   const media_type=file.type.startsWith("video")?"video":(file.type==="image/gif"?"gif":"image")
   try{
-    const path=`hero/${Date.now()}-${safeFileName(file.name)}`
-    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,file,{upsert:false,contentType:file.type})
+    const uploadFile = media_type==="image" ? await compressImageFile(file,1920,0.82) : file
+    const path=`hero/${Date.now()}-${safeFileName(uploadFile.name)}`
+    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
     const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:media_type,p_url:data.publicUrl,p_link_url:null,p_order_index:m.order_index,p_is_active:m.is_active})
@@ -2569,7 +2600,8 @@ async function saveAnalysis(){
     // even if a cover or PDF upload fails, so a retry cannot create a duplicate slug.
     document.getElementById("editId").value=savedId
 
-    const coverFile=document.getElementById("cover").files[0]
+    const coverFileRaw=document.getElementById("cover").files[0]
+    const coverFile=coverFileRaw?await compressImageFile(coverFileRaw):null
     const pdfFile=document.getElementById("pdf").files[0]
 
     if(coverFile){
@@ -3104,5 +3136,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608040848"></script></body>
+<script src="shell-ui.js?v=202608041620"></script></body>
 </html>
