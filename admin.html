@@ -379,7 +379,25 @@ textarea{min-height:92px;resize:vertical}
         <h2 id="formTitle">Nuova analisi</h2><p class="section-intro">Compila i dati principali e controlla sempre l anteprima sulla destra</p>
         <input type="hidden" id="editId">
         <div class="import-json-box"><label class="btn ghost" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px"><span>📥</span> Importa da file (testo semplice)<input type="file" id="importJsonFile" accept=".txt,.json,application/json,text/plain" style="display:none" onchange="importAnalysisFromFile(this.files[0])"></label><span class="field-note" style="margin-left:10px">Carica un semplice file di testo (nessun codice) con tutti i dati — vedi il modello scaricabile per il formato esatto</span></div>
-        <div class="step-head"><span class="step-num">1</span><div><b>Informazioni principali</b><small>Titolo, categoria e descrizione · appaiono sulla card e in cima alla pagina dell'analisi</small></div></div><div class="two">
+        <div class="step-head"><span class="step-num">1</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
+        <div class="field-note">Consigliato: JPG orizzontale, formato 2,4:1 (circa 12:5) — es. 1792×768px, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
+        <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
+        <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
+        <div class="card" style="margin-top:10px;padding:12px">
+          <h2 style="font-size:15px;margin:0 0 8px">Accesso al rapporto PDF</h2>
+          <label class="check"><input type="checkbox" id="pdfFree"> Download gratuito</label>
+          <div class="field-note">Se attivo, il PDF non consuma crediti ed è disponibile a tutti</div>
+          <div style="margin-top:10px;font-weight:900;font-size:12px">Piani autorizzati</div>
+          <div class="checks" id="pdfPlanRules">
+            <label class="check"><input type="checkbox" class="pdf-plan" value="smart"> Smart</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="pro"> Pro</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="advanced"> Advanced</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="business"> Business</label>
+            <label class="check"><input type="checkbox" class="pdf-plan" value="max"> BizScan Max</label>
+          </div>
+          <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
+        </div>
+        <div class="step-head"><span class="step-num">2</span><div><b>Informazioni principali</b><small>Titolo, categoria e descrizione · appaiono sulla card e in cima alla pagina dell'analisi</small></div></div><div class="two">
           <label>Titolo<input id="title" placeholder="Titolo dell’analisi"><div class="field-note">Titolo corto con hook che apparirà sulla scheda</div></label>
           <label>Slug<input id="slug" placeholder="nome-attivita"><div class="field-note">Nome tecnico del link · senza spazi · esempio nome-attivita</div></label>
         </div>
@@ -400,7 +418,7 @@ textarea{min-height:92px;resize:vertical}
         </div>
         <label>Descrizione breve<textarea id="summary" placeholder="Costi profitto rischio e tempo di rientro"></textarea><div class="field-note">Massimo una o due righe · appare sotto il titolo</div></label>
         <label>Link video (YouTube, TikTok, Instagram, Facebook)<input type="url" id="videoUrl" placeholder="https://youtube.com/watch?v=... oppure TikTok/Instagram/Facebook"><div class="field-note">Opzionale · usato solo per la ricerca Google (rich result video), non viene mostrato sulla pagina del prodotto</div></label>
-        <div class="step-head"><span class="step-num">2</span><div><b>Numeri chiave</b><small>Score, rischio, investimento e rientro · i primi dati che il cliente vede</small></div></div><div class="three">
+        <div class="step-head"><span class="step-num">3</span><div><b>Numeri chiave</b><small>Score, rischio, investimento e rientro · i primi dati che il cliente vede</small></div></div><div class="three">
           <label>BizScan Score<input id="score" type="number" min="0" max="100" value="80"><div class="field-note">Valutazione generale da 0 a 100</div></label>
           <label>Rischio su 100<input id="risk" type="number" min="0" max="100" value="50"><div class="field-note">0 significa rischio basso · 100 rischio molto alto</div></label>
           <label>Ordine<input id="order" type="number" min="1" value="1"><div class="field-note">Ordine generale nella lista delle analisi</div></label>
@@ -426,27 +444,9 @@ textarea{min-height:92px;resize:vertical}
           <label>Verdetto<select id="verdict"><option>Conviene</option><option>Dipende</option><option>Non conviene</option></select></label>
         </div>
         <label>Conclusione<textarea id="conclusion" placeholder="Breve conclusione BizScan"></textarea><div class="field-note">Risposta breve finale · Conviene oppure no e perché</div></label>
-        <div class="step-head"><span class="step-num">3</span><div><b>Contenuto della pagina</b><small>Le sezioni testuali dell'analisi · decidi cosa è gratuito e cosa è premium</small></div></div><div class="card" style="margin-top:12px">
+        <div class="step-head"><span class="step-num">4</span><div><b>Contenuto della pagina</b><small>Le sezioni testuali dell'analisi · decidi cosa è gratuito e cosa è premium</small></div></div><div class="card" style="margin-top:12px">
           <div class="context-title"><div><h2>Sezioni analisi</h2><p class="section-intro">Crea il contenuto gratuito e premium nell ordine corretto</p></div><button type="button" class="btn" onclick="addSectionRow()">+ Sezione</button></div>
           <div id="sectionsEditor"></div>
-        </div>
-        <div class="step-head"><span class="step-num">4</span><div><b>Copertina e report PDF</b><small>L'immagine della card e il PDF scaricabile · con le regole di accesso</small></div></div><label>Immagine copertina<input id="cover" type="file" accept="image/*" onchange="readCover(this)"></label>
-        <div class="field-note">Consigliato: JPG orizzontale, formato 2,4:1 (circa 12:5) — es. 1792×768px, sotto i 300 KB · le immagini pesanti rallentano molto il sito sui telefoni</div><div class="file-name" id="coverName">Nessuna immagine selezionata</div>
-        <label style="margin-top:10px">PDF<input id="pdf" type="file" accept="application/pdf" onchange="readPdf(this)"></label>
-        <div class="file-name" id="pdfName">Nessun PDF selezionato</div>
-        <div class="card" style="margin-top:10px;padding:12px">
-          <h2 style="font-size:15px;margin:0 0 8px">Accesso al rapporto PDF</h2>
-          <label class="check"><input type="checkbox" id="pdfFree"> Download gratuito</label>
-          <div class="field-note">Se attivo, il PDF non consuma crediti ed è disponibile a tutti</div>
-          <div style="margin-top:10px;font-weight:900;font-size:12px">Piani autorizzati</div>
-          <div class="checks" id="pdfPlanRules">
-            <label class="check"><input type="checkbox" class="pdf-plan" value="smart"> Smart</label>
-            <label class="check"><input type="checkbox" class="pdf-plan" value="pro"> Pro</label>
-            <label class="check"><input type="checkbox" class="pdf-plan" value="advanced"> Advanced</label>
-            <label class="check"><input type="checkbox" class="pdf-plan" value="business"> Business</label>
-            <label class="check"><input type="checkbox" class="pdf-plan" value="max"> BizScan Max</label>
-          </div>
-          <div class="field-note">Per un PDF premium servono sia un piano autorizzato sia un credito PDF disponibile</div>
         </div>
         <div class="step-head"><span class="step-num">5</span><div><b>Grafici e cifre reali</b><small>Numeri veri al posto degli esempi generici, per tutti i 16 strumenti · lascia vuoto per usare l'esempio</small></div></div>
 
@@ -564,13 +564,6 @@ textarea{min-height:92px;resize:vertical}
           <label class="check"><input type="checkbox" value="conclusion" class="free">Conclusione</label>
           <label class="check"><input type="checkbox" value="price" class="free" checked>Prezzo</label>
         </div>
-
-        <div class="actions">
-          <button class="btn primary" onclick="saveAnalysis()">Salva</button>
-          <button class="btn dark" onclick="resetForm()">Pulisci</button>
-          <button class="btn ghost" onclick="openFullPreview()">👁 Anteprima completa sul sito</button>
-        </div>
-        <div class="field-note" style="margin-top:6px">Salva prima di aprire l'anteprima — vedrai la pagina reale, esattamente come apparirà (anche da bozza, solo per te come admin)</div>
       </div>
 
       <div class="card">
@@ -594,6 +587,12 @@ textarea{min-height:92px;resize:vertical}
   <span class="section-tag" id="pBadge">Nessuna etichetta</span>
 </div>
 <div class="notice" style="margin-top:12px">I dati vengono salvati nel database Supabase protetto</div>
+        <div class="actions" style="margin-top:14px">
+          <button class="btn primary" onclick="saveAnalysis()">Salva</button>
+          <button class="btn dark" onclick="resetForm()">Pulisci</button>
+          <button class="btn ghost" onclick="openFullPreview()">👁 Anteprima completa sul sito</button>
+        </div>
+        <div class="field-note" style="margin-top:6px">Salva prima di aprire l'anteprima — vedrai la pagina reale, esattamente come apparirà (anche da bozza, solo per te come admin)</div>
       </div>
     </div>
   </section>
@@ -918,8 +917,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608041707"></script>
-<script src="app.js?v=202608041707"></script>
+ <script src="supabase-data.js?v=202608041716"></script>
+<script src="app.js?v=202608041716"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -3150,5 +3149,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608041707"></script></body>
+<script src="shell-ui.js?v=202608041716"></script></body>
 </html>
