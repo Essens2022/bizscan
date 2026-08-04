@@ -918,8 +918,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608041640"></script>
-<script src="app.js?v=202608041640"></script>
+ <script src="supabase-data.js?v=202608041707"></script>
+<script src="app.js?v=202608041707"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1809,6 +1809,7 @@ window.uploadHeroMediaFile=async(input)=>{
 window.replaceHeroMediaFile=async(id,input)=>{
   const file=input.files[0];if(!file)return
   const m=_heroMedia.find(x=>x.id===id);if(!m)return
+  const oldPath=publicUrlToStoragePath(m.url) // salvato PRIMA di sovrascrivere, per pulire dopo il successo
   const media_type=file.type.startsWith("video")?"video":(file.type==="image/gif"?"gif":"image")
   try{
     const uploadFile = media_type==="image" ? await compressImageFile(file,1920,0.82) : file
@@ -1818,6 +1819,9 @@ window.replaceHeroMediaFile=async(id,input)=>{
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
     const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:media_type,p_url:data.publicUrl,p_link_url:null,p_order_index:m.order_index,p_is_active:m.is_active})
     if(error){alert("Errore: "+error.message);return}
+    // Il vecchio file va rimosso SOLO dopo che il database punta già al nuovo con successo -
+    // altrimenti un errore a metà lascerebbe il carosello senza immagine funzionante.
+    if(oldPath){const{error:removeError}=await supabaseClient.storage.from("bizscan-public").remove([oldPath]);if(removeError)console.warn("pulizia file vecchio non riuscita",removeError)}
     await loadHeroMedia()
   }catch(e){
     console.error(e)
@@ -1835,8 +1839,13 @@ window.toggleHeroMedia=async(id,active)=>{
 window.deleteHeroMedia=async(id)=>{
   try{
     if(!confirm("Eliminare questo media dal carosello?"))return
+    const m=_heroMedia.find(x=>x.id===id)
+    const path=m?publicUrlToStoragePath(m.url):""
     const{error}=await supabaseClient.rpc("admin_delete_hero_media",{p_id:id})
     if(error){console.error("❌ ERRORE deleteHeroMedia:",error);alert("Errore: "+error.message);return}
+    // La riga del database è già eliminata con successo qui - ora rimuoviamo anche il file fisico,
+    // altrimenti resterebbe orfano nello storage per sempre, occupando spazio senza motivo.
+    if(path){const{error:removeError}=await supabaseClient.storage.from("bizscan-public").remove([path]);if(removeError)console.warn("pulizia file non riuscita",removeError)}
     await loadHeroMedia()
     console.log("✅ Media eliminato con successo")
   }catch(e){console.error("❌ ERRORE CRITICO deleteHeroMedia:",e);alert("Errore: "+(e.message||e))}
@@ -2760,6 +2769,10 @@ async function duplicateAnalysis(id){
 }
 function attachmentStoragePath(a){
   const value=String(a?.file_url||"")
+  return publicUrlToStoragePath(value)
+}
+function publicUrlToStoragePath(value){
+  value=String(value||"")
   if(!value)return ""
   if(!/^https?:/i.test(value))return value
   const marker="/storage/v1/object/public/bizscan-public/"
@@ -3137,5 +3150,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608041640"></script></body>
+<script src="shell-ui.js?v=202608041707"></script></body>
 </html>
