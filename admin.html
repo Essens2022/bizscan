@@ -343,6 +343,10 @@ textarea{min-height:92px;resize:vertical}
             </select>
           </small>
           <strong id="statRevenue30">—</strong><span class="dash-stat-sub" id="statOrdersPeriod"></span>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+            <span id="statPeriodFreshness" style="font-size:9px;color:#5a6478"></span>
+            <button type="button" onclick="loadDashboardStats()" title="Ricalcola ora" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:10px;padding:0">↻</button>
+          </div>
         </div>
         <div class="dash-stat"><small>RECENSIONI</small><strong id="statReviews">—</strong><span id="statReviews7d" class="dash-stat-sub"></span></div>
       </div>
@@ -932,8 +936,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608042023"></script>
-<script src="app.js?v=202608042023"></script>
+ <script src="supabase-data.js?v=202608042048"></script>
+<script src="app.js?v=202608042048"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -2159,6 +2163,8 @@ async function loadDashboardStats(){
     document.getElementById("statRevenue").textContent=`${eur(s.revenue_total)} totali`
     document.getElementById("statRevenue30").textContent=eur(s.revenue_period)
     document.getElementById("statOrdersPeriod").textContent=`${s.paid_orders_period} ordin${s.paid_orders_period===1?'e':'i'}`
+    const freshEl=document.getElementById("statPeriodFreshness")
+    if(freshEl)freshEl.textContent=`ricalcolato alle ${new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`
     document.getElementById("statReviews").textContent=s.reviews_total
     document.getElementById("statReviews7d").textContent=s.reviews_last_7d>0?`+${s.reviews_last_7d} negli ultimi 7 giorni`:""
     const qaN=document.getElementById("qaNotifs")
@@ -3166,5 +3172,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608042023"></script></body>
+<script src="shell-ui.js?v=202608042048"></script></body>
 </html>
