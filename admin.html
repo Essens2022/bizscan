@@ -20,6 +20,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit;
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .stat{padding:15px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}.stat small{display:block;color:var(--muted);margin-bottom:6px}.stat strong{font-size:24px}
 .tabs{display:flex;gap:8px;overflow:auto;margin-bottom:12px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab-pinned{position:sticky;left:0;z-index:2;box-shadow:8px 0 10px -6px var(--bg)}
 .admin-sticky-group{position:sticky;top:66px;z-index:20;background:var(--bg);padding-top:10px;margin:0 -14px;padding-left:14px;padding-right:14px;box-shadow:0 8px 14px -8px rgba(0,0,0,.4)}
 .admin-sticky-group .stats{margin-bottom:10px}
 .admin-sticky-group .tabs{margin-bottom:10px}
@@ -312,17 +313,12 @@ textarea{min-height:92px;resize:vertical}
   </section>
 
   <nav class="tabs">
-    <button class="tab active" onclick="showTab('dashboard',this)">Dashboard <span class="tab-help">?</span></button>
+    <button class="tab active tab-pinned" onclick="showTab('dashboard',this)">Dashboard <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('analyses',this)">Analisi <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('new',this)">Nuova analisi <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('categories',this)">Categorie <span class="tab-help">?</span></button>
-    <button class="tab" onclick="showTab('feedback',this)">Feedback <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('plans',this)">Piani <span class="tab-help">?</span></button>
     <button class="tab" onclick="showTab('data',this)">Importa esporta <span class="tab-help">?</span></button>
-    <button class="tab" onclick="showTab('homepage',this)">Pagina principale <span class="tab-help">?</span></button>
-    <button class="tab" onclick="showTab('credits',this)">Crediti <span class="tab-help">?</span></button>
-    <button class="tab" onclick="showTab('notifications',this)">Notifiche <span class="tab-help">?</span></button>
-    <button class="tab" onclick="showTab('customers',this)">Clienti <span class="tab-help">?</span></button>
   </nav>
   </div>
 
@@ -922,8 +918,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608031928"></script>
-<script src="app.js?v=202608031928"></script>
+ <script src="supabase-data.js?v=202608040834"></script>
+<script src="app.js?v=202608040834"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1382,6 +1378,7 @@ async function checkAdminAccess() {
   if(savedTab){
     const btn=[...document.querySelectorAll(".tab")].find(t=>t.getAttribute("onclick")===`showTab('${savedTab}',this)`)
     if(btn)showTab(savedTab,btn)
+    else if(document.getElementById(savedTab+"Panel"))openTabByName(savedTab)
   }
 }
 
@@ -2045,7 +2042,10 @@ function showTab(name,btn){
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"))
   document.getElementById(name+"Panel").classList.add("active")
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"))
-  btn.classList.add("active")
+  // Alcune sezioni (Feedback, Crediti, Notifiche, Clienti, Pagina principale) non hanno più
+  // un proprio pulsante nella barra dei tab, essendo raggiungibili solo dalle Azioni rapide del
+  // Dashboard - in quel caso non c'è nulla da evidenziare come "attivo" nella barra dei tab.
+  if(btn)btn.classList.add("active")
   history.replaceState(null,"","#"+name)
   if(name==="new")refreshSelects()
   if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
@@ -3100,5 +3100,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608031928"></script></body>
+<script src="shell-ui.js?v=202608040834"></script></body>
 </html>
