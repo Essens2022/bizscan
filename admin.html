@@ -327,8 +327,23 @@ textarea{min-height:92px;resize:vertical}
       <h2>Panoramica</h2>
       <div class="dash-stats-grid" id="dashStatsGrid">
         <div class="dash-stat"><small>UTENTI REGISTRATI</small><strong id="statTotalUsers">—</strong><span id="statUsers7d" class="dash-stat-sub"></span></div>
-        <div class="dash-stat"><small>ORDINI PAGATI</small><strong id="statPaidOrders">—</strong><span class="dash-stat-sub" id="statRevenue"></span></div>
-        <div class="dash-stat"><small>INCASSO ULTIMI 30 GG</small><strong id="statRevenue30">—</strong></div>
+        <div class="dash-stat"><small>ORDINI PAGATI (TOTALE)</small><strong id="statPaidOrders">—</strong><span class="dash-stat-sub" id="statRevenue"></span></div>
+        <div class="dash-stat">
+          <small style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+            <span>INCASSO PERIODO</span>
+            <select id="dashPeriodSelect" onchange="loadDashboardStats()" style="background:#0d1420;color:var(--text);border:1px solid var(--line);border-radius:6px;font-size:9.5px;font-weight:800;padding:2px 4px">
+              <option value="0">Oggi</option>
+              <option value="3">3 gg</option>
+              <option value="7">7 gg</option>
+              <option value="14">14 gg</option>
+              <option value="30" selected>30 gg</option>
+              <option value="90">3 mesi</option>
+              <option value="180">6 mesi</option>
+              <option value="365">1 anno</option>
+            </select>
+          </small>
+          <strong id="statRevenue30">—</strong><span class="dash-stat-sub" id="statOrdersPeriod"></span>
+        </div>
         <div class="dash-stat"><small>RECENSIONI</small><strong id="statReviews">—</strong><span id="statReviews7d" class="dash-stat-sub"></span></div>
       </div>
     </div>
@@ -917,8 +932,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608041938"></script>
-<script src="app.js?v=202608041938"></script>
+ <script src="supabase-data.js?v=202608042023"></script>
+<script src="app.js?v=202608042023"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -2133,15 +2148,17 @@ window.addEventListener("resize",updateAdminStickyOffset)
 
 async function loadDashboardStats(){
   try{
-    const{data:s,error}=await supabaseClient.rpc("admin_dashboard_stats")
+    const periodDays = parseInt(document.getElementById("dashPeriodSelect")?.value ?? "30", 10)
+    const{data:s,error}=await supabaseClient.rpc("admin_dashboard_stats",{p_period_days:periodDays})
     if(error)throw error
     if(!s?.success)return
     const eur=v=>Number(v||0).toFixed(2).replace(".",",")+" €"
     document.getElementById("statTotalUsers").textContent=s.total_users
     document.getElementById("statUsers7d").textContent=s.users_last_7d>0?`+${s.users_last_7d} negli ultimi 7 giorni`:""
-    document.getElementById("statPaidOrders").textContent=s.paid_orders
+    document.getElementById("statPaidOrders").textContent=s.paid_orders_total
     document.getElementById("statRevenue").textContent=`${eur(s.revenue_total)} totali`
-    document.getElementById("statRevenue30").textContent=eur(s.revenue_last_30d)
+    document.getElementById("statRevenue30").textContent=eur(s.revenue_period)
+    document.getElementById("statOrdersPeriod").textContent=`${s.paid_orders_period} ordin${s.paid_orders_period===1?'e':'i'}`
     document.getElementById("statReviews").textContent=s.reviews_total
     document.getElementById("statReviews7d").textContent=s.reviews_last_7d>0?`+${s.reviews_last_7d} negli ultimi 7 giorni`:""
     const qaN=document.getElementById("qaNotifs")
@@ -3149,5 +3166,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608041938"></script></body>
+<script src="shell-ui.js?v=202608042023"></script></body>
 </html>
