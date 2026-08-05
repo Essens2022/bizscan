@@ -228,7 +228,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
  .pricing-promises span{font-size:8px;padding:6px 8px}
  .pricing-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:9px;padding:1px 14vw 6px 0}
  .price-card{flex:0 0 82vw;max-width:330px;scroll-snap-align:start;padding:14px}
- .price-card-head h3{font-size:17px}.price-amount{font-size:25px}
+ .price-card-head h3{font-size:20px}.price-amount{font-size:25px}
  .price-purpose{font-size:9px;min-height:0;margin:7px 0 9px}
  .price-benefits{gap:5px}.price-benefits li{font-size:9px}
  .pricing-section{padding-top:23px}.pricing-section-head{text-align:left}.pricing-section-head h2{font-size:20px}
@@ -271,7 +271,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 }
 @media(max-width:420px){
  .price-card-head{gap:8px}
- .price-card-head h3{font-size:16px}
+ .price-card-head h3{font-size:19px}
  .price-amount{font-size:23px}
  .value-units{grid-template-columns:1fr 1fr}
  .pdf-credit-grid{grid-template-columns:1fr 1fr}
