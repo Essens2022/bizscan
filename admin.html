@@ -830,6 +830,29 @@ textarea{min-height:92px;resize:vertical}
         <p id="creditGrantMessage" style="margin-top:12px;font-size:13px"></p>
       </div>
     </div>
+
+    <div class="card" style="margin-top:20px">
+      <h2>Regala un piano a un utente</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Attiva un piano come regalo (nessun addebito reale) — utile per testare cosa include, o per un\'offerta speciale.</p>
+      <div style="max-width:420px">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Email dell'utente</label>
+        <input id="planGrantEmail" type="email" placeholder="esempio@email.com" style="width:100%;padding:12px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Piano</label>
+        <select id="planGrantType" style="width:100%;padding:12px;margin-bottom:16px;border-radius:10px;border:1px solid var(--line);background:#0d1420;color:var(--text)">
+          <option value="single">Base (Analisi Singola)</option>
+          <option value="starter">Starter</option>
+          <option value="smart">Smart</option>
+          <option value="pro">Pro</option>
+          <option value="advanced">Advanced</option>
+          <option value="business">Business</option>
+          <option value="max">BizScan Max</option>
+        </select>
+
+        <button class="btn primary full" onclick="grantPlanToUser()">Regala il piano</button>
+        <p id="planGrantMessage" style="margin-top:12px;font-size:13px"></p>
+      </div>
+    </div>
   </section>
 
   <section id="notificationsPanel" class="panel">
@@ -936,8 +959,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=202608042048"></script>
-<script src="app.js?v=202608042048"></script>
+ <script src="supabase-data.js?v=202608050754"></script>
+<script src="app.js?v=202608050754"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -980,6 +1003,43 @@ async function grantCreditsToUser(){
     msgEl.textContent = `✓ ${quantity} crediti (${creditType === 'pdf' ? 'PDF' : 'analisi'}) aggiunti con successo a ${email}`
     msgEl.style.color = "#7ef2c9"
     document.getElementById("creditGrantEmail").value = ""
+  } catch (e) {
+    msgEl.textContent = e.message || "Errore imprevisto"
+    msgEl.style.color = "#ff5c6c"
+  }
+}
+
+async function grantPlanToUser(){
+  const msgEl = document.getElementById("planGrantMessage")
+  const email = document.getElementById("planGrantEmail").value.trim()
+  const planType = document.getElementById("planGrantType").value
+  if (!email) {
+    msgEl.textContent = "Inserisci un'email"
+    msgEl.style.color = "#ff5c6c"
+    return
+  }
+  msgEl.textContent = "Attivazione in corso..."
+  msgEl.style.color = ""
+  try {
+    const c = await BizScanData.getSupabaseClient()
+    const { data, error } = await c.rpc("admin_grant_plan", {
+      p_email: email,
+      p_plan_type: planType
+    })
+    if (error) throw error
+    if (!data?.success) {
+      const reasons = {
+        not_admin: "Non hai i permessi di amministratore",
+        user_not_found: "Nessun utente trovato con questa email — verifica che si sia già registrato",
+        plan_not_found: "Piano non trovato"
+      }
+      msgEl.textContent = reasons[data?.reason] || "Operazione non riuscita"
+      msgEl.style.color = "#ff5c6c"
+      return
+    }
+    msgEl.textContent = `✓ Piano "${data.plan_title}" attivato con successo per ${email}`
+    msgEl.style.color = "#7ef2c9"
+    document.getElementById("planGrantEmail").value = ""
   } catch (e) {
     msgEl.textContent = e.message || "Errore imprevisto"
     msgEl.style.color = "#ff5c6c"
@@ -1176,8 +1236,11 @@ async function openCustomerDetail(userId){
       ordersHost.innerHTML = data.orders.map(o => {
         const dt = new Date(o.paid_at || o.created_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
         const statusColor = o.status === "paid" ? "#7ef2c9" : (o.status === "refunded" ? "#ff5c6c" : "var(--muted)")
+        const amountHtml = o.is_admin_gift
+          ? `<b style="font-size:11.5px;color:var(--gold)">🎁 REGALO</b>`
+          : `<b style="font-size:12.5px">${Number(o.amount).toFixed(2)} ${esc((o.currency||"EUR").toUpperCase())}</b>`
         return `<div style="padding:10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between"><b style="font-size:12.5px">${esc(o.plan_name || "Pacchetto")}</b><b style="font-size:12.5px">${Number(o.amount).toFixed(2)} ${esc((o.currency||"EUR").toUpperCase())}</b></div>
+          <div style="display:flex;justify-content:space-between"><b style="font-size:12.5px">${esc(o.plan_name || "Pacchetto")}</b>${amountHtml}</div>
           <p style="font-size:11.5px;color:var(--muted);margin:3px 0">${dt}</p>
           <span style="font-size:10.5px;font-weight:800;color:${statusColor}">${esc((o.status||"").toUpperCase())}</span>
         </div>`
@@ -3172,5 +3235,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=202608042048"></script></body>
+<script src="shell-ui.js?v=202608050754"></script></body>
 </html>
