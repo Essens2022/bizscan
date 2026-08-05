@@ -1260,13 +1260,13 @@ const PREMIUM_GIFT_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style
 </defs>
 <path d="M45 3 L82 15 V50 C82 76 66 92 45 101 C24 92 8 76 8 50 V15 Z" fill="url(#shieldInnerGift)" stroke="url(#goldBorderGift)" stroke-width="5" stroke-linejoin="round"/>
 <path d="M20 14 L45 6 V40 C34 42 24 36 20 26 Z" fill="#ffffff" opacity="0.035"/>
-<rect x="24" y="48" width="42" height="30" rx="4" fill="url(#boxGold)" stroke="#7a4f09" stroke-width="1"/>
-<rect x="20" y="40" width="50" height="12" rx="4" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
-<rect x="41" y="40" width="8" height="38" fill="#8a5c0a" opacity="0.55"/>
-<path d="M45 40 C38 26 26 28 30 36 C33 41 41 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
-<path d="M45 40 C52 26 64 28 60 36 C57 41 49 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
-<circle cx="45" cy="40" r="4" fill="#fff6d8" stroke="#7a4f09" stroke-width="1"/>
-<path d="M28 53 h14" stroke="#ffffff" opacity="0.3" stroke-width="2" stroke-linecap="round"/>
+<rect x="24" y="40" width="42" height="30" rx="4" fill="url(#boxGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="20" y="32" width="50" height="12" rx="4" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="41" y="32" width="8" height="38" fill="#8a5c0a" opacity="0.55"/>
+<path d="M45 32 C38 18 26 20 30 28 C33 33 41 32 45 32 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<path d="M45 32 C52 18 64 20 60 28 C57 33 49 32 45 32 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<circle cx="45" cy="32" r="4" fill="#fff6d8" stroke="#7a4f09" stroke-width="1"/>
+<path d="M28 45 h14" stroke="#ffffff" opacity="0.3" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
