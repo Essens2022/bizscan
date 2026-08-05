@@ -379,7 +379,7 @@ window.claimNotificationPlan=async(notifId)=>{
    toast(reasons[data?.reason]||'Non è stato possibile attivare il piano');
    return;
   }
-  try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell();if(typeof renderPricing==='function')renderPricing()}catch(_){}
   // Stessa correzione già applicata a unlockTool(): senza invalidare questa cache, gli
   // strumenti ora inclusi gratis dal piano appena ricevuto continuerebbero ad apparire
   // "bloccati" nelle pagine analisi già visitate in questa sessione, finché la cache di 24h
