@@ -356,6 +356,12 @@ window.claimNotificationPlan=async(notifId)=>{
    return;
   }
   try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  // Stessa correzione già applicata a unlockTool(): senza invalidare questa cache, gli
+  // strumenti ora inclusi gratis dal piano appena ricevuto continuerebbero ad apparire
+  // "bloccati" nelle pagine analisi già visitate in questa sessione, finché la cache di 24h
+  // non scade da sola - causa esatta di un caso reale segnalato (credito scalato per uno
+  // strumento che il piano già includeva gratis, perché la pagina mostrava dati non aggiornati).
+  try{sessionStorage.removeItem('cache:publicData')}catch(e){}
   notifications=notifications.map(n=>n.id===notifId?{...n,claimed_at:new Date().toISOString(),seen_at:n.seen_at||new Date().toISOString()}:n);
   refreshSingleNotifItem(notifId);
   renderNotifBadge();
