@@ -1215,6 +1215,35 @@ const PREMIUM_LOCK_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style
 <circle cx="45" cy="58" r="4.2" fill="#231405"/>
 <rect x="43.3" y="60.5" width="3.4" height="8" rx="1.2" fill="#231405"/>
 </svg>`;
+// Stessa qualità visiva del badge del lucchetto (stessa cornice a scudo, stessi toni oro),
+// ma con un pacco regalo al posto del lucchetto - usato SOLO per gli strumenti già inclusi
+// gratis dal piano, non per quelli davvero bloccati. ID dei gradienti resi unici (suffisso
+// "Gift") per evitare conflitti con l'SVG del lucchetto quando entrambi compaiono in pagina.
+const PREMIUM_GIFT_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style="margin-bottom:6px">
+<defs>
+  <linearGradient id="goldBorderGift" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fff3c4"/><stop offset="25%" stop-color="#e8b431"/><stop offset="55%" stop-color="#a9720f"/><stop offset="80%" stop-color="#f2c752"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <radialGradient id="shieldInnerGift" cx="35%" cy="25%" r="80%">
+    <stop offset="0%" stop-color="#1b2430"/><stop offset="60%" stop-color="#0c1017"/><stop offset="100%" stop-color="#04060a"/>
+  </radialGradient>
+  <linearGradient id="boxGold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fff6d8"/><stop offset="18%" stop-color="#f7d35c"/><stop offset="45%" stop-color="#d69a1f"/><stop offset="75%" stop-color="#b87a12"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <linearGradient id="ribbonGold" x1="0" y1="0" x2="1" y2="0.3">
+    <stop offset="0%" stop-color="#8a5c0a"/><stop offset="30%" stop-color="#f7d35c"/><stop offset="60%" stop-color="#fff6d8"/><stop offset="100%" stop-color="#c68d1c"/>
+  </linearGradient>
+</defs>
+<path d="M45 3 L82 15 V50 C82 76 66 92 45 101 C24 92 8 76 8 50 V15 Z" fill="url(#shieldInnerGift)" stroke="url(#goldBorderGift)" stroke-width="5" stroke-linejoin="round"/>
+<path d="M20 14 L45 6 V40 C34 42 24 36 20 26 Z" fill="#ffffff" opacity="0.035"/>
+<rect x="24" y="48" width="42" height="30" rx="4" fill="url(#boxGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="20" y="40" width="50" height="12" rx="4" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="41" y="40" width="8" height="38" fill="#8a5c0a" opacity="0.55"/>
+<path d="M45 40 C38 26 26 28 30 36 C33 41 41 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<path d="M45 40 C52 26 64 28 60 36 C57 41 49 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<circle cx="45" cy="40" r="4" fill="#fff6d8" stroke="#7a4f09" stroke-width="1"/>
+<path d="M28 53 h14" stroke="#ffffff" opacity="0.3" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
@@ -1227,18 +1256,19 @@ function renderLockedToolCard(title,description,toolKey){
   </section>`;
 }
 // Strumento incluso gratis dal piano dell'utente, non ancora rivelato in questa visita.
-// Stile volutamente diverso da quello bloccato (verde, nessun lucchetto) - non è una barriera
-// da superare, solo un tocco di conferma per capire chiaramente cosa include il proprio piano.
+// IDENTICO al card bloccato normale (stesso colore del piano, stessa etichetta) - cambiano
+// solo due cose: l'icona (pacco regalo invece di lucchetto) e il testo del pulsante (GRATIS
+// invece di "con 1 credito", dato che non consuma nulla).
 function renderFreeToolCard(title,description,toolKey){
- const color='#24d98b';
+ const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
+ const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
+ const pill=minPlan?`<span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
  return `<section class="panel tab-panel locked-tool-card" style="position:relative;background:linear-gradient(180deg,#101a29,#09121e)">
    <span class="locked-side-bar" style="background:${color}"></span>
    <div class="locked-tool-inner">
     <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
-    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">
-     <span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel tuo piano</span>
-     <button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="revealFreeTool('${esc(toolKey||'')}')">Sblocca GRATIS</button>
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${PREMIUM_GIFT_BADGE}${pill}<button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="revealFreeTool('${esc(toolKey||'')}')">Sblocca GRATIS</button>
     </div>
    </div>
   </section>`;
