@@ -397,6 +397,9 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .notif-item-img{width:100%;max-width:220px;border-radius:10px;object-fit:cover;display:block;margin-bottom:10px;background:#182437}
 .notif-item-msg{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.4}
 .notif-item-btn{font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#ffb400,#ff8a00);color:#0c1420;border:none;cursor:pointer}
+.notif-claim-link{display:inline-block;font-size:13.5px;font-weight:900;color:#24d98b;text-decoration:none;letter-spacing:.01em}
+.notif-claim-link:active{opacity:.75}
+.notif-claim-done{display:inline-block;font-size:11.5px;font-weight:700;color:var(--muted)}
 .notif-item-btn.is-claimed{background:#182437;color:var(--muted);cursor:default}
 .notif-item-btn.is-link{background:#182437;color:var(--text);border:1px solid var(--line)}
 .notif-empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:12.5px}

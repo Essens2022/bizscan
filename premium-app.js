@@ -239,14 +239,13 @@ function notifItemHtml(n){
  const img=n.image_url?`<img class="notif-item-img" src="${esc(n.image_url)}" alt="" loading="lazy">`:'';
  let actionHtml='';
  if(n.action_type==='claim_bonus'){
-  if(n.claimed_at){
-   actionHtml='<button class="notif-item-btn is-claimed" disabled>✓ Già riscosso</button>';
-  }else{
-   const parts=[];
-   if(n.bonus_analysis_credits>0)parts.push(`${n.bonus_analysis_credits} crediti`);
-   if(n.bonus_pdf_credits>0)parts.push(`${n.bonus_pdf_credits} PDF`);
-   actionHtml=`<button class="notif-item-btn" onclick="claimNotificationBonus('${n.id}')">Riscuoti ${esc(parts.join(' + '))}</button>`;
-  }
+  actionHtml=n.claimed_at
+   ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
+   : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationBonus('${n.id}')">Ricevi →</a>`;
+ }else if(n.action_type==='claim_plan'){
+  actionHtml=n.claimed_at
+   ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
+   : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationPlan('${n.id}')">Ricevi →</a>`;
  }else if(n.action_type==='link' && n.action_link_url){
   actionHtml=`<a class="notif-item-btn is-link" href="${esc(n.action_link_url)}">Scopri di più</a>`;
  }
@@ -310,14 +309,29 @@ async function markAllNotificationsSeenUI(){
  }catch(e){console.warn('markAllNotificationsSeenUI',e)}
 }
 
+// Aggiorna un singolo elemento notifica senza toccare gli altri, preservando lo stato
+// aperto/chiuso del <details> - una sostituzione totale del pannello lo richiuderebbe subito
+// dopo che la persona ha appena cliccato "Ricevi" al suo interno.
+function refreshSingleNotifItem(notifId){
+ const n=notifications.find(x=>x.id===notifId);
+ const oldEl=document.querySelector(`.notif-item[data-notif-id="${notifId}"]`);
+ if(!n||!oldEl)return;
+ const wasOpen=oldEl.open;
+ const wrapper=document.createElement('div');
+ wrapper.innerHTML=notifItemHtml(n);
+ const newEl=wrapper.firstElementChild;
+ if(wasOpen)newEl.open=true;
+ oldEl.replaceWith(newEl);
+}
+
 window.claimNotificationBonus=async(notifId)=>{
  try{
   const c=await BizScanData.getSupabaseClient();
   const{data,error}=await c.rpc('claim_notification_bonus',{p_notification_id:notifId});
   if(error)throw error;
   if(!data?.success){
-   const reasons={already_claimed:'Hai già riscosso questo bonus',not_found_or_expired:'Questa notifica non è più disponibile',not_a_bonus_notification:'Questa notifica non prevede un bonus'};
-   toast(reasons[data?.reason]||'Non è stato possibile riscuotere il bonus');
+   const reasons={already_claimed:'Hai già ricevuto questo regalo',not_found_or_expired:'Questa notifica non è più disponibile',not_a_bonus_notification:'Questa notifica non prevede un regalo'};
+   toast(reasons[data?.reason]||'Non è stato possibile ricevere il regalo');
    return;
   }
   if(typeof access.available_credits==='number')access.available_credits+=(data.bonus_analysis_credits||0);
@@ -325,10 +339,28 @@ window.claimNotificationBonus=async(notifId)=>{
   if(typeof access.available_pdf_credits==='number')access.available_pdf_credits+=(data.bonus_pdf_credits||0);
   updateShell();
   notifications=notifications.map(n=>n.id===notifId?{...n,claimed_at:new Date().toISOString(),seen_at:n.seen_at||new Date().toISOString()}:n);
-  renderNotifPanel();
+  refreshSingleNotifItem(notifId);
   renderNotifBadge();
-  toast('✓ Bonus riscosso con successo');
+  toast('✓ Regalo ricevuto con successo');
  }catch(e){console.error('claimNotificationBonus',e);toast('Errore, riprova')}
+}
+
+window.claimNotificationPlan=async(notifId)=>{
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  const{data,error}=await c.rpc('claim_notification_plan',{p_notification_id:notifId});
+  if(error)throw error;
+  if(!data?.success){
+   const reasons={already_claimed:'Hai già ricevuto questo regalo',not_found_or_expired:'Questa notifica non è più disponibile'};
+   toast(reasons[data?.reason]||'Non è stato possibile attivare il piano');
+   return;
+  }
+  try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  notifications=notifications.map(n=>n.id===notifId?{...n,claimed_at:new Date().toISOString(),seen_at:n.seen_at||new Date().toISOString()}:n);
+  refreshSingleNotifItem(notifId);
+  renderNotifBadge();
+  toast('✓ Piano attivato con successo');
+ }catch(e){console.error('claimNotificationPlan',e);toast('Errore, riprova')}
 }
 
 window.markAllNotificationsSeenUI=markAllNotificationsSeenUI;
