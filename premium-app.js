@@ -174,6 +174,20 @@ function updateShell(){
  const pdfN=access.available_pdf_credits??0;
  const plan=(access.plan&&access.plan!=='free')?String(access.plan).charAt(0).toUpperCase()+String(access.plan).slice(1):'';
  if(c)c.textContent=`Crediti: ${n} · PDF: ${pdfN}`;
+ // Il chip "Pacchetti" nella barra in alto prende il colore del piano attivo dell'utente (stesso
+ // sistema colori già usato per gli strumenti/prezzi) - resta il violetto originale finché non
+ // ha ancora nessun piano, poi cambia automaticamente non appena ne acquista o riceve uno.
+ const pacchettiChip=document.getElementById('pacchettiChip');
+ if(pacchettiChip){
+  const tierColor=(access.plan && access.plan!=='free') ? PLAN_TIER_COLOR[access.plan] : null;
+  if(tierColor){
+   pacchettiChip.style.background=`linear-gradient(135deg,${tierColor}dd,${tierColor})`;
+   pacchettiChip.style.borderColor=tierColor;
+  }else{
+   pacchettiChip.style.background='';
+   pacchettiChip.style.borderColor='';
+  }
+ }
  try{localStorage.setItem('bizscan_last_credits',JSON.stringify({n,pdfN}))}catch(_){}
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
  if(nameEl){

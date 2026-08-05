@@ -368,7 +368,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .home18-faq{padding-top:48px}.home18-faq h2{margin:9px 0 6px;font-size:38px}.home18-faq>p{margin:0 0 20px;color:#9aa6b7}.home18-faq-list{overflow:hidden;border:1px solid #2b394d;border-radius:20px;background:#091420}.home18-faq-list details{border-bottom:1px solid #2b394d}.home18-faq-list details:last-child{border:0}.home18-faq-list summary{display:flex;justify-content:space-between;gap:20px;padding:22px 26px;list-style:none;cursor:pointer;font-size:16px;font-weight:850}.home18-faq-list summary::-webkit-details-marker{display:none}.home18-faq-list summary span{color:var(--gold);font-size:26px}.home18-faq-list details[open] summary span{transform:rotate(45deg)}.home18-faq-list p{margin:0;padding:0 26px 24px;color:#9aa6b7;line-height:1.65}
 @media(max-width:900px){.home18-dashboard,.home18-how{grid-template-columns:1fr}.home18-categories{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){
- .topbar{height:66px;padding:0 14px;grid-template-columns:auto 1fr auto}.brand img{width:42px;height:42px}.brand .brand-word{font-size:22px!important}.top-actions{gap:7px}.top-actions .chip:first-child{display:inline-flex;align-items:center;font-size:10.5px;padding:0 8px;height:28px;white-space:nowrap}.top-actions .chip.purple{width:72px;height:42px;justify-content:center;font-size:0}.top-actions .chip.purple:before{content:'♛ PRO';font-size:12px;font-weight:950}.top-actions .icon-btn{display:inline-flex;width:42px;height:42px;padding:0;justify-content:center;font-size:0}.top-actions .icon-btn:before{content:'♙';font-size:17px}.nav,.top-search{display:none}
+ .topbar{height:66px;padding:0 14px;grid-template-columns:auto 1fr auto}.brand img{width:42px;height:42px}.brand .brand-word{font-size:22px!important}.top-actions{gap:7px}.top-actions .chip:first-child{display:inline-flex;align-items:center;font-size:10.5px;padding:0 8px;height:28px;white-space:nowrap}.top-actions .chip.purple{width:72px;height:42px;justify-content:center;font-size:0}.top-actions .chip.purple:before{content:'♛';font-size:24px;font-weight:950}.top-actions .icon-btn{display:inline-flex;width:42px;height:42px;padding:0;justify-content:center;font-size:0}.top-actions .icon-btn:before{content:'♙';font-size:17px}.nav,.top-search{display:none}
  .page{padding:56px 12px 26px}.home18{padding-top:12px}.home18-hero{padding:26px 20px;border-radius:23px;--hero-pad:20px}.home18-hero h1{font-size:43px}.home18-hero>p{font-size:14px}.home18-search{height:52px}.home18-search button{width:58px}.home18-trust{font-size:11px;gap:10px 16px}.home18-section{padding-top:35px}.home18-head h2{font-size:28px}.home18-carousel{padding-right:18vw}.home18-carousel>.business-card{flex-basis:74vw;max-width:300px}.home18-dashboard{grid-template-columns:1fr}.home18-score-top{align-items:flex-start}.home18-score-top h3{font-size:24px}.home18-bars>div{grid-template-columns:76px 1fr 34px}.home18-chart-card{padding:18px}.home18-bars-chart{height:235px;padding:18px}.home18-compare{grid-template-columns:1fr 1fr;overflow-x:auto}.home18-compare article{min-width:270px}.home18-locked{min-height:430px}.home18-how{padding:24px}.home18-how h2{font-size:32px}.home18-categories{grid-template-columns:1fr 1fr}.home18-faq h2{font-size:34px}.home18-faq-list summary{padding:20px;font-size:14px}.home18-faq-list p{padding:0 20px 20px}.bottom-nav{height:74px}.bottom-nav a{font-size:10px}.bottom-nav span{font-size:20px}
 }
 @media(max-width:430px){.home18-hero h1{font-size:37px}.home18-head h2{font-size:26px}.home18-score-top{gap:12px}.home18-categories{grid-template-columns:1fr}.home18-how h2{font-size:29px}.home18-faq h2{font-size:30px}}
@@ -422,7 +422,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
  .brand .brand-word{font-size:19px!important;line-height:1!important;white-space:nowrap!important;flex-wrap:nowrap!important}
  .top-actions{gap:5px}
  .top-actions .chip.purple{width:58px!important;height:34px!important;border-radius:10px!important}
- .top-actions .chip.purple:before{font-size:10px!important;letter-spacing:.01em}
+ .top-actions .chip.purple:before{font-size:20px!important}
  .home18-head-icon,.top-actions .icon-btn{width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important;font-size:15px!important}
  .top-actions .icon-btn:before{font-size:14px!important}
 }
@@ -433,6 +433,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
  .brand img{width:31px!important;height:31px!important;flex-basis:31px!important}
  .brand .brand-word{font-size:17px!important}
  .top-actions .chip.purple{width:52px!important;height:32px!important}
+ .top-actions .chip.purple:before{font-size:19px!important}
  .home18-head-icon,.top-actions .icon-btn{width:32px!important;height:32px!important;min-width:32px!important}
 }
 
@@ -456,7 +457,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
  .brand .brand-word{font-size:17px!important;letter-spacing:-.04em!important}
  .top-actions{gap:4px!important}
  .top-actions .chip.purple{width:49px!important;height:30px!important;border-radius:9px!important;padding:0!important}
- .top-actions .chip.purple:before{font-size:9px!important}
+ .top-actions .chip.purple:before{font-size:17px!important}
  .home18-head-icon,.top-actions .icon-btn{width:30px!important;height:30px!important;min-width:30px!important;border-radius:9px!important;padding:0!important}
  .home18-head-icon{font-size:14px!important}.top-actions .icon-btn span{font-size:13px!important}
  .global-back{width:30px!important;height:30px!important;min-width:30px!important;border-radius:9px!important}
