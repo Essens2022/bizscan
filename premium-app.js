@@ -1107,26 +1107,20 @@ function lockedCta(toolKey){
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
- const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
+ // La pill indica solo la categoria/colore dello strumento (per coerenza visiva con le altre
+ // pagine) - NON implica più che un piano superiore lo includa gratis: ogni piano da' solo
+ // crediti, mai accesso gratuito agli strumenti a pagamento. Solo i pochi strumenti realmente
+ // gratuiti (score, rischio, investimento, rientro) non hanno questa pill, dato che sono
+ // sempre visibili a tutti senza nulla da sbloccare.
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
   return `${pill}<a href="account.html?next=${encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash))}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
  }
- const userPlan=access.plan||'free';
- const planOrder=['free','single','starter','smart','pro','advanced','business','max'];
- const userPlanIdx=planOrder.indexOf(userPlan);
- const minPlanIdx=planOrder.indexOf(minPlanKey||'free');
  const n=access.available_credits??access.credits??0;
  const creditsNote=`<small class="locked-credits-note">Hai <b>${n}</b> credit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</small>`;
  if(n>0){
-  // Con crediti disponibili, lo sblocco col credito è SEMPRE la prima opzione - anche per
-  // indicatori di livello superiore al piano (regola aggiornata anche lato server). L'upgrade
-  // resta proposto come alternativa conveniente quando il piano attuale non copre il livello.
-  const upgradeAlt=(minPlanKey&&userPlanIdx<minPlanIdx)?`<a href="pricing.html" class="locked-upgrade-alt">oppure passa al piano ${esc(minPlan)} — lo include senza usare crediti</a>`:'';
-  return `${pill}<button class="btn locked-upgrade-btn" type="button" style="${btnStyle}" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>${creditsNote}${upgradeAlt}`;
- }
- if(minPlanKey&&userPlanIdx<minPlanIdx){
-  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Upgrade a ${esc(minPlan)}</a>${creditsNote}`;
+  return `${pill}<button class="btn locked-upgrade-btn" type="button" style="${btnStyle}" onclick="unlockTool('${esc(toolKey||'')}')">Sblocca con 1 credito</button>${creditsNote}`;
  }
  return `${pill}<a href="pricing.html" class="btn locked-upgrade-btn" style="${btnStyle}">Acquista crediti</a>${creditsNote}`;
 }
