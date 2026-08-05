@@ -6,6 +6,13 @@ try{
  }
 }catch(_){}
 try{
+ const cachedPlanColor=localStorage.getItem('bizscan_last_plan_color');
+ if(cachedPlanColor){
+  const pacchettiEl=document.getElementById('pacchettiChip');
+  if(pacchettiEl){pacchettiEl.style.backgroundColor=cachedPlanColor;pacchettiEl.style.borderColor=cachedPlanColor}
+ }
+}catch(_){}
+try{
  const cachedUnseen=parseInt(localStorage.getItem('bizscan_last_unseen_notifs')||'0',10);
  if(cachedUnseen>0){
   const badgeEl=document.getElementById('notifBadge');
@@ -189,6 +196,7 @@ function updateShell(){
    pacchettiChip.style.backgroundColor='';
    pacchettiChip.style.borderColor='';
   }
+  try{localStorage.setItem('bizscan_last_plan_color',tierColor||'')}catch(_){}
  }
  try{localStorage.setItem('bizscan_last_credits',JSON.stringify({n,pdfN}))}catch(_){}
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
