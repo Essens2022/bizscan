@@ -1090,13 +1090,19 @@ function analysisOverview(p){
  const d=(p&&p.display)||{};
  const gate=(key,html)=>{
   if(key==='indicators')return html;
-  if(toolUnlocked(key))return html;
   const titles={scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'};
   const descriptions={
    scenario:'Profitto stimato in tre scenari — prudente, realistico e ottimistico — con fatturato, utile netto e ROI per ciascuno.',
    benchmark:'Come si posiziona questa attività rispetto alla media del settore, su ROI, margine, tempo di recupero e rischio.',
    distribuzione_costi:'Dove vanno esattamente i soldi dell\'investimento iniziale, ripartiti per voce di spesa.'
   };
+  // Incluso gratis dal piano ma non ancora rivelato consapevolmente in questa visita: mostra
+  // un pulsante "Sblocca GRATIS" invece del contenuto diretto, cosi' la persona capisce
+  // chiaramente che è incluso dal suo piano - nessun costo, solo un tocco di conferma.
+  if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+   return renderFreeToolCard(titles[key],descriptions[key],key);
+  }
+  if(toolUnlocked(key))return html;
   return renderLockedToolCard(titles[key],descriptions[key],key);
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
@@ -1122,6 +1128,22 @@ function analysisOverview(p){
  return `<div class="dash-grid">${gate('indicators',indicatorsHtml)}${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
+// Distingue "incluso gratis dal piano" da "sbloccato con un credito" - un piano non richiede
+// alcuna azione lato server per essere visto, ma la persona deve comunque cliccare
+// consapevolmente "Sblocca GRATIS" per capire chiaramente che è incluso, invece che vederselo
+// comparire subito senza spiegazione. Il set tiene traccia di quali ha già rivelato in QUESTA
+// visita di pagina (si azzera naturalmente ad ogni nuovo caricamento, nessuna persistenza).
+const revealedFreeTools=new Set();
+function toolPlanIncluded(key){const p=findCurrent();return Array.isArray(p?.plan_tool_keys)&&p.plan_tool_keys.includes(key)}
+window.revealFreeTool=(key)=>{
+ revealedFreeTools.add(key);
+ const content=document.getElementById('analysisTabContent');
+ const activeTabBtn=document.querySelector('.tabs button.active');
+ const p=findCurrent();
+ if(content&&activeTabBtn&&p){
+  content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+ }
+}
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
 const PLAN_TIER_COLOR={single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'};
@@ -1204,8 +1226,28 @@ function renderLockedToolCard(title,description,toolKey){
    </div>
   </section>`;
 }
+// Strumento incluso gratis dal piano dell'utente, non ancora rivelato in questa visita.
+// Stile volutamente diverso da quello bloccato (verde, nessun lucchetto) - non è una barriera
+// da superare, solo un tocco di conferma per capire chiaramente cosa include il proprio piano.
+function renderFreeToolCard(title,description,toolKey){
+ const color='#24d98b';
+ const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
+ return `<section class="panel tab-panel locked-tool-card" style="position:relative;background:linear-gradient(180deg,#101a29,#09121e)">
+   <span class="locked-side-bar" style="background:${color}"></span>
+   <div class="locked-tool-inner">
+    <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">
+     <span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel tuo piano</span>
+     <button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="revealFreeTool('${esc(toolKey||'')}')">Sblocca GRATIS</button>
+    </div>
+   </div>
+  </section>`;
+}
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
+ if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+  return `<div id="toolwrap-${esc(key)}">${renderFreeToolCard(title,fallback,key)}</div>`;
+ }
  if(!has)return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
  const visual=toolVisual(key);
  const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
