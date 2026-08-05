@@ -177,14 +177,16 @@ function updateShell(){
  // Il chip "Pacchetti" nella barra in alto prende il colore del piano attivo dell'utente (stesso
  // sistema colori già usato per gli strumenti/prezzi) - resta il violetto originale finché non
  // ha ancora nessun piano, poi cambia automaticamente non appena ne acquista o riceve uno.
+ // Usa backgroundColor (non lo shorthand background) apposta: quello shorthand cancellerebbe
+ // anche il background-image della corona (versione tablet, icona-sola) impostato via CSS.
  const pacchettiChip=document.getElementById('pacchettiChip');
  if(pacchettiChip){
   const tierColor=(access.plan && access.plan!=='free') ? PLAN_TIER_COLOR[access.plan] : null;
   if(tierColor){
-   pacchettiChip.style.background=`linear-gradient(135deg,${tierColor}dd,${tierColor})`;
+   pacchettiChip.style.backgroundColor=tierColor;
    pacchettiChip.style.borderColor=tierColor;
   }else{
-   pacchettiChip.style.background='';
+   pacchettiChip.style.backgroundColor='';
    pacchettiChip.style.borderColor='';
   }
  }
