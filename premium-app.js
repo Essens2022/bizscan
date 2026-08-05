@@ -1107,7 +1107,7 @@ function lockedCta(toolKey){
  const minPlanKey=toolKey?TOOL_MIN_PLAN_KEY[toolKey]:null;
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const color=minPlanKey?(PLAN_TIER_COLOR[minPlanKey]||'#ffb703'):null;
- const pill=minPlanKey?`<span class="locked-pill" style="background:${color}22;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
+ const pill=minPlanKey?`<span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
  const btnStyle=color?`background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a`:'';
  if(!access.authenticated){
   return `${pill}<a href="account.html?next=${encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash))}" class="btn locked-upgrade-btn" style="${btnStyle}">Accedi per continuare</a>`;
