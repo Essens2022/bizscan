@@ -356,6 +356,12 @@ window.claimNotificationPlan=async(notifId)=>{
    return;
   }
   try{const fresh=await BizScanData.accessSummary();Object.assign(access,fresh);updateShell()}catch(_){}
+  // Stessa correzione già applicata a unlockTool(): senza invalidare questa cache, gli
+  // strumenti ora inclusi gratis dal piano appena ricevuto continuerebbero ad apparire
+  // "bloccati" nelle pagine analisi già visitate in questa sessione, finché la cache di 24h
+  // non scade da sola - causa esatta di un caso reale segnalato (credito scalato per uno
+  // strumento che il piano già includeva gratis, perché la pagina mostrava dati non aggiornati).
+  try{sessionStorage.removeItem('cache:publicData')}catch(e){}
   notifications=notifications.map(n=>n.id===notifId?{...n,claimed_at:new Date().toISOString(),seen_at:n.seen_at||new Date().toISOString()}:n);
   refreshSingleNotifItem(notifId);
   renderNotifBadge();
@@ -1084,13 +1090,19 @@ function analysisOverview(p){
  const d=(p&&p.display)||{};
  const gate=(key,html)=>{
   if(key==='indicators')return html;
-  if(toolUnlocked(key))return html;
   const titles={scenario:'Scenari di profitto (annuo)',benchmark:'Confronto con la media categoria',distribuzione_costi:'Distribuzione costi iniziali'};
   const descriptions={
    scenario:'Profitto stimato in tre scenari — prudente, realistico e ottimistico — con fatturato, utile netto e ROI per ciascuno.',
    benchmark:'Come si posiziona questa attività rispetto alla media del settore, su ROI, margine, tempo di recupero e rischio.',
    distribuzione_costi:'Dove vanno esattamente i soldi dell\'investimento iniziale, ripartiti per voce di spesa.'
   };
+  // Incluso gratis dal piano ma non ancora rivelato consapevolmente in questa visita: mostra
+  // un pulsante "Sblocca GRATIS" invece del contenuto diretto, cosi' la persona capisce
+  // chiaramente che è incluso dal suo piano - nessun costo, solo un tocco di conferma.
+  if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+   return renderFreeToolCard(titles[key],descriptions[key],key);
+  }
+  if(toolUnlocked(key))return html;
   return renderLockedToolCard(titles[key],descriptions[key],key);
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
@@ -1116,6 +1128,22 @@ function analysisOverview(p){
  return `<div class="dash-grid">${gate('indicators',indicatorsHtml)}${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
+// Distingue "incluso gratis dal piano" da "sbloccato con un credito" - un piano non richiede
+// alcuna azione lato server per essere visto, ma la persona deve comunque cliccare
+// consapevolmente "Sblocca GRATIS" per capire chiaramente che è incluso, invece che vederselo
+// comparire subito senza spiegazione. Il set tiene traccia di quali ha già rivelato in QUESTA
+// visita di pagina (si azzera naturalmente ad ogni nuovo caricamento, nessuna persistenza).
+const revealedFreeTools=new Set();
+function toolPlanIncluded(key){const p=findCurrent();return Array.isArray(p?.plan_tool_keys)&&p.plan_tool_keys.includes(key)}
+window.revealFreeTool=(key)=>{
+ revealedFreeTools.add(key);
+ const content=document.getElementById('analysisTabContent');
+ const activeTabBtn=document.querySelector('.tabs button.active');
+ const p=findCurrent();
+ if(content&&activeTabBtn&&p){
+  content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+ }
+}
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
 const PLAN_TIER_COLOR={single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'};
@@ -1187,6 +1215,35 @@ const PREMIUM_LOCK_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style
 <circle cx="45" cy="58" r="4.2" fill="#231405"/>
 <rect x="43.3" y="60.5" width="3.4" height="8" rx="1.2" fill="#231405"/>
 </svg>`;
+// Stessa qualità visiva del badge del lucchetto (stessa cornice a scudo, stessi toni oro),
+// ma con un pacco regalo al posto del lucchetto - usato SOLO per gli strumenti già inclusi
+// gratis dal piano, non per quelli davvero bloccati. ID dei gradienti resi unici (suffisso
+// "Gift") per evitare conflitti con l'SVG del lucchetto quando entrambi compaiono in pagina.
+const PREMIUM_GIFT_BADGE=`<svg width="72" height="83" viewBox="0 0 90 104" style="margin-bottom:6px">
+<defs>
+  <linearGradient id="goldBorderGift" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fff3c4"/><stop offset="25%" stop-color="#e8b431"/><stop offset="55%" stop-color="#a9720f"/><stop offset="80%" stop-color="#f2c752"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <radialGradient id="shieldInnerGift" cx="35%" cy="25%" r="80%">
+    <stop offset="0%" stop-color="#1b2430"/><stop offset="60%" stop-color="#0c1017"/><stop offset="100%" stop-color="#04060a"/>
+  </radialGradient>
+  <linearGradient id="boxGold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fff6d8"/><stop offset="18%" stop-color="#f7d35c"/><stop offset="45%" stop-color="#d69a1f"/><stop offset="75%" stop-color="#b87a12"/><stop offset="100%" stop-color="#8a5c0a"/>
+  </linearGradient>
+  <linearGradient id="ribbonGold" x1="0" y1="0" x2="1" y2="0.3">
+    <stop offset="0%" stop-color="#8a5c0a"/><stop offset="30%" stop-color="#f7d35c"/><stop offset="60%" stop-color="#fff6d8"/><stop offset="100%" stop-color="#c68d1c"/>
+  </linearGradient>
+</defs>
+<path d="M45 3 L82 15 V50 C82 76 66 92 45 101 C24 92 8 76 8 50 V15 Z" fill="url(#shieldInnerGift)" stroke="url(#goldBorderGift)" stroke-width="5" stroke-linejoin="round"/>
+<path d="M20 14 L45 6 V40 C34 42 24 36 20 26 Z" fill="#ffffff" opacity="0.035"/>
+<rect x="24" y="48" width="42" height="30" rx="4" fill="url(#boxGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="20" y="40" width="50" height="12" rx="4" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<rect x="41" y="40" width="8" height="38" fill="#8a5c0a" opacity="0.55"/>
+<path d="M45 40 C38 26 26 28 30 36 C33 41 41 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<path d="M45 40 C52 26 64 28 60 36 C57 41 49 40 45 40 Z" fill="url(#ribbonGold)" stroke="#7a4f09" stroke-width="1"/>
+<circle cx="45" cy="40" r="4" fill="#fff6d8" stroke="#7a4f09" stroke-width="1"/>
+<path d="M28 53 h14" stroke="#ffffff" opacity="0.3" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
 function renderLockedToolCard(title,description,toolKey){
  const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
@@ -1198,8 +1255,29 @@ function renderLockedToolCard(title,description,toolKey){
    </div>
   </section>`;
 }
+// Strumento incluso gratis dal piano dell'utente, non ancora rivelato in questa visita.
+// IDENTICO al card bloccato normale (stesso colore del piano, stessa etichetta) - cambiano
+// solo due cose: l'icona (pacco regalo invece di lucchetto) e il testo del pulsante (GRATIS
+// invece di "con 1 credito", dato che non consuma nulla).
+function renderFreeToolCard(title,description,toolKey){
+ const color=toolKey?toolMinPlanColor(toolKey):'#94a3b8';
+ const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
+ const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
+ const pill=minPlan?`<span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
+ return `<section class="panel tab-panel locked-tool-card" style="position:relative;background:linear-gradient(180deg,#101a29,#09121e)">
+   <span class="locked-side-bar" style="background:${color}"></span>
+   <div class="locked-tool-inner">
+    <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${PREMIUM_GIFT_BADGE}${pill}<button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="revealFreeTool('${esc(toolKey||'')}')">Sblocca GRATIS</button>
+    </div>
+   </div>
+  </section>`;
+}
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
+ if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+  return `<div id="toolwrap-${esc(key)}">${renderFreeToolCard(title,fallback,key)}</div>`;
+ }
  if(!has)return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
  const visual=toolVisual(key);
  const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
