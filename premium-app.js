@@ -1623,8 +1623,10 @@ function renderPricing(){
   const v=packageValue(p)
   const saving=v.saving>.01
   const color=PRICE_CARD_COLOR[p.key]||'#9aa5b1'
-  const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='max'?'is-max':''].filter(Boolean).join(' ')
-  return `<article class="${classes}" data-plan="${p.key}" style="border-top:3px solid ${color}">
+  const isCurrentPlan=access.authenticated && access.plan===p.key
+  const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='max'?'is-max':'',isCurrentPlan?'is-current-plan':''].filter(Boolean).join(' ')
+  return `<article class="${classes}" data-plan="${p.key}" style="border-top:3px solid ${color};${isCurrentPlan?`box-shadow:0 0 0 2px ${color}, 0 14px 38px rgba(0,0,0,.14)`:''}">
+   ${isCurrentPlan?`<span class="current-plan-badge" style="background:${color}">✓ Il tuo piano attuale</span>`:''}
    ${p.badge?`<span class="price-badge">${p.badge}</span>`:''}
    <div class="price-card-head"><div><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small><h3 style="color:${color}">${p.name}</h3></div><div class="price-amount">${euro(p.price)}</div></div>
    <p class="price-purpose">${purpose[p.key]}</p>
