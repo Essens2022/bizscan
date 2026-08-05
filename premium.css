@@ -180,8 +180,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .is-max .price-badge{background:linear-gradient(135deg,#7940df,#aa6bff);color:white}
 .price-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-right:0}
 .price-card.has-badge .price-card-head{padding-right:88px}
-.price-card-head small{display:block;color:#8694a7;font-size:7px;font-weight:900;letter-spacing:.11em}
-.price-card-head h3{font-size:18px;margin:4px 0 0;line-height:1.1}
+.price-card-head small{display:block;color:#8694a7;font-size:7px;font-weight:900;letter-spacing:.11em;margin-top:4px}
+.price-card-head h3{font-size:22px;margin:0;line-height:1.1}
 .price-amount{font-size:27px;line-height:1;color:var(--gold);font-weight:950;white-space:nowrap;letter-spacing:-.04em}
 .price-card .btn.full{font-size:14px;font-weight:900;min-height:44px}
 .price-purpose{color:var(--muted);font-size:9px;line-height:1.45;margin:9px 0 11px;min-height:26px}

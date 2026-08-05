@@ -1628,7 +1628,7 @@ function renderPricing(){
   return `<article class="${classes}" data-plan="${p.key}" style="${isCurrentPlan?'':`border-top:3px solid ${color}`}">
    ${isCurrentPlan?`<span class="current-plan-badge">✓ IL TUO PIANO ATTUALE</span>`:''}
    ${p.badge?`<span class="price-badge">${p.badge}</span>`:''}
-   <div class="price-card-head"><div><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small><h3 style="color:${color}">${p.name}</h3></div><div class="price-amount">${euro(p.price)}</div></div>
+   <div class="price-card-head"><div><h3 style="color:${color}">${p.name}</h3><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small></div><div class="price-amount">${euro(p.price)}</div></div>
    <p class="price-purpose">${purpose[p.key]}</p>
    <ul class="price-benefits">${benefits(p).map(x=>`<li>${x}</li>`).join('')}</ul>
    ${saving?`<div class="price-proof"><span><small>Valore acquistato separatamente</small><del>${euro(v.total)}</del></span><span><small>Risparmio incluso</small><strong>${euro(v.saving)}</strong></span></div>`:'<div class="price-proof"><span><small>Prezzo diretto</small><strong>'+euro(p.price)+'</strong></span></div>'}
