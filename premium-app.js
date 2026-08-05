@@ -276,7 +276,7 @@ function notifItemHtml(n){
  // ontoggle segna letta la notifica SOLO quando questa specifica viene espansa (tocco sulla
  // freccina) - non più tutte insieme all'apertura del pannello, cosi' il titolo resta bianco
  // finché la persona non apre davvero quella notifica, non solo il campanello in generale.
- return `<details class="notif-item${unseen?' is-unseen':''}" data-notif-id="${n.id}" ontoggle="if(this.open)markSingleNotificationSeen('${n.id}',this)"><summary class="notif-item-summary"><span class="notif-item-title">${esc(n.title)}</span><svg class="notif-item-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="notif-item-body">${img}<p class="notif-item-msg">${esc(n.message)}</p>${actionHtml}</div></details>`;
+ return `<details class="notif-item${unseen?' is-unseen':''}" data-notif-id="${n.id}" ontoggle="if(this.open){markSingleNotificationSeen('${n.id}',this);scrollOpenedNotifIntoView(this)}"><summary class="notif-item-summary"><span class="notif-item-title">${esc(n.title)}</span><svg class="notif-item-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="notif-item-body">${img}<p class="notif-item-msg">${esc(n.message)}</p>${actionHtml}</div></details>`;
 }
 
 async function markSingleNotificationSeen(id,detailsEl){
@@ -291,6 +291,18 @@ async function markSingleNotificationSeen(id,detailsEl){
   if(detailsEl)detailsEl.classList.remove('is-unseen');
   renderNotifBadge();
  }catch(e){console.warn('mark_notification_seen',e)}
+}
+
+// Il pannello ha altezza fissa (non cresce mai) - un messaggio lungo (es. un piano regalato con
+// tutti gli strumenti elencati) può quindi spingere il pulsante "Ricevi" fuori dalla vista,
+// richiedendo uno scroll manuale per trovarlo. Scorre automaticamente cosi' il fondo
+// dell'elemento appena aperto (dove sta il pulsante) diventa subito visibile, senza bisogno di
+// cercarlo - si attiva SEMPRE all'apertura, anche se la notifica era già stata letta prima
+// (a differenza di markSingleNotificationSeen, che una volta segnata letta non rifà nulla).
+function scrollOpenedNotifIntoView(detailsEl){
+ requestAnimationFrame(()=>{
+  detailsEl.scrollIntoView({block:'end',behavior:'smooth'});
+ });
 }
 
 function renderNotifPanel(){
