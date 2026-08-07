@@ -1154,14 +1154,17 @@ function analysisOverview(p){
    benchmark:'Come si posiziona questa attività rispetto alla media del settore, su ROI, margine, tempo di recupero e rischio.',
    distribuzione_costi:'Dove vanno esattamente i soldi dell\'investimento iniziale, ripartiti per voce di spesa.'
   };
-  if(toolUnlocked(key))return html;
-  // Incluso dal piano E ha ancora bonus disponibili: mostra "Sblocca GRATIS" (consuma un
-  // bonus reale, tracciato lato server). Se il bonus è esaurito, cade nel caso normale
-  // sotto - stesso strumento, ma richiede un credito come chiunque altro.
+  // BUG REALE trovato e corretto: questi 3 strumenti non venivano mai avvolti in un
+  // <div id="toolwrap-KEY">, a differenza di toolBlock() che lo fa sempre per tutti gli
+  // altri strumenti - senza quel contenitore, sia lo stato "in corso" (opacità ridotta) sia
+  // l'aggiornamento immediato dopo lo sblocco non trovavano alcun elemento da modificare,
+  // lasciando la card bloccata visivamente finché la pagina non veniva ricaricata da zero
+  // (lo sblocco lato server riusciva comunque, solo l'interfaccia non lo rifletteva subito).
+  if(toolUnlocked(key))return `<div id="toolwrap-${esc(key)}">${html}</div>`;
   if((access.available_plan_bonus||0) > 0){
-   return renderFreeToolCard(titles[key],descriptions[key],key);
+   return `<div id="toolwrap-${esc(key)}">${renderFreeToolCard(titles[key],descriptions[key],key)}</div>`;
   }
-  return renderLockedToolCard(titles[key],descriptions[key],key);
+  return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(titles[key],descriptions[key],key)}</div>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
  const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
