@@ -1686,6 +1686,15 @@ function renderPricing(){
  const purpose={
   single:'Per conoscere una singola attività',starter:'Per valutare alcune alternative',smart:'Per confrontare con dati più profondi',pro:'Per scegliere con strumenti finanziari completi',advanced:'Per una decisione approfondita',business:'Per analizzare più opportunità in modo professionale',max:'Per utilizzare tutti gli strumenti BizScan'
  }
+ // Stesso conteggio cumulativo usato lato server (dinamico, non fisso): quanti strumenti unici
+ // sono inclusi fino a questo livello di piano - mostrato in evidenza sulla card, cosi' il
+ // bonus di sblocchi gratuiti si vede PRIMA dell'acquisto, non solo dopo.
+ const planOrder=['single','starter','smart','pro','advanced','business','max']
+ const planBonusCount=key=>{
+  const idx=planOrder.indexOf(key)
+  if(idx<0)return 0
+  return Object.values(TOOL_MIN_PLAN_KEY).filter(t=>planOrder.indexOf(t)<=idx).length
+ }
  const benefits=p=>p.features&&p.features.length?p.features.slice(0,6):[`${p.analyses} crediti`]
  const PRICE_CARD_COLOR=PLAN_TIER_COLOR
  const cards=PACKAGES.map(p=>{
@@ -1693,12 +1702,14 @@ function renderPricing(){
   const saving=v.saving>.01
   const color=PRICE_CARD_COLOR[p.key]||'#9aa5b1'
   const isCurrentPlan=access.authenticated && access.plan===p.key
+  const bonusCount=planBonusCount(p.key)
   const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='max'?'is-max':'',isCurrentPlan?'is-current-plan':''].filter(Boolean).join(' ')
   return `<article class="${classes}" data-plan="${p.key}" style="${isCurrentPlan?'':`border-top:3px solid ${color}`}">
    ${isCurrentPlan?`<span class="current-plan-badge">✓ IL TUO PIANO ATTUALE</span>`:''}
    ${p.badge?`<span class="price-badge">${p.badge}</span>`:''}
    <div class="price-card-head"><div><h3 style="color:${color}">${p.name}</h3><small>${p.key==='single'?'ACCESSO SINGOLO':'PAGAMENTO UNICO'}</small></div><div class="price-amount">${euro(p.price)}</div></div>
    <p class="price-purpose">${purpose[p.key]}</p>
+   ${bonusCount>0?`<div class="price-bonus-line" style="border-color:${color}55;background:${color}14"><b style="color:${color}">🎁 ${bonusCount}</b> sblocc${bonusCount===1?'o':'hi'} gratuit${bonusCount===1?'o':'i'} inclus${bonusCount===1?'o':'i'}</div>`:''}
    <ul class="price-benefits">${benefits(p).map(x=>`<li>${x}</li>`).join('')}</ul>
    ${saving?`<div class="price-proof"><span><small>Valore acquistato separatamente</small><del>${euro(v.total)}</del></span><span><small>Risparmio incluso</small><strong>${euro(v.saving)}</strong></span></div>`:'<div class="price-proof"><span><small>Prezzo diretto</small><strong>'+euro(p.price)+'</strong></span></div>'}
    <button class="btn full" style="background:${color};color:#0c1420;font-weight:900;border:none" onclick="choosePackage('${p.key}')">Scegli ${p.name}</button>
