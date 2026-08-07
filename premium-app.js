@@ -31,7 +31,7 @@ let PACKAGES=[
  {key:'business',name:'Business',price:18.99,analyses:49,pdfCredits:5,badge:'MIGLIOR VALORE',indicatorCount:0,compare:'Base',features:['Tutti gli strumenti dei piani precedenti','49 crediti','Analisi della concorrenza locale','Domanda e stagionalità','5 crediti report PDF']},
  {key:'max',name:'BizScan Max',price:23.99,analyses:62,pdfCredits:7,badge:'MASSIMA PROFONDITÀ',indicatorCount:0,compare:'Base',features:['Tutti gli strumenti dei piani precedenti','62 crediti','Matrice dei rischi','Strategie di crescita','7 crediti report PDF']}
 ]
-const UNIT_PRICES={analysis:1.99,indicator:2.99,pdf:3.99,comparison:1.99}
+const UNIT_PRICES={analysis:1.99,indicator:1.99,pdf:3.99,comparison:1.99}
 const COMPARISON_UNITS={Base:0,Dettagliato:1,Avanzato:2,Professionale:3,Completo:4}
 const PDF_BULK_PRICES={1:1.99,3:4.99,5:6.99,10:11.99}
 function pdfBulkValue(n){
@@ -80,7 +80,7 @@ function applyDbPlans(rows){
   const d=PACKAGES.find(p=>p.key===r.type)||{};
   return {key:r.type,name:r.title||d.name||r.type,price:Number(r.price)||d.price||0,
    analyses:Number(r.analysis_limit??d.analyses??0),pdfCredits:Number(r.pdf_credits??d.pdfCredits??0),
-   badge:d.badge||'',indicatorCount:d.indicatorCount||0,compare:d.compare||'Base',
+   badge:d.badge||'',indicatorCount:(typeof planBonusCount==='function'?planBonusCount(r.type):0)||d.indicatorCount||0,compare:d.compare||'Base',
    features:d.features||[String(r.description||'')].filter(Boolean)};
  });
 }
@@ -1274,6 +1274,16 @@ window._doUnlockToolWithPlanBonus=async(toolKey)=>{
 }
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 const TOOL_MIN_PLAN_KEY={scenario:'single',break_even:'starter',benchmark:'smart',distribuzione_costi:'smart',cash_flow:'pro',costi_fissi_variabili:'pro',personale:'advanced',fornitori:'advanced',concorrenza_locale:'business',stagionalita:'business',matrice_rischi:'max',strategie_crescita:'max'};
+const PLAN_ORDER=['single','starter','smart','pro','advanced','business','max'];
+// Numero di sblocchi bonus gratuiti che un piano concede = numero di strumenti inclusi fino a
+// quel livello (cumulativo) - stessa formula usata dal database (fulfill_plan_purchase) e ora
+// condivisa da OGNI punto del frontend che deve mostrarla (pagina prezzi, calcolo del valore,
+// fatturazione), invece di essere ricalcolata separatamente in più posti.
+function planBonusCount(key){
+ const idx=PLAN_ORDER.indexOf(key);
+ if(idx<0)return 0;
+ return Object.values(TOOL_MIN_PLAN_KEY).filter(t=>PLAN_ORDER.indexOf(t)<=idx).length;
+}
 const PLAN_TIER_COLOR={single:'#a7b8d3',starter:'#22c55e',smart:'#3b82f6',pro:'#13bbd3',advanced:'#ec3f96',business:'#a445f4',max:'#ffb30b'};
 function toolMinPlanColor(key){
  const planKey=TOOL_MIN_PLAN_KEY[key];
@@ -1719,15 +1729,8 @@ function renderPricing(){
  const purpose={
   single:'Per conoscere una singola attività',starter:'Per valutare alcune alternative',smart:'Per confrontare con dati più profondi',pro:'Per scegliere con strumenti finanziari completi',advanced:'Per una decisione approfondita',business:'Per analizzare più opportunità in modo professionale',max:'Per utilizzare tutti gli strumenti BizScan'
  }
- // Stesso conteggio cumulativo usato lato server (dinamico, non fisso): quanti strumenti unici
- // sono inclusi fino a questo livello di piano - mostrato in evidenza sulla card, cosi' il
- // bonus di sblocchi gratuiti si vede PRIMA dell'acquisto, non solo dopo.
- const planOrder=['single','starter','smart','pro','advanced','business','max']
- const planBonusCount=key=>{
-  const idx=planOrder.indexOf(key)
-  if(idx<0)return 0
-  return Object.values(TOOL_MIN_PLAN_KEY).filter(t=>planOrder.indexOf(t)<=idx).length
- }
+ // Il conteggio bonus ora usa la funzione globale condivisa planBonusCount() (stessa formula
+ // usata anche da applyDbPlans per il calcolo del valore) - non più duplicata qui localmente.
  const benefits=p=>p.features&&p.features.length?p.features.slice(0,6):[`${p.analyses} crediti`]
  const PRICE_CARD_COLOR=PLAN_TIER_COLOR
  const cards=PACKAGES.map(p=>{
@@ -1826,6 +1829,8 @@ function invoiceRowHtml(o){
  let contentColor='#ffb400',contentIcon='📦';
  if(isPlan){
   contentColor=PLAN_TIER_COLOR[o.plan_type]||'#ffb400';
+  const bonusCount=planBonusCount(o.plan_type);
+  if(bonusCount>0)items.push(`🎁 ${bonusCount} sblocc${bonusCount===1?'o':'hi'} gratuit${bonusCount===1?'o':'i'} su qualsiasi indicatore`);
   if(o.plan_analysis_credits>0)items.push(`${o.plan_analysis_credits} credit${o.plan_analysis_credits===1?'o':'i'} analisi`);
   if(o.plan_pdf_credits>0)items.push(`${o.plan_pdf_credits} credit${o.plan_pdf_credits===1?'o':'i'} PDF`);
   if(Array.isArray(o.plan_tool_names))items.push(...o.plan_tool_names);
