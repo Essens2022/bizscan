@@ -1228,15 +1228,13 @@ window._doUnlockToolWithPlanBonus=async(toolKey)=>{
   if(typeof access.available_plan_bonus==='number')access.available_plan_bonus=Math.max(0,access.available_plan_bonus-1);
   try{sessionStorage.removeItem('cache:publicData')}catch(e){}
   toast('Strumento sbloccato con il bonus del piano');
+  // Sostituisce TUTTO il contenuto della scheda, non solo la card appena sbloccata - se sono
+  // visibili più card "GRATIS" o "con credito" contemporaneamente, ognuna mostra un contatore
+  // "Hai N disponibili" che deve aggiornarsi ovunque, non solo su quella cliccata.
   const activeTabBtn=document.querySelector('.tabs button.active');
   const content=document.getElementById('analysisTabContent');
-  const targetWrap=document.getElementById(`toolwrap-${toolKey}`);
-  if(targetWrap&&activeTabBtn){
-   const freshTabHtml=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
-   const temp=document.createElement('div');
-   temp.innerHTML=freshTabHtml;
-   const freshWrap=temp.querySelector(`#toolwrap-${toolKey}`);
-   if(freshWrap)targetWrap.replaceWith(freshWrap);
+  if(content&&activeTabBtn){
+   content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
   }
  }catch(e){
   console.error('unlockToolWithPlanBonus',e);
@@ -1440,18 +1438,12 @@ window._doUnlockTool=async(toolKey)=>{
   try{sessionStorage.removeItem('cache:publicData')}catch(e){}
   toast('Strumento sbloccato con successo');
   updateShell();
+  // Sostituisce TUTTO il contenuto della scheda, non solo il blocco appena sbloccato - altri
+  // strumenti ancora bloccati sulla stessa pagina mostrano "Hai N crediti disponibili", che
+  // deve aggiornarsi ovunque appena viene speso un credito, non restare indietro.
   const activeTabBtn=document.querySelector('.tabs button.active');
   const content=document.getElementById('analysisTabContent');
-  const targetWrap=document.getElementById(`toolwrap-${toolKey}`);
-  if(targetWrap&&activeTabBtn){
-   // Aggiornamento mirato: sostituisce SOLO il blocco appena sbloccato, lasciando intatti gli altri strumenti sulla stessa scheda
-   const freshTabHtml=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
-   const temp=document.createElement('div');
-   temp.innerHTML=freshTabHtml;
-   const freshWrap=temp.querySelector(`#toolwrap-${toolKey}`);
-   if(freshWrap)targetWrap.outerHTML=freshWrap.outerHTML;
-   else if(content)content.innerHTML=freshTabHtml;
-  }else if(activeTabBtn&&content){
+  if(activeTabBtn&&content){
    content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
   }else{
    renderAnalysis();
