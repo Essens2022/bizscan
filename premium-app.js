@@ -1796,18 +1796,27 @@ function invoiceRowHtml(o){
  // pagina prezzi (price-bonus-line + price-benefits) - non uno stile nuovo, coerenza totale.
  // Dentro un <details> cosi' la lista resta compatta, con il dettaglio a un tocco di distanza.
  const isPlan=!!o.plan_type;
- const planColor=isPlan?(PLAN_TIER_COLOR[o.plan_type]||'#ffb400'):'#ffb400';
  const items=[];
+ let contentColor='#ffb400',contentIcon='📦';
  if(isPlan){
+  contentColor=PLAN_TIER_COLOR[o.plan_type]||'#ffb400';
   if(o.plan_analysis_credits>0)items.push(`${o.plan_analysis_credits} credit${o.plan_analysis_credits===1?'o':'i'} analisi`);
   if(o.plan_pdf_credits>0)items.push(`${o.plan_pdf_credits} credit${o.plan_pdf_credits===1?'o':'i'} PDF`);
   if(Array.isArray(o.plan_tool_names))items.push(...o.plan_tool_names);
  }else{
-  if(o.standalone_analysis_credits>0)items.push(`${o.standalone_analysis_credits} credit${o.standalone_analysis_credits===1?'o':'i'} analisi`);
-  if(o.standalone_pdf_credits>0)items.push(`${o.standalone_pdf_credits} credit${o.standalone_pdf_credits===1?'o':'i'} PDF`);
+  // Niente colore di piano qui - crediti e PDF sono neutri, ma distinti TRA loro (non solo
+  // un grigio unico) cosi' si riconoscono a colpo d'occhio: blu spento per analisi, ambra
+  // spento per PDF. Se un ordine contiene entrambi, usa un terzo tono neutro condiviso.
+  const hasAnalysis=o.standalone_analysis_credits>0, hasPdf=o.standalone_pdf_credits>0;
+  if(hasAnalysis&&hasPdf){contentColor='#8f9bad';contentIcon='🎫'}
+  else if(hasPdf){contentColor='#b08a5c';contentIcon='📄'}
+  else if(hasAnalysis){contentColor='#6b8fa8';contentIcon='📊'}
+  if(hasAnalysis)items.push(`${o.standalone_analysis_credits} credit${o.standalone_analysis_credits===1?'o':'i'} analisi`);
+  if(hasPdf)items.push(`${o.standalone_pdf_credits} credit${o.standalone_pdf_credits===1?'o':'i'} PDF`);
  }
+ const planColor=contentColor;
  const contentsHtml=items.length?`<div class="invoice-contents">
-   <div class="price-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">📦</b> Cosa includeva</div>
+   <div class="price-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">${contentIcon}</b> Cosa includeva</div>
    <ul class="price-benefits invoice-contents-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   </div>`:'';
  const label=o.plan_name||(items.length?'Crediti':'Acquisto');
