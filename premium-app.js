@@ -274,8 +274,12 @@ function notifItemHtml(n){
   if(n.bonus_pdf_credits>0)items.push(`${n.bonus_pdf_credits} credit${n.bonus_pdf_credits===1?'o':'i'} PDF`);
   if(Array.isArray(n.bonus_tool_names))items.push(...n.bonus_tool_names);
   if(!items.length)return '';
+  // Il numero di sblocchi gratuiti bonus è esattamente il numero di strumenti inclusi (stessa
+  // logica già usata nella pagina prezzi) - mostrato ora esplicitamente come cifra, non solo
+  // implicito nella lista sottostante.
+  const bonusCount=Array.isArray(n.bonus_tool_names)?n.bonus_tool_names.length:0;
   const bonusLine=n.action_type==='claim_plan'
-   ?`<div class="price-bonus-line notif-gift-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">🎁</b> Indicatori chiave gratis</div>`
+   ?`<div class="price-bonus-line notif-gift-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">🎁 ${bonusCount}</b> sblocc${bonusCount===1?'o':'hi'} gratuit${bonusCount===1?'o':'i'} inclus${bonusCount===1?'o':'i'}</div>`
    :`<div class="price-bonus-line notif-gift-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">🎁</b> Contenuto del regalo</div>`;
   return `${bonusLine}<ul class="price-benefits notif-gift-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
  };
