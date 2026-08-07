@@ -1822,7 +1822,7 @@ async function renderInvoices(){
   host.innerHTML='<div class="empty"><h1>Fatturazione</h1><p>Accedi al tuo account per vedere la cronologia dei tuoi acquisti.</p><a class="btn gold" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi</a></div>';
   return;
  }
- host.innerHTML='<section class="page-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList" style="max-height:65vh;overflow-y:auto;padding-right:4px"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
+ host.innerHTML='<section class="page-title invoice-fixed-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList" class="invoice-list-below-fixed-title"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
  const list=document.getElementById('invoicesList');
  try{
   const orders=await BizScanData.fetchMyOrders();
