@@ -163,7 +163,33 @@ async function load(){
   heroSeconds=rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):5;
   setSessionCache('publicData',{analyses,heroMedia,heroPhrases,heroTransition,heroSeconds,plansRaw:rp.status==='fulfilled'?rp.value:null});
  }
- if(rs.status==='fulfilled'){access=rs.value}else{access={authenticated:false,credits:0}}
+ if(rs.status==='fulfilled'){
+  access=rs.value;
+ }else{
+  // BUG REALE corretto: prima, un semplice fallimento di rete (connessione lenta, timeout)
+  // durante il caricamento di accessSummary() veniva interpretato come "non sei autenticato",
+  // mostrando un falso logout anche quando la sessione reale era perfettamente valida - la
+  // persona vedeva "disconnesso" per un attimo, poi risultava ancora loggata su un'altra
+  // pagina, perché il vero token di sessione non era mai stato toccato, solo QUELLA singola
+  // richiesta di dati era fallita. Ora, prima di arrendersi, controlla se esiste comunque una
+  // sessione valida SALVATA LOCALMENTE (nessuna rete richiesta per questo controllo) - se sì,
+  // resta autenticato usando gli ultimi valori noti (crediti/PDF dalla cache locale), invece
+  // di mostrare un logout falso solo perché una richiesta di rete è scivolata.
+  console.warn('accessSummary fallito, verifico sessione locale prima di considerare l\'utente disconnesso',rs.reason);
+  let hasLocalSession=false;
+  try{
+   const c=await BizScanData.getSupabaseClient();
+   const{data:sd}=await c.auth.getSession();
+   hasLocalSession=!!sd?.session?.access_token;
+  }catch(_){}
+  if(hasLocalSession){
+   let cachedCredits={n:0,pdfN:0};
+   try{cachedCredits=JSON.parse(localStorage.getItem('bizscan_last_credits')||'null')||cachedCredits}catch(_){}
+   access={authenticated:true,credits:cachedCredits.n,available_credits:cachedCredits.n,available_pdf_credits:cachedCredits.pdfN,available_plan_bonus:0,plan:'free',unlocked_analyses:0,subscription_active:false,unlocked:[],unlocked_tools:['score','investimento','rischio','rientro']};
+  }else{
+   access={authenticated:false,credits:0};
+  }
+ }
  // I preferiti sono dati personali dell'account: l'unica fonte di verità è il server.
  // Un ospite non autenticato non ha una lista di preferiti locale che poi "eredita" al login.
  if(access.authenticated){
