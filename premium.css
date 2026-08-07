@@ -185,6 +185,8 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .price-amount{font-size:27px;line-height:1;color:var(--gold);font-weight:950;white-space:nowrap;letter-spacing:-.04em}
 .price-card .btn.full{font-size:14px;font-weight:900;min-height:44px}
 .price-purpose{color:var(--muted);font-size:9px;line-height:1.45;margin:9px 0 11px;min-height:26px}
+.price-bonus-line{border:1px solid;border-radius:9px;padding:7px 10px;font-size:10.5px;font-weight:700;color:#c3cbda;margin:0 0 10px}
+.price-bonus-line b{font-weight:950;font-size:12px}
 .price-benefits{list-style:none;padding:0;margin:0;display:grid;gap:6px;flex:1}
 .price-benefits li{font-size:9px;line-height:1.35;color:#d7dee7}
 .price-benefits li:before{content:'✓';color:var(--green);font-weight:900;margin-right:7px}
