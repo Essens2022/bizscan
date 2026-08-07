@@ -161,7 +161,6 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .price-card{position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid var(--line2);border-radius:16px;background:linear-gradient(180deg,#101a29,#09121e);padding:16px;box-shadow:0 14px 38px rgba(0,0,0,.14)}
 .price-card:hover{border-color:#415672;transform:translateY(-1px)}
 .price-card.is-pro{box-shadow:0 0 0 1px rgba(19,187,211,.12),0 18px 45px rgba(19,187,211,.08)}
-.price-card.is-max{background:radial-gradient(circle at 90% 100%,rgba(255,179,11,.22),transparent 45%),linear-gradient(180deg,#1b1230,#09121d)}
 .price-badge{position:absolute;top:12px;right:12px;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#121212;font-size:8.5px;font-weight:950;letter-spacing:.04em}
 @property --border-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 .current-plan-badge{position:absolute;top:12px;left:12px;padding:7px 13px;border-radius:999px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.65);font-size:9.5px;font-weight:950;letter-spacing:.02em;white-space:nowrap;z-index:1;box-shadow:0 4px 14px rgba(0,0,0,.35);background:linear-gradient(90deg,#a7b8d3,#22c55e,#3b82f6,#13bbd3,#ec3f96,#a445f4,#ffb30b,#a7b8d3);background-size:250% 100%;animation:planBadgeShimmer 5s linear infinite}
