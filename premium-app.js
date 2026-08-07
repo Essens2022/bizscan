@@ -1774,24 +1774,31 @@ function invoiceRowHtml(o){
  const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
  const statusLabel=({completed:'Completato',paid:'Completato',pending:'In attesa',failed:'Fallito',refunded:'Rimborsato'})[o.status]||o.status;
  const amountHtml=o.is_admin_gift
-  ?`<span style="display:flex;align-items:center;gap:6px"><del style="color:var(--muted);font-weight:400">${euro(o.plan_real_price||0)}</del><strong style="color:#24d98b">🎁 REGALO</strong></span>`
+  ?`<span style="display:flex;align-items:center;gap:6px">${o.plan_type?`<del style="color:var(--muted);font-weight:400">${euro(o.plan_real_price||0)}</del>`:''}<strong style="color:#24d98b">🎁 REGALO</strong></span>`
   :`<strong>${euro(o.amount)}</strong>`;
  // Riusa esattamente lo stesso linguaggio visivo già stabilito per le notifiche regalo e la
  // pagina prezzi (price-bonus-line + price-benefits) - non uno stile nuovo, coerenza totale.
  // Dentro un <details> cosi' la lista resta compatta, con il dettaglio a un tocco di distanza.
- const planColor=o.plan_type?(PLAN_TIER_COLOR[o.plan_type]||'#ffb400'):null;
+ const isPlan=!!o.plan_type;
+ const planColor=isPlan?(PLAN_TIER_COLOR[o.plan_type]||'#ffb400'):'#ffb400';
  const items=[];
- if(o.plan_analysis_credits>0)items.push(`${o.plan_analysis_credits} credit${o.plan_analysis_credits===1?'o':'i'} analisi`);
- if(o.plan_pdf_credits>0)items.push(`${o.plan_pdf_credits} credit${o.plan_pdf_credits===1?'o':'i'} PDF`);
- if(Array.isArray(o.plan_tool_names))items.push(...o.plan_tool_names);
- const contentsHtml=(items.length&&planColor)?`<div class="invoice-contents">
+ if(isPlan){
+  if(o.plan_analysis_credits>0)items.push(`${o.plan_analysis_credits} credit${o.plan_analysis_credits===1?'o':'i'} analisi`);
+  if(o.plan_pdf_credits>0)items.push(`${o.plan_pdf_credits} credit${o.plan_pdf_credits===1?'o':'i'} PDF`);
+  if(Array.isArray(o.plan_tool_names))items.push(...o.plan_tool_names);
+ }else{
+  if(o.standalone_analysis_credits>0)items.push(`${o.standalone_analysis_credits} credit${o.standalone_analysis_credits===1?'o':'i'} analisi`);
+  if(o.standalone_pdf_credits>0)items.push(`${o.standalone_pdf_credits} credit${o.standalone_pdf_credits===1?'o':'i'} PDF`);
+ }
+ const contentsHtml=items.length?`<div class="invoice-contents">
    <div class="price-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">📦</b> Cosa includeva</div>
    <ul class="price-benefits invoice-contents-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   </div>`:'';
+ const label=o.plan_name||(items.length?'Crediti':'Acquisto');
  if(!contentsHtml){
-  return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+  return `<div class="purchase-history-row"><div><b>${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
  }
- return `<details class="purchase-history-row is-expandable"><summary class="purchase-history-summary"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></summary>${contentsHtml}</details>`;
+ return `<details class="purchase-history-row is-expandable"><summary class="purchase-history-summary"><div><b>${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></summary>${contentsHtml}</details>`;
 }
 async function renderInvoices(){
  const host=$('#invoicesContent');if(!host)return;
@@ -1799,7 +1806,7 @@ async function renderInvoices(){
   host.innerHTML='<div class="empty"><h1>Fatturazione</h1><p>Accedi al tuo account per vedere la cronologia dei tuoi acquisti.</p><a class="btn gold" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi</a></div>';
   return;
  }
- host.innerHTML='<section class="page-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
+ host.innerHTML='<section class="page-title"><h1>Fatturazione</h1><p>Tutti i tuoi acquisti, in un unico posto</p></section><div id="invoicesList" style="max-height:65vh;overflow-y:auto;padding-right:4px"><p style="color:var(--muted);font-size:12px">Caricamento…</p></div>';
  const list=document.getElementById('invoicesList');
  try{
   const orders=await BizScanData.fetchMyOrders();
