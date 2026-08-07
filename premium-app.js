@@ -188,7 +188,9 @@ async function load(){
   if(hasLocalSession){
    let cachedCredits={n:0,pdfN:0};
    try{cachedCredits=JSON.parse(localStorage.getItem('bizscan_last_credits')||'null')||cachedCredits}catch(_){}
-   access={authenticated:true,credits:cachedCredits.n,available_credits:cachedCredits.n,available_pdf_credits:cachedCredits.pdfN,available_plan_bonus:0,plan:'free',unlocked_analyses:0,subscription_active:false,unlocked:[],unlocked_tools:['score','investimento','rischio','rientro']};
+   let cachedPlan='free';
+   try{cachedPlan=localStorage.getItem('bizscan_last_plan')||'free'}catch(_){}
+   access={authenticated:true,credits:cachedCredits.n,available_credits:cachedCredits.n,available_pdf_credits:cachedCredits.pdfN,available_plan_bonus:0,plan:cachedPlan,unlocked_analyses:0,subscription_active:false,unlocked:[],unlocked_tools:['score','investimento','rischio','rientro']};
   }else{
    access={authenticated:false,credits:0};
   }
@@ -227,6 +229,7 @@ function updateShell(){
   }
   try{localStorage.setItem('bizscan_last_plan_color',tierColor||'')}catch(_){}
  }
+ try{localStorage.setItem('bizscan_last_plan',access.plan||'')}catch(_){}
  try{localStorage.setItem('bizscan_last_credits',JSON.stringify({n,pdfN}))}catch(_){}
  const nameEl=$('#shellProfileName'),statusEl=$('#shellProfileStatus');
  if(nameEl){
