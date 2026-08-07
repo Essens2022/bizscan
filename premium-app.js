@@ -1816,13 +1816,16 @@ window.chooseAddon=async type=>{
  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
  await openStripeCheckoutWithRetry({item_type:type,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)}, item[0]);
 };
-function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="pdf-topup-head"><div class="pdf-topup-icon">📄</div><div><small class="pdf-topup-kicker">REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>{
- // Stesso identico pattern già collaudato sulle card dei piani principali (price-proof) -
- // non uno stile nuovo inventato qui, coerenza visiva reale con il resto del sito.
+function pdfTopups(){const packs=[{n:1,p:1.99,tag:''},{n:3,p:4.99,tag:''},{n:5,p:6.99,tag:'PIÙ RICHIESTO'},{n:10,p:11.99,tag:'MIGLIOR VALORE'}];return `<section class="pdf-topups section"><div class="pdf-topup-head"><div class="pdf-topup-icon">📄</div><div><small class="pdf-topup-kicker">REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>{
+ // Valore se acquistati uno alla volta (1,99€ ciascuno) - classi dedicate e uniche (pdf-pack-*),
+ // niente riuso di .price-proof qui: quella condivideva il selettore "strong" con .pdf-credit-card,
+ // che vinceva per specificità e rompeva completamente lo stile del risparmio (numeri enormi,
+ // colore sbagliato) - causa reale del problema segnalato.
  const separateValue=x.n*1.99;
  const saving=separateValue-x.p;
- const proofHtml=saving>0.01?`<div class="price-proof"><span><small>Valore separato</small><del>${euro(separateValue)}</del></span><span><small>Risparmio incluso</small><strong>${euro(saving)}</strong></span></div>`:'';
- return `<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong>${proofHtml}<button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`;
+ const savingHtml=saving>0.01?`<div class="pdf-pack-saving"><span class="pdf-pack-saving-old">${euro(separateValue)}</span><span class="pdf-pack-saving-new">Risparmi ${euro(saving)}</span></div>`:`<div class="pdf-pack-saving pdf-pack-saving-empty">Prezzo base</div>`;
+ const tagHtml=x.tag?`<span class="pdf-pack-tag">${x.tag}</span>`:'';
+ return `<article class="panel pdf-credit-card${x.tag?' is-featured':''}">${tagHtml}<div class="pdf-pack-count">${x.n}</div><div class="pdf-pack-label">${x.n===1?'report PDF':'report PDF'}</div><div class="pdf-pack-price">${euro(x.p)}</div>${savingHtml}<button class="btn gold full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi</button></article>`;
 }).join('')}</div></section>`}
 function invoiceRowHtml(o){
  const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
