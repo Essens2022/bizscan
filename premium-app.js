@@ -264,34 +264,33 @@ function notifItemHtml(n){
  let actionHtml='';
  let bodyHtml='';
  const introHtml=`<p class="notif-gift-intro">${esc(n.message)}</p>`;
+ // Stessa identica lingua visiva della pagina prezzi (price-bonus-line + price-benefits) - non
+ // uno stile nuovo inventato per le notifiche, per coerenza totale tra le due pagine, come
+ // richiesto esplicitamente ("cam asa cum este chear pe pagina pachetilor").
+ const giftBreakdown=(planColor)=>{
+  const totalBonus=(n.bonus_analysis_credits||0)+(n.bonus_pdf_credits||0);
+  const items=[];
+  if(n.bonus_analysis_credits>0)items.push(`${n.bonus_analysis_credits} credit${n.bonus_analysis_credits===1?'o':'i'} analisi`);
+  if(n.bonus_pdf_credits>0)items.push(`${n.bonus_pdf_credits} credit${n.bonus_pdf_credits===1?'o':'i'} PDF`);
+  if(Array.isArray(n.bonus_tool_names))items.push(...n.bonus_tool_names);
+  if(!items.length)return '';
+  const bonusLine=n.action_type==='claim_plan'
+   ?`<div class="price-bonus-line notif-gift-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">🎁</b> Indicatori chiave gratis</div>`
+   :`<div class="price-bonus-line notif-gift-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">🎁</b> Contenuto del regalo</div>`;
+  return `${bonusLine}<ul class="price-benefits notif-gift-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ };
  if(n.action_type==='claim_bonus'){
   actionHtml=n.claimed_at
    ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
    : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationBonus('${n.id}')">Ricevi →</a>`;
-  // Stessa struttura visiva del regalo-piano (messaggio + numeri grandi in evidenza), invece
-  // di un semplice paragrafo di testo - coerenza professionale su ogni tipo di regalo, non
-  // solo su quelli con un piano incluso.
-  const statsHtml=(n.bonus_analysis_credits>0||n.bonus_pdf_credits>0)?`<div class="notif-gift-stats">
-    ${n.bonus_analysis_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_analysis_credits}</b><small>credit${n.bonus_analysis_credits===1?'o':'i'} analisi</small></div>`:''}
-    ${n.bonus_pdf_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_pdf_credits}</b><small>credit${n.bonus_pdf_credits===1?'o':'i'} PDF</small></div>`:''}
-   </div>`:'';
-  bodyHtml=`${introHtml}${statsHtml}`;
+  bodyHtml=`${introHtml}${giftBreakdown('#ffb400')}`;
  }else if(n.action_type==='claim_plan'){
   actionHtml=n.claimed_at
    ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
    : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationPlan('${n.id}')">Ricevi →</a>`;
-  // Scheda strutturata invece del testo in un unico paragrafo: piano ben visibile con il suo
-  // colore, crediti come numeri grandi separati, strumenti come singole etichette invece che
-  // elencati dentro una frase - molto più rapido da scansionare con un'occhiata. Il messaggio
-  // originale resta come introduzione professionale sopra la scheda, non viene più scartato.
   const planColor=n.bonus_plan_type?(PLAN_TIER_COLOR[n.bonus_plan_type]||'#ffb400'):'#ffb400';
   const planLabel=n.bonus_plan_type?(n.bonus_plan_type==='max'?'BizScan Max':n.bonus_plan_type.charAt(0).toUpperCase()+n.bonus_plan_type.slice(1)):'';
-  const statsHtml=(n.bonus_analysis_credits>0||n.bonus_pdf_credits>0)?`<div class="notif-gift-stats">
-    ${n.bonus_analysis_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_analysis_credits}</b><small>crediti analisi</small></div>`:''}
-    ${n.bonus_pdf_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_pdf_credits}</b><small>crediti PDF</small></div>`:''}
-   </div>`:'';
-  const toolsHtml=(Array.isArray(n.bonus_tool_names)&&n.bonus_tool_names.length)?`<div class="notif-gift-tools-label">Indicatori inclusi gratis</div><div class="notif-gift-tools">${n.bonus_tool_names.map(t=>`<span class="notif-gift-tool-chip">${esc(t)}</span>`).join('')}</div>`:'';
-  bodyHtml=`${introHtml}<div class="notif-gift-plan-badge" style="background:${planColor}22;border-color:${planColor};color:${planColor}">Piano ${esc(planLabel)}</div>${statsHtml}${toolsHtml}`;
+  bodyHtml=`${introHtml}<div class="notif-gift-plan-badge" style="background:${planColor}22;border-color:${planColor};color:${planColor}">Piano ${esc(planLabel)}</div>${giftBreakdown(planColor)}`;
  }else if(n.action_type==='link' && n.action_link_url){
   actionHtml=`<a class="notif-item-btn is-link" href="${esc(n.action_link_url)}">Scopri di più</a>`;
  }
