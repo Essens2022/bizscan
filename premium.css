@@ -215,9 +215,6 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .value-units em{display:block;font-style:normal;color:#93a0b2;font-size:7px;margin-top:3px}
 .pdf-credit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .pdf-credit-card{display:grid;gap:5px;text-align:center;padding:13px}
-.pdf-credit-saving{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px}
-.pdf-credit-saving del{color:var(--muted);font-weight:400}
-.pdf-credit-saving b{color:#24d98b;font-weight:900}
 .pdf-credit-card b{font-size:25px;color:var(--gold)}
 .pdf-credit-card span{font-size:8px;color:var(--muted)}
 .pdf-credit-card strong{font-size:17px}
