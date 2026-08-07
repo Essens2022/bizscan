@@ -1825,7 +1825,7 @@ function pdfTopups(){const packs=[{n:1,p:1.99,tag:''},{n:3,p:4.99,tag:''},{n:5,p
  const saving=separateValue-x.p;
  const savingHtml=saving>0.01?`<div class="pdf-pack-saving"><span class="pdf-pack-saving-old">${euro(separateValue)}</span><span class="pdf-pack-saving-new">Risparmi ${euro(saving)}</span></div>`:`<div class="pdf-pack-saving pdf-pack-saving-empty">Prezzo base</div>`;
  const tagHtml=x.tag?`<span class="pdf-pack-tag">${x.tag}</span>`:'';
- return `<article class="panel pdf-credit-card${x.tag?' is-featured':''}">${tagHtml}<div class="pdf-pack-count">${x.n}</div><div class="pdf-pack-label">${x.n===1?'report PDF':'report PDF'}</div><div class="pdf-pack-price">${euro(x.p)}</div>${savingHtml}<button class="btn gold full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi</button></article>`;
+ return `<article class="panel pdf-credit-card${x.tag?' is-featured':''}">${tagHtml}<div class="pdf-pack-icon">📄</div><div class="pdf-pack-count">${x.n}</div><div class="pdf-pack-label">${x.n===1?'report PDF':'report PDF'}</div><div class="pdf-pack-price">${euro(x.p)}</div>${savingHtml}<button class="btn gold full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi</button></article>`;
 }).join('')}</div></section>`}
 function invoiceRowHtml(o){
  const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
