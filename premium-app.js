@@ -1774,7 +1774,10 @@ function invoiceRowHtml(o){
  const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
  const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
  const statusLabel=({completed:'Completato',paid:'Completato',pending:'In attesa',failed:'Fallito',refunded:'Rimborsato'})[o.status]||o.status;
- return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right"><strong>${euro(o.amount)}</strong><span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+ const amountHtml=o.is_admin_gift
+  ?`<span style="display:flex;align-items:center;gap:6px"><del style="color:var(--muted);font-weight:400">${euro(o.plan_real_price||0)}</del><strong style="color:#24d98b">🎁 REGALO</strong></span>`
+  :`<strong>${euro(o.amount)}</strong>`;
+ return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
 }
 async function renderInvoices(){
  const host=$('#invoicesContent');if(!host)return;
