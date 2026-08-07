@@ -13,14 +13,15 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Strategia doppia:
-// 1) Asset versionati (?v=...) - come premium-app.js?v=20260725: l'URL stesso
-//    garantisce la freschezza (ogni deploy cambia il numero), quindi possiamo
-//    servirli istantaneamente dalla cache senza aspettare la rete - stessa
-//    tecnica usata dai siti principali (nomi file con hash immutabili).
-// 2) Tutto il resto (pagine HTML, richieste senza versione) - rete prima,
-//    così il contenuto che può cambiare in qualsiasi momento resta sempre
-//    aggiornato, con la cache solo come rete di sicurezza offline.
+// BUG REALE trovato e corretto: la vecchia strategia "cache-first" per gli asset versionati
+// (?v=...) si fidava ciecamente della cache senza MAI verificare la rete, partendo dal
+// presupposto che ogni deploy generi un numero di versione diverso - falso quando due deploy
+// avvengono nello stesso minuto (il timestamp usato ha solo granularità al minuto), cosa
+// successa piu' volte oggi durante iterazioni rapide: la seconda modifica riceveva lo STESSO
+// URL della prima, e il telefono restava bloccato sul codice vecchio, per sempre, senza mai
+// ricontrollare - anche con la modifica correttamente pubblicata su GitHub.
+// Ora TUTTO passa prima dalla rete (sempre fresco, mai una versione stantia servita alla
+// cieca), con la cache usata SOLO come rete di sicurezza per l'uso offline.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = event.request.url;
@@ -28,21 +29,6 @@ self.addEventListener('fetch', (event) => {
   // per Supabase JS) - lasciale gestire normalmente dal browser, senza passare dalla
   // cache di questo service worker, che è pensata solo per gli asset di bizscan.it
   if (new URL(url).origin !== self.location.origin) return;
-  const isVersionedAsset = url.includes('?v=');
-
-  if (isVersionedAsset) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        if (cached) return cached;
-        return fetch(event.request).then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        });
-      })
-    );
-    return;
-  }
 
   event.respondWith(
     fetch(event.request)
