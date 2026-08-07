@@ -47,7 +47,10 @@ function pdfBulkValue(n){
 function packageValue(p){
  const analysisValue=p.analyses*UNIT_PRICES.analysis
  const indicatorValue=p.indicatorCount*UNIT_PRICES.indicator
- const pdfValue=pdfBulkValue(p.pdfCredits)
+ // Il valore percepito usa il prezzo uniforme di un credito (1,99€) per OGNI risorsa - analisi,
+ // PDF, e sblocco bonus - non lo sconto a scaglioni pensato per l'acquisto separato di pacchetti
+ // PDF (pdfBulkValue), che resta invariato altrove per i veri acquisti standalone.
+ const pdfValue=p.pdfCredits*UNIT_PRICES.analysis
  const comparisonValue=(COMPARISON_UNITS[p.compare]||0)*UNIT_PRICES.comparison
  const total=analysisValue+indicatorValue+pdfValue+comparisonValue
  return {analysisValue,indicatorValue,pdfValue,comparisonValue,total,saving:Math.max(0,total-p.price),resources:p.analyses+p.indicatorCount+p.pdfCredits+(COMPARISON_UNITS[p.compare]||0)}
