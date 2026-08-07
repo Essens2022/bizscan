@@ -1158,7 +1158,7 @@ function analysisOverview(p){
   // Incluso dal piano E ha ancora bonus disponibili: mostra "Sblocca GRATIS" (consuma un
   // bonus reale, tracciato lato server). Se il bonus è esaurito, cade nel caso normale
   // sotto - stesso strumento, ma richiede un credito come chiunque altro.
-  if(toolPlanIncluded(key) && (access.available_plan_bonus||0) > 0){
+  if((access.available_plan_bonus||0) > 0){
    return renderFreeToolCard(titles[key],descriptions[key],key);
   }
   return renderLockedToolCard(titles[key],descriptions[key],key);
@@ -1186,7 +1186,6 @@ function analysisOverview(p){
  return `<div class="dash-grid">${gate('indicators',indicatorsHtml)}${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
-function toolPlanIncluded(key){const p=findCurrent();return Array.isArray(p?.plan_tool_keys)&&p.plan_tool_keys.includes(key)}
 
 // Consuma DAVVERO un bonus del piano (non solo un'azione visiva lato client come revealFreeTool
 // sopra) - stessa struttura di _doUnlockTool (conferma diritto di recesso, invalidazione cache,
@@ -1380,7 +1379,7 @@ function toolBlock(key,title,fallback,realHtml){
   const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
   return `<div id="toolwrap-${esc(key)}"><section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section></div>`;
  }
- if(toolPlanIncluded(key) && (access.available_plan_bonus||0) > 0){
+ if((access.available_plan_bonus||0) > 0){
   return `<div id="toolwrap-${esc(key)}">${renderFreeToolCard(title,fallback,key)}</div>`;
  }
  return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
