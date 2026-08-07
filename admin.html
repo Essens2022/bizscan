@@ -924,7 +924,13 @@ textarea{min-height:92px;resize:vertical}
 
     <div class="card" style="margin-top:16px">
       <h2>Risultati</h2>
-      <div id="customerSearchResults" style="margin-top:12px"><p style="color:var(--muted);font-size:13px">Digita un\'email o un nome e premi Cerca — oppure premi Cerca senza testo per vedere gli ultimi clienti registrati.</p></div>
+      <div id="customerSearchResults" style="margin-top:12px;max-height:420px;overflow-y:auto;padding-right:4px"><p style="color:var(--muted);font-size:13px">Digita un\'email o un nome e premi Cerca — oppure premi Cerca senza testo per vedere gli ultimi clienti registrati.</p></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Ordini con account eliminato</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Lo storico finanziario resta salvato anche se il cliente elimina il proprio account - qui puoi comunque consultarlo.</p>
+      <div id="orphanedOrdersResults" style="max-height:320px;overflow-y:auto;padding-right:4px"><p style="color:var(--muted);font-size:13px">Caricamento…</p></div>
     </div>
 
     <div class="card" id="customerDetailCard" style="margin-top:16px;display:none">
@@ -959,8 +965,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=20260807131936"></script>
-<script src="app.js?v=20260807131936"></script>
+ <script src="supabase-data.js?v=20260807134748"></script>
+<script src="app.js?v=20260807134748"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1170,6 +1176,32 @@ async function deactivateNotification(id){
     loadNotificationsList()
   } catch (e) {
     alert(e.message || "Errore")
+  }
+}
+
+async function loadOrphanedOrders(){
+  const host = document.getElementById("orphanedOrdersResults")
+  if (!host) return
+  try {
+    const { data, error } = await supabaseClient.rpc("admin_orphaned_orders")
+    if (error) throw error
+    if (!data || !data.length) {
+      host.innerHTML = '<p style="color:var(--muted);font-size:13px">Nessun ordine orfano al momento.</p>'
+      return
+    }
+    host.innerHTML = data.map(o => {
+      const dt = new Date(o.created_at).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+      const amountHtml = o.is_admin_gift
+        ? `<b style="font-size:11.5px;color:var(--gold)">🎁 REGALO</b>`
+        : `<b style="font-size:12.5px">${Number(o.amount).toFixed(2)} ${esc((o.currency||"EUR").toUpperCase())}</b>`
+      return `<div style="padding:10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between"><b style="font-size:12.5px">${esc(o.plan_name || "Acquisto")}</b>${amountHtml}</div>
+        <p style="font-size:11px;color:var(--muted);margin:3px 0">${dt} · account eliminato${!o.livemode?' · TEST':''}</p>
+        <span style="font-size:10px;font-weight:800;color:${o.status==='paid'?'#7ef2c9':'var(--muted)'}">${esc((o.status||"").toUpperCase())}</span>
+      </div>`
+    }).join("")
+  } catch (e) {
+    host.innerHTML = `<p style="color:#ff5c6c;font-size:13px">Errore: ${esc(e.message||"")}</p>`
   }
 }
 
@@ -2173,7 +2205,7 @@ function showTab(name,btn){
   if(name==="homepage"){loadHeroMedia();loadHeroPhrases();loadCarouselTransition()}
   if(name==="feedback"){loadFeedbackList();loadSuggestionsList();loadSiteFeedbackList()}
   if(name==="notifications"){loadNotificationsList()}
-  if(name==="customers"){searchCustomers()}
+  if(name==="customers"){searchCustomers();loadOrphanedOrders()}
 }
 
 // Apre una scheda per nome programmaticamente (usato dalle azioni rapide del dashboard),
@@ -3235,5 +3267,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=20260807131936"></script></body>
+<script src="shell-ui.js?v=20260807134748"></script></body>
 </html>
