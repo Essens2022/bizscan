@@ -1816,7 +1816,15 @@ window.chooseAddon=async type=>{
  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
  await openStripeCheckoutWithRetry({item_type:type,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)}, item[0]);
 };
-function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="pdf-topup-head"><div class="pdf-topup-icon">📄</div><div><small class="pdf-topup-kicker">REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
+function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="pdf-topup-head"><div class="pdf-topup-icon">📄</div><div><small class="pdf-topup-kicker">REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>{
+ // Valore se acquistati uno alla volta (1,99€ ciascuno, stesso prezzo di un credito singolo) -
+ // mostra il risparmio reale dei pacchetti da 3/5/10, coerente con lo stesso calcolo già
+ // usato per i pacchetti principali.
+ const separateValue=x.n*1.99;
+ const saving=separateValue-x.p;
+ const savingHtml=saving>0.01?`<div class="pdf-credit-saving"><del>${euro(separateValue)}</del><b>−${euro(saving)}</b></div>`:'';
+ return `<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong>${savingHtml}<button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`;
+}).join('')}</div></section>`}
 function invoiceRowHtml(o){
  const date=new Date(o.created_at).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
  const statusColor=o.status==='completed'||o.status==='paid'?'#24d98b':(o.status==='pending'?'#ffbf34':'#8f9bad');
