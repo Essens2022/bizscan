@@ -234,11 +234,19 @@
         // Controlla subito se esiste una versione più recente, invece di aspettare il controllo
         // periodico del browser (che può richiedere ore) - così un deploy nuovo raggiunge chi
         // ha già l'app installata molto più rapidamente, senza bisogno di disinstallare/reinstallare.
+        var lastUpdateCheck=Date.now();
         reg.update().catch(function(){});
-        // Ricontrolla anche ogni volta che l'app torna in primo piano (utile per un'app installata,
-        // che spesso resta aperta in background per giorni senza mai fare un fetch "load" completo).
+        // Ricontrolla anche ogni volta che l'app torna in primo piano, MA con un limite minimo di
+        // 5 minuti tra un controllo e l'altro - senza questo limite, ogni singolo cambio di app o
+        // sblocco del telefono (normalissimo decine di volte al giorno su mobile) scatenava una
+        // nuova richiesta di rete per /sw.js, causando un volume di richieste sproporzionato
+        // (osservato: 3.900 richieste a /sw.js su sole 404 visite reali nei log di Cloudflare).
         document.addEventListener('visibilitychange',function(){
-          if(document.visibilityState==='visible')reg.update().catch(function(){});
+          if(document.visibilityState!=='visible')return;
+          var now=Date.now();
+          if(now-lastUpdateCheck<300000)return; // meno di 5 minuti fa, salta
+          lastUpdateCheck=now;
+          reg.update().catch(function(){});
         });
       }).catch(function(){});
       // Quando un nuovo service worker prende il controllo (skipWaiting + clients.claim, già
