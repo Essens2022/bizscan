@@ -1820,10 +1820,14 @@ function invoiceRowHtml(o){
    <ul class="price-benefits invoice-contents-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   </div>`:'';
  const label=o.plan_name||(items.length?'Crediti':'Acquisto');
+ // Il colore/icona ora si vede SUBITO sulla riga chiusa (bordo laterale + icona accanto al
+ // nome), non solo dentro il dettaglio espanso - la persona deve riconoscere piano vs crediti
+ // vs PDF con un'occhiata, prima ancora di aprire la riga.
+ const rowStyle=`border-left:3px solid ${contentColor}`;
  if(!contentsHtml){
-  return `<div class="purchase-history-row"><div><b>${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+  return `<div class="purchase-history-row" style="${rowStyle}"><div><b>${contentIcon} ${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
  }
- return `<details class="purchase-history-row is-expandable"><summary class="purchase-history-summary"><div><b>${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></summary>${contentsHtml}</details>`;
+ return `<details class="purchase-history-row is-expandable" style="${rowStyle}"><summary class="purchase-history-summary"><div><b>${contentIcon} ${esc(label)}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></summary>${contentsHtml}</details>`;
 }
 async function renderInvoices(){
  const host=$('#invoicesContent');if(!host)return;
