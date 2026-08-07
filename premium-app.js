@@ -1732,6 +1732,47 @@ function renderPricing(){
 }
 function packageComparison(){return `<section class="pricing-section package-comparison"><div class="pricing-section-head"><small>CONFRONTO COMPLETO</small><h2>Confronta tutti i pacchetti</h2><p>Le funzioni aumentano progressivamente senza ripetizioni</p></div><div class="package-table-wrap"><table class="package-table"><thead><tr><th>Incluso</th>${PACKAGES.map(p=>`<th>${p.name}</th>`).join('')}</tr></thead><tbody><tr><th>Crediti</th>${PACKAGES.map(p=>`<td>${p.analyses}</td>`).join('')}</tr><tr><th>Crediti report PDF</th>${PACKAGES.map(p=>`<td>${p.pdfCredits||'—'}</td>`).join('')}</tr><tr><th>Accesso alle analisi sbloccate</th>${PACKAGES.map(()=>'<td class="best">Permanente</td>').join('')}</tr></tbody></table></div></section>`}
 function standaloneProducts(){const items=[{icon:'▣',title:'Analisi interattiva',text:'Apri una singola attività nella piattaforma',price:UNIT_PRICES.analysis,action:"chooseAddon('analysis')"},{icon:'◎',title:'Indicatore premium',text:'Sblocca un indicatore avanzato su un’analisi scelta',price:UNIT_PRICES.indicator,action:"chooseAddon('indicator')"},{icon:'PDF',title:'Report PDF completo',text:'Scarica il dossier approfondito di un’attività',price:UNIT_PRICES.pdf,action:"chooseAddon('pdf')"},{icon:'⇄',title:'Confronto avanzato',text:'Confronta due attività con metriche complete',price:UNIT_PRICES.comparison,action:"chooseAddon('comparison')"}];return `<section class="standalone-products section"><div class="section-head"><div><small>ACQUISTA SOLO CIÒ CHE TI SERVE</small><h2>Prezzi singoli trasparenti</h2><p>Questi prezzi formano il valore separato mostrato nei pacchetti</p></div></div><div class="standalone-grid">${items.map(x=>`<article class="panel standalone-card"><i>${x.icon}</i><div><h3>${x.title}</h3><p>${x.text}</p></div><strong>${euro(x.price)}</strong><button class="btn ghost full" onclick="${x.action}">Acquista singolarmente</button></article>`).join('')}</div></section>`}
+// Funzione condivisa dai 3 punti di acquisto (addon singolo, crediti PDF, pacchetto) - centralizza
+// la gestione sessione + chiamata di rete, con UN tentativo automatico in più se la prima richiesta
+// fallisce a livello di rete (non un errore del server, proprio la fetch che non riesce a
+// completarsi - "Load failed" su Safari). Causa più probabile: la funzione edge ha un "cold
+// start" quando non viene chiamata da un po', e la primissima richiesta puo' arrivare prima che
+// sia pronta - la persona non deve accorgersi di questo dettaglio ne' dover ricliccare da sola.
+async function openStripeCheckoutWithRetry(body, modalTitle, sessionReturnUrl){
+ const c=await BizScanData.getSupabaseClient();
+ let{data:sessionData}=await c.auth.getSession();
+ let session=sessionData?.session;
+ if(!session?.access_token){
+  try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
+ }
+ if(!session?.access_token){
+  modal(modalTitle,'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent(sessionReturnUrl||(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi</a>');
+  return;
+ }
+ const doFetch=()=>fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
+  method:'POST',
+  headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+  body:JSON.stringify(body)
+ });
+ let res;
+ try{
+  res=await doFetch();
+ }catch(e1){
+  try{
+   res=await doFetch();
+  }catch(e2){
+   console.error('checkout error (dopo un tentativo di retry)',e2);
+   modal(modalTitle,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e2?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+   return;
+  }
+ }
+ const data=await res.json().catch(()=>({}));
+ if(!res.ok||!data.url){
+  modal(modalTitle,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
+  return;
+ }
+ location.href=data.url;
+}
 window.chooseAddon=async type=>{
  const map={analysis:['Analisi interattiva',UNIT_PRICES.analysis],indicator:['Indicatore premium',UNIT_PRICES.indicator],pdf:['Report PDF completo',UNIT_PRICES.pdf],comparison:['Confronto avanzato',UNIT_PRICES.comparison]};
  const item=map[type];if(!item)return;
@@ -1741,32 +1782,7 @@ window.chooseAddon=async type=>{
  }
  if(!access.authenticated){modal(item[0],'<p>Devi accedere al tuo account per acquistare.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi o registrati</a>');return}
  modal(item[0],`<p>Prezzo singolo <strong>${euro(item[1])}</strong></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
- try{
-  const c=await BizScanData.getSupabaseClient();
-  let{data:sessionData}=await c.auth.getSession();
-  let session=sessionData?.session;
-  if(!session?.access_token){
-   try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
-  }
-  if(!session?.access_token){
-   modal(item[0],'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi</a>');
-   return;
-  }
-  const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({item_type:type,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)})
-  });
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok||!data.url){
-   modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
-   return;
-  }
-  location.href=data.url;
- }catch(e){
-  console.error('checkout error',e);
-  modal(item[0],`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
- }
+ await openStripeCheckoutWithRetry({item_type:type,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)}, item[0]);
 };
 function pdfTopups(){const packs=[{n:1,p:1.99},{n:3,p:4.99},{n:5,p:6.99},{n:10,p:11.99}];return `<section class="pdf-topups section"><div class="pdf-topup-head"><div class="pdf-topup-icon">📄</div><div><small class="pdf-topup-kicker">REPORT COMPLETI</small><h2>Crediti PDF aggiuntivi</h2><p>Scarica il dossier completo solo per le attività che vuoi valutare seriamente</p></div></div><div class="pdf-credit-grid">${packs.map(x=>`<article class="panel pdf-credit-card"><b>${x.n}</b><span>${x.n===1?'report PDF':'report PDF'}</span><strong>${euro(x.p)}</strong><button class="btn ghost full" onclick="choosePdfPack(${x.n},${x.p})">Aggiungi crediti PDF</button></article>`).join('')}</div></section>`}
 function invoiceRowHtml(o){
@@ -1824,32 +1840,7 @@ window.choosePdfPack=async(count,price)=>{
 }
 window._doChoosePdfPack=async(count,price)=>{
  modal('Crediti PDF',`<p>${count} ${count===1?'credito':'crediti'} report PDF per <b>${euro(price)}</b></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
- try{
-  const c=await BizScanData.getSupabaseClient();
-  let{data:sessionData}=await c.auth.getSession();
-  let session=sessionData?.session;
-  if(!session?.access_token){
-   try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
-  }
-  if(!session?.access_token){
-   modal('Crediti PDF','<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search))+'">Accedi</a>');
-   return;
-  }
-  const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({pdf_pack_count:count,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)})
-  });
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok||!data.url){
-   modal('Crediti PDF',`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
-   return;
-  }
-  location.href=data.url;
- }catch(e){
-  console.error('checkout error',e);
-  modal('Crediti PDF',`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
- }
+ await openStripeCheckoutWithRetry({pdf_pack_count:count,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)}, 'Crediti PDF');
 };
 window.choosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
@@ -1872,32 +1863,7 @@ window.choosePackage=async key=>{
 window._doChoosePackage=async key=>{
  const p=PACKAGES.find(x=>x.key===key);if(!p)return;
  modal(p.name,`<p>Il pacchetto selezionato costa <b>${euro(p.price)}</b></p><p>Stiamo aprendo il pagamento sicuro…</p>`,'');
- try{
-  const c=await BizScanData.getSupabaseClient();
-  let{data:sessionData}=await c.auth.getSession();
-  let session=sessionData?.session;
-  if(!session?.access_token){
-   try{const r=await c.auth.refreshSession();session=r?.data?.session}catch(_){}
-  }
-  if(!session?.access_token){
-   modal(p.name,'<p>La tua sessione è scaduta. Accedi di nuovo e riprova.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent('pricing.html')+'">Accedi</a>');
-   return;
-  }
-  const res=await fetch('https://fafedftoyztptdiubjmx.supabase.co/functions/v1/create-checkout-session',{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-   body:JSON.stringify({plan_type:key,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)})
-  });
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok||!data.url){
-   modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">Codice: ${esc(data.error||res.status)}${data.detail?'<br>'+esc(data.detail):''}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
-   return;
-  }
-  location.href=data.url;
- }catch(e){
-  console.error('checkout error',e);
-  modal(p.name,`<p>Non è stato possibile aprire il pagamento.</p><p style="color:#8d99aa;font-size:11px">${esc(e?.message||'Errore sconosciuto')}</p>`,'<button class="btn ghost full" onclick="closeModal()">Chiudi</button>');
- }
+ await openStripeCheckoutWithRetry({plan_type:key,return_to:(window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash)}, p.name, 'pricing.html');
 };
 function renderCompare(){const host=$('#compareContent');if(!host)return;const arr=compare.map(s=>analyses.find(p=>p.slug===s)).filter(Boolean);
  if(arr.length===0){host.innerHTML=`<div class="empty"><h1>Confronta due attività</h1><p>Usa il simbolo ⇄ sulle card per selezionare due analisi</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>`;return}
