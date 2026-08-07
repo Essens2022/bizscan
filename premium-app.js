@@ -1145,13 +1145,13 @@ function analysisOverview(p){
    benchmark:'Come si posiziona questa attività rispetto alla media del settore, su ROI, margine, tempo di recupero e rischio.',
    distribuzione_costi:'Dove vanno esattamente i soldi dell\'investimento iniziale, ripartiti per voce di spesa.'
   };
-  // Incluso gratis dal piano ma non ancora rivelato consapevolmente in questa visita: mostra
-  // un pulsante "Sblocca GRATIS" invece del contenuto diretto, cosi' la persona capisce
-  // chiaramente che è incluso dal suo piano - nessun costo, solo un tocco di conferma.
-  if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+  if(toolUnlocked(key))return html;
+  // Incluso dal piano E ha ancora bonus disponibili: mostra "Sblocca GRATIS" (consuma un
+  // bonus reale, tracciato lato server). Se il bonus è esaurito, cade nel caso normale
+  // sotto - stesso strumento, ma richiede un credito come chiunque altro.
+  if(toolPlanIncluded(key) && (access.available_plan_bonus||0) > 0){
    return renderFreeToolCard(titles[key],descriptions[key],key);
   }
-  if(toolUnlocked(key))return html;
   return renderLockedToolCard(titles[key],descriptions[key],key);
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
@@ -1177,20 +1177,60 @@ function analysisOverview(p){
  return `<div class="dash-grid">${gate('indicators',indicatorsHtml)}${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}</div>`}
 const TOOL_MIN_PLAN={scenario:'Smart',benchmark:'Smart',break_even:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
 function toolUnlocked(key){const p=findCurrent();return Array.isArray(p?.unlocked_tool_keys)&&p.unlocked_tool_keys.includes(key)}
-// Distingue "incluso gratis dal piano" da "sbloccato con un credito" - un piano non richiede
-// alcuna azione lato server per essere visto, ma la persona deve comunque cliccare
-// consapevolmente "Sblocca GRATIS" per capire chiaramente che è incluso, invece che vederselo
-// comparire subito senza spiegazione. Il set tiene traccia di quali ha già rivelato in QUESTA
-// visita di pagina (si azzera naturalmente ad ogni nuovo caricamento, nessuna persistenza).
-const revealedFreeTools=new Set();
 function toolPlanIncluded(key){const p=findCurrent();return Array.isArray(p?.plan_tool_keys)&&p.plan_tool_keys.includes(key)}
-window.revealFreeTool=(key)=>{
- revealedFreeTools.add(key);
- const content=document.getElementById('analysisTabContent');
- const activeTabBtn=document.querySelector('.tabs button.active');
- const p=findCurrent();
- if(content&&activeTabBtn&&p){
-  content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+
+// Consuma DAVVERO un bonus del piano (non solo un'azione visiva lato client come revealFreeTool
+// sopra) - stessa struttura di _doUnlockTool (conferma diritto di recesso, invalidazione cache,
+// aggiornamento mirato del blocco), ma chiama unlock_tool_with_plan_bonus invece di
+// unlock_tool_with_credit, e scala access.available_plan_bonus invece dei crediti normali.
+window.unlockToolWithPlanBonus=async(toolKey)=>{
+ const p=findCurrent();if(!p?.id)return;
+ if(!access.authenticated){modal('Accesso richiesto','<p>Devi accedere al tuo account per sbloccare questo strumento.</p>','<a class="btn gold full" href="account.html?next='+encodeURIComponent((window.buildReturnUrl?window.buildReturnUrl():location.pathname+location.search+location.hash))+'">Accedi</a>');return}
+ confirmWithdrawalWaiver('',()=>window._doUnlockToolWithPlanBonus(toolKey));
+}
+window._doUnlockToolWithPlanBonus=async(toolKey)=>{
+ const p=findCurrent();if(!p?.id)return;
+ closeModal();
+ const loadingWrap=document.getElementById(`toolwrap-${toolKey}`);
+ if(loadingWrap)loadingWrap.style.opacity='0.55';
+ try{
+  const c=await BizScanData.getSupabaseClient();
+  const{data,error}=await c.rpc('unlock_tool_with_plan_bonus',{p_analysis_id:p.id,p_tool_key:toolKey});
+  if(error)throw error;
+  if(!data?.success){
+   if(loadingWrap)loadingWrap.style.opacity='1';
+   if(data?.reason==='no_bonus_remaining'){
+    // Il bonus del piano è esaurito: rimuove la scheda "GRATIS" e ri-renderizza cosi' lo
+    // strumento appare come per chiunque altro - normale, con credito richiesto.
+    if(typeof access.available_plan_bonus==='number')access.available_plan_bonus=0;
+    const activeTabBtn=document.querySelector('.tabs button.active');
+    const content=document.getElementById('analysisTabContent');
+    if(content&&activeTabBtn)content.innerHTML=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+    toast('Bonus del piano esaurito - ora richiede un credito');
+    return;
+   }
+   toast('Non è stato possibile sbloccare lo strumento');
+   return;
+  }
+  if(!Array.isArray(p.unlocked_tool_keys))p.unlocked_tool_keys=[];
+  if(!p.unlocked_tool_keys.includes(toolKey))p.unlocked_tool_keys.push(toolKey);
+  if(typeof access.available_plan_bonus==='number')access.available_plan_bonus=Math.max(0,access.available_plan_bonus-1);
+  try{sessionStorage.removeItem('cache:publicData')}catch(e){}
+  toast('Strumento sbloccato con il bonus del piano');
+  const activeTabBtn=document.querySelector('.tabs button.active');
+  const content=document.getElementById('analysisTabContent');
+  const targetWrap=document.getElementById(`toolwrap-${toolKey}`);
+  if(targetWrap&&activeTabBtn){
+   const freshTabHtml=activeTabBtn.dataset.tab==='overview'?analysisOverview(p):tabContent(activeTabBtn.dataset.tab);
+   const temp=document.createElement('div');
+   temp.innerHTML=freshTabHtml;
+   const freshWrap=temp.querySelector(`#toolwrap-${toolKey}`);
+   if(freshWrap)targetWrap.replaceWith(freshWrap);
+  }
+ }catch(e){
+  console.error('unlockToolWithPlanBonus',e);
+  if(loadingWrap)loadingWrap.style.opacity='1';
+  toast('Errore, riprova');
  }
 }
 const TOOL_MIN_PLAN_LABEL={scenario:'Analisi Singola',break_even:'Starter',benchmark:'Smart',distribuzione_costi:'Smart',cash_flow:'Pro',costi_fissi_variabili:'Pro',personale:'Advanced',fornitori:'Advanced',concorrenza_locale:'Business',stagionalita:'Business',matrice_rischi:'Max',strategie_crescita:'Max'};
@@ -1313,24 +1353,28 @@ function renderFreeToolCard(title,description,toolKey){
  const minPlan=toolKey?TOOL_MIN_PLAN_LABEL[toolKey]:null;
  const descHtml=description?`<p class="locked-card-desc">${esc(description)}</p>`:'';
  const pill=minPlan?`<span class="locked-pill" style="background:${color}38;border-color:${color};color:${color}">Incluso nel piano ${esc(minPlan)}</span>`:'';
+ const n=access.available_plan_bonus??0;
+ const bonusNote=`<small class="locked-credits-note">Hai <b>${n}</b> sblocc${n===1?'o':'hi'} gratuit${n===1?'o':'i'} disponibil${n===1?'e':'i'}</small>`;
  return `<section class="panel tab-panel locked-tool-card" style="position:relative;background:linear-gradient(180deg,#101a29,#09121e)">
    <span class="locked-side-bar" style="background:${color}"></span>
    <div class="locked-tool-inner">
     <h3 class="locked-tool-title">${esc(title)}</h3>${descHtml}
-    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${PREMIUM_GIFT_BADGE}${pill}<button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="revealFreeTool('${esc(toolKey||'')}')">Sblocca GRATIS</button>
+    <div class="locked-cta-zone" style="border-color:${color}66;background:radial-gradient(circle at 88% -10%,${color}26,transparent 55%),rgba(255,255,255,.015);box-shadow:0 0 0 1px ${color}14 inset">${PREMIUM_GIFT_BADGE}${pill}<button class="btn locked-upgrade-btn" type="button" style="background:${color};color:#0c1420;font-weight:900;border:none;box-shadow:0 8px 22px ${color}3a" onclick="unlockToolWithPlanBonus('${esc(toolKey||'')}')">Sblocca GRATIS</button>${bonusNote}
     </div>
    </div>
   </section>`;
 }
 function toolBlock(key,title,fallback,realHtml){
  const has=toolUnlocked(key);
- if(toolPlanIncluded(key) && !revealedFreeTools.has(key)){
+ if(has){
+  const visual=toolVisual(key);
+  const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
+  return `<div id="toolwrap-${esc(key)}"><section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section></div>`;
+ }
+ if(toolPlanIncluded(key) && (access.available_plan_bonus||0) > 0){
   return `<div id="toolwrap-${esc(key)}">${renderFreeToolCard(title,fallback,key)}</div>`;
  }
- if(!has)return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
- const visual=toolVisual(key);
- const body=visual?`<div class="tool-block-split"><div class="tool-block-text">${realHtml||`<p>${esc(fallback)}</p>`}</div><div class="tool-block-visual">${visual}</div></div>`:(realHtml||`<p>${esc(fallback)}</p>`);
- return `<div id="toolwrap-${esc(key)}"><section class="panel tab-panel"><h3>${esc(title)}</h3>${body}</section></div>`;
+ return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(title,fallback,key)}</div>`;
 }
 window._pendingWithdrawalConfirm=null;
 window._runWithdrawalConfirm=function(){
