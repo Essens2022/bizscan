@@ -1712,7 +1712,7 @@ function renderPricing(){
   const color=PRICE_CARD_COLOR[p.key]||'#9aa5b1'
   const isCurrentPlan=access.authenticated && access.plan===p.key
   const bonusCount=planBonusCount(p.key)
-  const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='max'?'is-max':'',isCurrentPlan?'is-current-plan':''].filter(Boolean).join(' ')
+  const classes=['price-card',p.badge?'has-badge':'',p.key==='pro'?'is-pro':'',p.key==='advanced'?'is-advanced':'',p.key==='business'?'is-business':'',p.key==='max'?'is-max':'',isCurrentPlan?'is-current-plan':''].filter(Boolean).join(' ')
   return `<article class="${classes}" data-plan="${p.key}" style="${isCurrentPlan?'':`border-top:3px solid ${color}`}">
    ${isCurrentPlan?`<span class="current-plan-badge">✓ IL TUO PIANO ATTUALE</span>`:''}
    ${p.badge?`<span class="price-badge">${p.badge}</span>`:''}
