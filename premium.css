@@ -787,6 +787,13 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .pdf-topup-head p{margin:0;color:var(--muted);font-size:13px;max-width:480px}
 .purchase-history-list{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
 .purchase-history-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(180deg,#101a29,#0b1422)}
+.purchase-history-row.is-expandable{display:block;cursor:pointer}
+.purchase-history-summary{display:flex;justify-content:space-between;align-items:center;list-style:none}
+.purchase-history-summary::-webkit-details-marker{display:none}
+.invoice-contents{margin-top:12px;padding-top:12px;border-top:1px solid var(--line2)}
+.invoice-contents-list{margin-top:8px!important}
+.invoice-contents-list li{font-size:11px;padding-left:16px;position:relative}
+.invoice-contents-list li:before{content:'✓';position:absolute;left:0;color:#24d98b;font-weight:900}
 .purchase-history-row b{display:block;font-size:13px;margin-bottom:3px}
 .purchase-history-row small{color:var(--muted);font-size:11px}
 .purchase-history-right{text-align:right}

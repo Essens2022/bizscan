@@ -1772,7 +1772,22 @@ function invoiceRowHtml(o){
  const amountHtml=o.is_admin_gift
   ?`<span style="display:flex;align-items:center;gap:6px"><del style="color:var(--muted);font-weight:400">${euro(o.plan_real_price||0)}</del><strong style="color:#24d98b">🎁 REGALO</strong></span>`
   :`<strong>${euro(o.amount)}</strong>`;
- return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+ // Riusa esattamente lo stesso linguaggio visivo già stabilito per le notifiche regalo e la
+ // pagina prezzi (price-bonus-line + price-benefits) - non uno stile nuovo, coerenza totale.
+ // Dentro un <details> cosi' la lista resta compatta, con il dettaglio a un tocco di distanza.
+ const planColor=o.plan_type?(PLAN_TIER_COLOR[o.plan_type]||'#ffb400'):null;
+ const items=[];
+ if(o.plan_analysis_credits>0)items.push(`${o.plan_analysis_credits} credit${o.plan_analysis_credits===1?'o':'i'} analisi`);
+ if(o.plan_pdf_credits>0)items.push(`${o.plan_pdf_credits} credit${o.plan_pdf_credits===1?'o':'i'} PDF`);
+ if(Array.isArray(o.plan_tool_names))items.push(...o.plan_tool_names);
+ const contentsHtml=(items.length&&planColor)?`<div class="invoice-contents">
+   <div class="price-bonus-line" style="border-color:${planColor}55;background:${planColor}14"><b style="color:${planColor}">📦</b> Cosa includeva</div>
+   <ul class="price-benefits invoice-contents-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+  </div>`:'';
+ if(!contentsHtml){
+  return `<div class="purchase-history-row"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></div>`;
+ }
+ return `<details class="purchase-history-row is-expandable"><summary class="purchase-history-summary"><div><b>${esc(o.plan_name||'Acquisto')}</b><small>${date}</small></div><div class="purchase-history-right">${amountHtml}<span style="color:${statusColor}">● ${esc(statusLabel)}</span></div></summary>${contentsHtml}</details>`;
 }
 async function renderInvoices(){
  const host=$('#invoicesContent');if(!host)return;
