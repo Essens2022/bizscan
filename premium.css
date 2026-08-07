@@ -192,6 +192,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .price-benefits li:before{content:'✓';color:var(--green);font-weight:900;margin-right:7px}
 .price-proof{display:flex;justify-content:space-between;align-items:center;gap:9px;border-top:1px solid var(--line);padding-top:10px;margin-top:12px;min-height:37px}
 .price-proof small{display:block;color:#a8b4c5;font-size:9px;font-weight:700;margin-bottom:2px}
+.price-proof .is-saving small{color:#24d98b}
 .price-proof del{font-size:10px;color:#b8c2cf;font-weight:800}
 .price-proof strong{display:block;text-align:right;color:#9cf1d3;font-size:12px}
 .price-card .btn{margin-top:10px;min-height:36px;font-size:9px}

@@ -1753,7 +1753,7 @@ function renderPricing(){
    <p class="price-purpose">${purpose[p.key]}</p>
    ${bonusCount>0?`<div class="price-bonus-line" style="border-color:${color}55;background:${color}14"><b style="color:${color}">🎁 ${bonusCount}</b> sblocc${bonusCount===1?'o':'hi'} gratuit${bonusCount===1?'o':'i'} inclus${bonusCount===1?'o':'i'}</div>`:''}
    <ul class="price-benefits">${benefits(p).map(x=>`<li>${x}</li>`).join('')}</ul>
-   ${saving?`<div class="price-proof"><span><small>Valore acquistato separatamente</small><del>${euro(v.total)}</del></span><span><small>Risparmio incluso</small><strong>${euro(v.saving)}</strong></span></div>`:'<div class="price-proof"><span><small>Prezzo diretto</small><strong>'+euro(p.price)+'</strong></span></div>'}
+   ${saving?`<div class="price-proof"><span><small>Valore acquistato separatamente</small><del>${euro(v.total)}</del></span><span class="is-saving"><small>Risparmio incluso</small><strong>${euro(v.saving)}</strong></span></div>`:'<div class="price-proof"><span><small>Prezzo diretto</small><strong>'+euro(p.price)+'</strong></span></div>'}
    <button class="btn full" style="background:${color};color:#0c1420;font-weight:900;border:none" onclick="choosePackage('${p.key}')">Scegli ${p.name}</button>
   </article>`
  }).join('')
