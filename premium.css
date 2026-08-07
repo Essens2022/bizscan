@@ -411,6 +411,7 @@ html.maybe-logged-in .icon-btn,html.maybe-logged-in .home18-head-icon[aria-label
 .notif-item-body{padding:0 14px 14px}
 .notif-item-img{width:100%;max-width:220px;border-radius:10px;object-fit:cover;display:block;margin-bottom:10px;background:#182437}
 .notif-item-msg{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.4}
+.notif-gift-intro{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}
 .notif-gift-plan-badge{display:inline-block;border:1.5px solid;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:900;margin-bottom:10px}
 .notif-gift-stats{display:flex;gap:10px;margin-bottom:12px}
 .notif-gift-stat{flex:1;background:#0d1622;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}

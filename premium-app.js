@@ -263,17 +263,27 @@ function notifItemHtml(n){
  const img=n.image_url?`<img class="notif-item-img" src="${esc(n.image_url)}" alt="" loading="lazy">`:'';
  let actionHtml='';
  let bodyHtml='';
+ const introHtml=`<p class="notif-gift-intro">${esc(n.message)}</p>`;
  if(n.action_type==='claim_bonus'){
   actionHtml=n.claimed_at
    ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
    : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationBonus('${n.id}')">Ricevi →</a>`;
+  // Stessa struttura visiva del regalo-piano (messaggio + numeri grandi in evidenza), invece
+  // di un semplice paragrafo di testo - coerenza professionale su ogni tipo di regalo, non
+  // solo su quelli con un piano incluso.
+  const statsHtml=(n.bonus_analysis_credits>0||n.bonus_pdf_credits>0)?`<div class="notif-gift-stats">
+    ${n.bonus_analysis_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_analysis_credits}</b><small>credit${n.bonus_analysis_credits===1?'o':'i'} analisi</small></div>`:''}
+    ${n.bonus_pdf_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_pdf_credits}</b><small>credit${n.bonus_pdf_credits===1?'o':'i'} PDF</small></div>`:''}
+   </div>`:'';
+  bodyHtml=`${introHtml}${statsHtml}`;
  }else if(n.action_type==='claim_plan'){
   actionHtml=n.claimed_at
    ? '<span class="notif-claim-done">✓ Già ricevuto</span>'
    : `<a href="javascript:void(0)" class="notif-claim-link" onclick="claimNotificationPlan('${n.id}')">Ricevi →</a>`;
   // Scheda strutturata invece del testo in un unico paragrafo: piano ben visibile con il suo
   // colore, crediti come numeri grandi separati, strumenti come singole etichette invece che
-  // elencati dentro una frase - molto più rapido da scansionare con un'occhiata.
+  // elencati dentro una frase - molto più rapido da scansionare con un'occhiata. Il messaggio
+  // originale resta come introduzione professionale sopra la scheda, non viene più scartato.
   const planColor=n.bonus_plan_type?(PLAN_TIER_COLOR[n.bonus_plan_type]||'#ffb400'):'#ffb400';
   const planLabel=n.bonus_plan_type?(n.bonus_plan_type==='max'?'BizScan Max':n.bonus_plan_type.charAt(0).toUpperCase()+n.bonus_plan_type.slice(1)):'';
   const statsHtml=(n.bonus_analysis_credits>0||n.bonus_pdf_credits>0)?`<div class="notif-gift-stats">
@@ -281,7 +291,7 @@ function notifItemHtml(n){
     ${n.bonus_pdf_credits>0?`<div class="notif-gift-stat"><b>${n.bonus_pdf_credits}</b><small>crediti PDF</small></div>`:''}
    </div>`:'';
   const toolsHtml=(Array.isArray(n.bonus_tool_names)&&n.bonus_tool_names.length)?`<div class="notif-gift-tools-label">Indicatori inclusi gratis</div><div class="notif-gift-tools">${n.bonus_tool_names.map(t=>`<span class="notif-gift-tool-chip">${esc(t)}</span>`).join('')}</div>`:'';
-  bodyHtml=`<div class="notif-gift-plan-badge" style="background:${planColor}22;border-color:${planColor};color:${planColor}">Piano ${esc(planLabel)}</div>${statsHtml}${toolsHtml}`;
+  bodyHtml=`${introHtml}<div class="notif-gift-plan-badge" style="background:${planColor}22;border-color:${planColor};color:${planColor}">Piano ${esc(planLabel)}</div>${statsHtml}${toolsHtml}`;
  }else if(n.action_type==='link' && n.action_link_url){
   actionHtml=`<a class="notif-item-btn is-link" href="${esc(n.action_link_url)}">Scopri di più</a>`;
  }
