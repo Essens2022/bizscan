@@ -965,8 +965,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=20260807171500"></script>
-<script src="app.js?v=20260807171500"></script>
+ <script src="supabase-data.js?v=20260807180101"></script>
+<script src="app.js?v=20260807180101"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -1082,8 +1082,11 @@ async function uploadNotifImage(notificationId){
   if (!fileRaw) return null
   const file = fileRaw.type === "image/gif" ? fileRaw : await compressImageFile(fileRaw, 1200, 0.82)
   const ext = (file.name.split(".").pop() || "png").toLowerCase()
-  const path = `notifications/${notificationId}/image.${ext}`
-  const { error: uploadError } = await supabaseClient.storage.from("bizscan-public").upload(path, file, { upsert: true, contentType: file.type })
+  // Percorso con timestamp (non più fisso) cosi' ogni caricamento è un file nuovo e univoco,
+  // sicuro da mettere in cache a lungo termine senza rischio che una sostituzione futura mostri
+  // ancora la versione vecchia a chi l'ha già in cache.
+  const path = `notifications/${notificationId}/image-${Date.now()}.${ext}`
+  const { error: uploadError } = await supabaseClient.storage.from("bizscan-public").upload(path, file, { upsert: true, contentType: file.type, cacheControl: "31536000" })
   if (uploadError) throw uploadError
   const { data } = supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
   return data.publicUrl
@@ -1908,7 +1911,7 @@ window.uploadHeroMediaFile=async(input)=>{
   try{
     const uploadFile = media_type==="image" ? await compressImageFile(file,1920,0.82) : file
     const path=`hero/${Date.now()}-${safeFileName(uploadFile.name)}`
-    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type})
+    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type,cacheControl:"31536000"})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
     const ok=await saveHeroMediaEntry(media_type,data.publicUrl)
@@ -1927,7 +1930,7 @@ window.replaceHeroMediaFile=async(id,input)=>{
   try{
     const uploadFile = media_type==="image" ? await compressImageFile(file,1920,0.82) : file
     const path=`hero/${Date.now()}-${safeFileName(uploadFile.name)}`
-    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type})
+    const{error:uploadError}=await supabaseClient.storage.from("bizscan-public").upload(path,uploadFile,{upsert:false,contentType:uploadFile.type,cacheControl:"31536000"})
     if(uploadError)throw uploadError
     const{data}=supabaseClient.storage.from("bizscan-public").getPublicUrl(path)
     const{error}=await supabaseClient.rpc("admin_upsert_hero_media",{p_id:id,p_media_type:media_type,p_url:data.publicUrl,p_link_url:null,p_order_index:m.order_index,p_is_active:m.is_active})
@@ -2623,7 +2626,7 @@ async function replaceAttachment(analysisId,type,file){
   if(!file)return
   const bucket=type==="pdf"?"bizscan-private":"bizscan-public"
   const path=`analyses/${analysisId}/${type}-${Date.now()}-${safeFileName(file.name)}`
-  const {error:uploadError}=await supabaseClient.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type})
+  const {error:uploadError}=await supabaseClient.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type,cacheControl:"31536000"})
   if(uploadError)throw uploadError
   let fileUrl=path
   if(bucket==="bizscan-public"){
@@ -3267,5 +3270,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=20260807171500"></script></body>
+<script src="shell-ui.js?v=20260807180101"></script></body>
 </html>
