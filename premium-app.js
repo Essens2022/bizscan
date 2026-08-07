@@ -2037,6 +2037,11 @@ window.addEventListener('pagehide',saveScrollPosition);
 // la barra, senza toccare il resto della pagina già renderizzata.
 window.addEventListener('pageshow', async(event) => {
  if (!event.persisted) return;
+ // La barra di caricamento in alto, se era rimasta a metà animazione nel momento in cui la
+ // persona ha lasciato questa pagina (es. aveva appena cliccato un altro link), non riceveva mai
+ // il segnale di completamento al ritorno con "indietro" - restava visivamente bloccata/a scatti
+ // invece di sparire in modo pulito. Ora si completa sempre, subito, quando la pagina torna dalla bfcache.
+ window.__pageLoadingDone?.();
  try{
   const fresh = await BizScanData.accessSummary();
   Object.assign(access, fresh);
