@@ -36,7 +36,18 @@ self.addEventListener('fetch', (event) => {
             cache.put(event.request, response.clone());
             return response;
           })
-          .catch(() => cached);
+          .catch((err) => {
+            // BUG REALE corretto: se la risorsa non era già in cache (prima visita a
+            // quell'URL) E la rete fallisce anche solo per un istante, "cached" qui è
+            // undefined - restituirlo comunque faceva sì che respondWith() ricevesse
+            // undefined invece di una vera Response, mandando in crash il service worker
+            // ("Failed to convert value to 'Response'"), visto in console proprio così su
+            // account.html. Ora, senza nulla in cache a cui appoggiarsi, l'errore di rete
+            // viene rilanciato correttamente, lasciando che il browser lo gestisca nel modo
+            // normale (pagina di errore/nuovo tentativo), invece di andare in crash.
+            if (cached) return cached;
+            throw err;
+          });
         return cached || networkFetch;
       })
     )
