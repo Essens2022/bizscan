@@ -5,11 +5,32 @@ let _clientPromise;
 let _isPasswordRecovery=false;
 function isPasswordRecoverySession(){return _isPasswordRecovery}
 
+// Prova jsDelivr per primo (il servizio abituale); se non risponde entro 5 secondi, o fallisce,
+// prova esm.sh come secondo servizio indipendente. I due servizi hanno infrastrutture separate,
+// quindi è molto improbabile che abbiano un problema esattamente nello stesso momento.
+async function loadSupabaseLibraryWithFallback(){
+  const withTimeout=(promise,ms)=>Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms))
+  ]);
+  try{
+    return await withTimeout(import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"),5000);
+  }catch(e){
+    return await import("https://esm.sh/@supabase/supabase-js@2");
+  }
+}
+
 async function getSupabaseClient(){
   if(_client)return _client;
   if(!_clientPromise){
     _clientPromise=(async()=>{
-      const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      // Carica la libreria Supabase da jsDelivr - ma se questo servizio esterno è lento o non
+      // risponde entro 5 secondi (è già successo, es. un'interruzione parziale confermata sul
+      // loro server di Falkenstein), prova automaticamente un secondo servizio indipendente
+      // (esm.sh, infrastruttura completamente separata) invece di lasciare la persona bloccata
+      // con la pagina vuota sotto la barra in alto. Nessun cambiamento per chi visita quando
+      // tutto funziona normalmente - la modifica entra in gioco SOLO se il primo servizio è lento.
+      const {createClient}=await loadSupabaseLibraryWithFallback();
       _client=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
       // Registriamo il listener PRIMA di scambiare il codice qui sotto: exchangeCodeForSession
       // emette l'evento PASSWORD_RECOVERY in modo sincrono durante lo scambio stesso, quindi il
