@@ -96,7 +96,11 @@ function preloadCardImages(){
  });
  return Promise.all(promises);
 }
-const CACHE_TTL_MS=45000; // 45 secondi - abbastanza per navigazione rapida tra pagine, ma si aggiorna presto
+const CACHE_TTL_MS=86400000; // 24 ore - BUG REALE corretto: era 45000 (45 secondi), in netto contrasto
+// con i commenti in tutto il file che parlavano di "cache 24h" - un valore quasi 2000 volte più
+// piccolo del previsto, che faceva scadere la cache troppo presto, costringendo molte più
+// navigazioni del dovuto sul percorso lento "prima visita" (6 chiamate di rete in parallelo +
+// preload immagini bloccante) invece di usare i dati già disponibili.
 function getSessionCache(key){
  try{
   const raw=sessionStorage.getItem('cache:'+key);
@@ -158,7 +162,12 @@ async function load(){
   const [ra,rsFresh,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
   rs=rsFresh;
   if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
-  await preloadCardImages();
+  // Non blocca più il rendering della pagina in attesa che TUTTE le immagini delle card siano
+  // scaricate/decodificate - con molte analisi pubblicate, questo poteva aggiungere secondi
+  // interi prima che la pagina mostrasse qualcosa, anche se il testo era già pronto. Ora le
+  // immagini si caricano in background, in parallelo con tutto il resto (stesso comportamento
+  // già corretto usato dal percorso con cache poco più sopra).
+  preloadCardImages();
   if(rp.status==='fulfilled'){applyDbPlans(rp.value)}
   heroMedia=rhm.status==='fulfilled'?rhm.value:[];
   heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
