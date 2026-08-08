@@ -289,13 +289,13 @@ async function initNotifications(){
   if(hasNewUnseen && !wasEmpty){
    if(navigator.vibrate)navigator.vibrate(25);
   }
-  // Sottoscrizione realtime: nuove notifiche appaiono senza bisogno di ricaricare la pagina.
-  if(!window.__notifRealtimeSub){
-   window.__notifRealtimeSub=c.channel('notifications-changes').on('postgres_changes',
-    {event:'INSERT',schema:'public',table:'notifications'},
-    ()=>{initNotifications()}
-   ).subscribe();
-  }
+ // Sottoscrizione realtime RIMOSSA: misurata a 50+ secondi per stabilirsi (dato reale, HAR
+ // file), e dato che questo è un sito multi-pagina con ricaricamento completo a ogni
+ // navigazione, un NUOVO tentativo di connessione partiva a ogni singola pagina visitata -
+ // una fonte concreta e misurata di rallentamento ripetuto. Le notifiche continuano a
+ // funzionare esattamente come prima (si aggiornano a ogni caricamento di pagina, appena sopra
+ // in questa stessa funzione) - l'unica differenza è che non appaiono più istantaneamente
+ // SENZA ricaricare la pagina se ne arriva una nuova mentre si è già su una pagina aperta.
  }catch(e){console.warn('initNotifications',e)}
 }
 
