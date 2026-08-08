@@ -27,6 +27,13 @@ self.addEventListener('fetch', (event) => {
   // per Supabase JS) - lasciale gestire normalmente dal browser, senza passare dalla
   // cache di questo service worker, che è pensata solo per gli asset di bizscan.it
   if (new URL(url).origin !== self.location.origin) return;
+  // Non intercettare le NAVIGAZIONI (caricamento di un'intera pagina, es. account.html) -
+  // solo gli asset secondari (JS, CSS, immagini). Le navigazioni hanno semantica diversa nel
+  // browser (redirect, credenziali, gestione errori) ed è la causa reale del crash osservato
+  // in console proprio su una navigazione ("Failed to convert value to Response" su
+  // account.html) - lasciarle gestire nativamente al browser è la pratica raccomandata ed
+  // elimina la classe di problema alla radice, invece di continuare a rincorrere singoli casi.
+  if (event.request.mode === 'navigate') return;
 
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
@@ -37,14 +44,6 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch((err) => {
-            // BUG REALE corretto: se la risorsa non era già in cache (prima visita a
-            // quell'URL) E la rete fallisce anche solo per un istante, "cached" qui è
-            // undefined - restituirlo comunque faceva sì che respondWith() ricevesse
-            // undefined invece di una vera Response, mandando in crash il service worker
-            // ("Failed to convert value to 'Response'"), visto in console proprio così su
-            // account.html. Ora, senza nulla in cache a cui appoggiarsi, l'errore di rete
-            // viene rilanciato correttamente, lasciando che il browser lo gestisca nel modo
-            // normale (pagina di errore/nuovo tentativo), invece di andare in crash.
             if (cached) return cached;
             throw err;
           });
