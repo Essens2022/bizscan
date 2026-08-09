@@ -965,8 +965,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=20260809153711"></script>
-<script src="app.js?v=20260809153711"></script>
+ <script src="supabase-data.js?v=20260809160605"></script>
+<script src="app.js?v=20260809160605"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -2387,7 +2387,7 @@ function parseSimpleTextFormat(text){
     "fabbisogno di personale":"personale","fornitori e autorizzazioni":"fornitori",
     "strategie di crescita":"strategie_crescita"
   }
-  const scenarioKeyMap={"prudente":"prudente","realistico":"realistico","ottimistico":"ottimistico"}
+  const scenarioKeyMap={"prudente":"prudente","realistico":"realistico","ottimistico":"ottimistico","piccola":"prudente","media":"realistico","grande":"ottimistico"}
   const benchmarkKeyMap={"roi":"roi","margine netto":"margine","tempo recupero":"recupero","rischio":"rischio"}
   const indicatorKeyMap={"domanda":"domanda","concorrenza":"concorrenza","scalabilità":"scalabilita","gestione":"gestione"}
 
@@ -2437,7 +2437,7 @@ function parseSimpleTextFormat(text){
     if(mode==="scenario"){
       const freeMatch=line.match(/^gratuito\s*:\s*(.+)$/i)
       if(freeMatch){if(/^(s[iì]|yes|true|1)$/i.test(freeMatch[1]))data.display.free.push("scenario");continue}
-      const m=line.match(/^(prudente|realistico|ottimistico)\s*:\s*(.+)$/i)
+      const m=line.match(/^(prudente|realistico|ottimistico|piccola|media|grande)\s*:\s*(.+)$/i)
       if(m){
         const key=scenarioKeyMap[m[1].toLowerCase()]
         const parts=m[2].split(",").map(x=>x.trim())
@@ -3267,5 +3267,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=20260809153711"></script></body>
+<script src="shell-ui.js?v=20260809160605"></script></body>
 </html>
