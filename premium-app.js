@@ -873,13 +873,19 @@ function costLegend(items){
  }).join('')}</div></div>`;
 }
 function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const p=findCurrent();if(!p){host.innerHTML='<div class="empty"><h1>Analisi non disponibile</h1><p>Non è stato possibile trovare questa analisi. Potrebbe non esistere più oppure i dati non sono ancora disponibili.</p><a class="btn gold" href="search.html">Esplora le analisi</a></div>';return};
- document.title=`${p.title} - Investimento, Rischio e Profitto | BizScan`;
+ // Titolo e descrizione ottimizzati per la ricerca reale (non solo per il nome esatto del
+ // prodotto): confrontando con i risultati Google reali per "aprire una pizzeria in italia",
+ // i competitor che compaiono usano titoli brevi con parole chiave dirette (costi, requisiti,
+ // guadagni) - il titolo precedente era ridondante ("...RISCHIO REALE - Investimento, Rischio e
+ // Profitto | BizScan") e troppo lungo, probabilmente troncato in modo scomodo da Google.
+ document.title=`${p.title} | BizScan`;
  const metaDesc=document.querySelector('meta[name="description"]');
- const descText=`${p.title}: ${p.summary||'analisi completa'}. Investimento ${p.investment||'-'}, ROI ${p.roi||'-'}, tempo di recupero ${p.payback||'-'}. Scopri se conviene aprire questa attività su BizScan.`.slice(0,300);
- if(metaDesc)metaDesc.setAttribute('content',descText);
+ const descText=(p.summary?`${p.summary} `:'')+`Investimento ${p.investment||'-'}, guadagno stimato, tempo di recupero ${p.payback||'-'} e rischio reale: scopri se conviene con BizScan.`;
+ const descTextTrimmed=descText.slice(0,300);
+ if(metaDesc)metaDesc.setAttribute('content',descTextTrimmed);
  const ogImage=p.wideCover||p.coverUrl||'https://bizscan.it/favicon.png';
  const ogTitle=document.querySelector('meta[property="og:title"]');if(ogTitle)ogTitle.setAttribute('content',`${p.title} | BizScan`);
- const ogDesc=document.querySelector('meta[property="og:description"]');if(ogDesc)ogDesc.setAttribute('content',descText);
+ const ogDesc=document.querySelector('meta[property="og:description"]');if(ogDesc)ogDesc.setAttribute('content',descTextTrimmed);
  const ogImg=document.querySelector('meta[property="og:image"]');if(ogImg)ogImg.setAttribute('content',ogImage);
  const ogUrl=document.querySelector('meta[property="og:url"]');if(ogUrl)ogUrl.setAttribute('content',`https://bizscan.it/analysis.html?slug=${p.slug}`);
  let canonical=document.querySelector('link[rel="canonical"]');
@@ -895,6 +901,21 @@ function renderAnalysis(){const host=$('#analysisContent');if(!host)return;const
   publisher:{'@type':'Organization',name:'BizScan',logo:{'@type':'ImageObject',url:'https://bizscan.it/favicon.png'}},
   mainEntityOfPage:{'@type':'WebPage','@id':`https://bizscan.it/analysis.html?slug=${p.slug}`}
  });
+ // Schema Prodotto aggiuntivo, con il prezzo - usa solo dati già pubblici (titolo, prezzo,
+ // immagine), può permettere a Google di mostrare il prezzo direttamente nei risultati di
+ // ricerca (rich snippet), un segnale in più che aiuta il click-through senza esporre alcun
+ // contenuto premium.
+ let ldProduct=document.getElementById('analysisLdProduct');
+ if(!ldProduct){ldProduct=document.createElement('script');ldProduct.type='application/ld+json';ldProduct.id='analysisLdProduct';document.head.appendChild(ldProduct)}
+ if(p.price){
+  ldProduct.textContent=JSON.stringify({
+   '@context':'https://schema.org','@type':'Product',
+   name:p.title,description:(p.summary||'').slice(0,200),
+   image:p.wideCover||p.coverUrl||'https://bizscan.it/favicon.png',
+   brand:{'@type':'Brand',name:'BizScan'},
+   offers:{'@type':'Offer',price:p.price,priceCurrency:'EUR',availability:'https://schema.org/InStock',url:`https://bizscan.it/analysis.html?slug=${p.slug}`}
+  });
+ }
  if(p.video_url)attachVideoSchema(p);
  host.innerHTML=`<div class="analysis-layout"><main class="analysis-main"><div class="analysis-head"><div><h1>${esc(p.title)} <span>★</span></h1><div class="meta"><em>${esc(p.category)}</em><em>Attività locale</em><span>◷ Analisi aggiornata periodicamente</span></div></div><div class="head-actions"><button class="btn ghost${compare.includes(p.slug)?' active':''}" data-compare-slug="${p.slug}" onclick="toggleCompare('${p.slug}')">${compare.includes(p.slug)?'✓ In confronto':'⇄ Confronta'}</button><button class="btn ghost${favorites.includes(p.slug)?' active':''}" data-fav-slug="${p.slug}" onclick="toggleFavorite('${p.slug}')">${favorites.includes(p.slug)?'♥ Salvato':'♡ Salva'}</button><button class="btn ghost" onclick="document.getElementById('feedbackAnchor').scrollIntoView({behavior:'smooth',block:'start'})">💬 Feedback</button><span class="analysis-rating analysis-rating-lg" id="analysisRatingMini">${(()=>{const s=statsCache&&statsCache[p.id];return(s&&s.review_count>0)?`${s.avg_stars} ${renderStarsPartial(s.avg_stars)} (${s.review_count})`:''})()}</span></div></div><section class="panel analysis-overview"><div class="analysis-hero"><div class="analysis-summary">${scoreRing(p.score,'large')}<div class="verdict"><small>${esc((p.verdictLabel||'Buona opportunità').toUpperCase())}</small><p>${esc(p.summary)}</p></div></div><div class="hero-image">${image({...p,coverUrl:p.wideCover||p.coverUrl},true,true)}</div></div><div class="kpi-grid"><div class="kpi"><small>Investimento iniziale</small><b>${esc(p.investment)}</b></div><div class="kpi"><small>Profitto netto/anno</small><b>${esc(p.profit)}</b></div><div class="kpi"><small>ROI medio annuo</small><b>${esc(p.roi||'—')}</b></div><div class="kpi"><small>Tempo di recupero</small><b>${esc(p.payback)}</b></div><div class="kpi"><small>Rischio</small><b class="${riskClass(p)}">● ${esc((p.riskLabel||'—').replace('Rischio ',''))}</b></div></div></section><nav class="tabs" aria-label="Sezioni analisi"><button class="active" data-tab="overview">Panoramica</button><button data-tab="finance">Analisi finanziaria</button><button data-tab="costs">Costi e ricavi</button><button data-tab="market">Mercato</button><button data-tab="risks">Rischi</button><button data-tab="operations">Operatività</button></nav><div id="analysisTabContent">${analysisOverview(p)}</div></main><aside class="panel report-card"><h3>Rapporto completo</h3><div class="report-cover">${image({...p,coverUrl:p.wideCover||p.coverUrl},true)}<div><small>REPORT BIZSCAN</small><strong>${esc(p.title).toUpperCase()}</strong><span>Costi · Profitti · Rischi</span></div></div><small>PDF · Documento completo</small><div class="report-access-note" id="reportAccessNote">Verifica accesso al rapporto…</div><button class="btn gold full" id="downloadReportBtn" onclick="downloadReport('${p.slug}')">Verifica e apri il rapporto</button></aside></div><section class="panel feedback-section" id="feedbackAnchor"><div class="feedback-unified-box"><div class="feedback-header"><div><h2>Cosa dicono gli utenti</h2><p>Condividi la tua esperienza con questa analisi</p></div><div class="feedback-avg" id="feedbackAvg"><span class="feedback-avg-num">—</span><span class="feedback-avg-stars">☆☆☆☆☆</span><small>caricamento…</small></div></div><div class="feedback-list-wrap"><div class="feedback-list" id="feedbackCarousel"><div class="feedback-empty">Ancora nessuna recensione. Sii il primo a lasciarne una!</div></div></div></div><div class="feedback-form-card" id="feedbackFormCard"><h3>Lascia il tuo feedback</h3><div class="feedback-form-row feedback-stars-row"><small>La tua valutazione</small><div class="feedback-star-picker" id="feedbackStarPicker" data-value="0">${starPickerHtml()}</div></div><div class="feedback-form-row"><input type="text" id="feedbackName" placeholder="Nome e cognome" maxlength="60"></div><div class="feedback-form-row"><textarea id="feedbackMessage" placeholder="Racconta la tua esperienza…" maxlength="500" rows="3" oninput="updateCharCounter('feedbackMessage')"></textarea><div class="char-counter-row">${charCounter('feedbackMessage',500)}${emojiRow('feedbackMessage')}</div></div><button class="btn gold full" id="feedbackSubmitBtn" onclick="submitFeedback('${p.slug}')">Invia recensione</button><p class="feedback-form-msg" id="feedbackFormMsg"></p></div></section><section class="panel suggestion-section"><h3>Aiutaci a migliorare BizScan</h3><p>Hai un'idea, hai trovato un problema, o vuoi suggerirci qualcosa? Scrivilo qui — leggiamo ogni messaggio.</p><textarea id="suggestionMessage" placeholder="Cosa possiamo migliorare o aggiungere?" maxlength="1000" rows="3" oninput="updateCharCounter('suggestionMessage')"></textarea><div class="char-counter-row">${charCounter('suggestionMessage',1000)}${emojiRow('suggestionMessage')}</div><button class="btn ghost" onclick="submitSuggestion()">Invia suggerimento</button><p class="feedback-form-msg" id="suggestionMsg"></p></section>`;bindTabs();refreshReportAccess(p.slug);initFeedbackSection(p.slug);
  ensureStatsLoaded().then(()=>{
