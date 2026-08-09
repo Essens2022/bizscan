@@ -1220,13 +1220,20 @@ function analysisOverview(p){
  const LV=(v,key)=>{
    if(key==='scalabilita')return 'risk-mid'; // la scalabilità non è né positiva né negativa in sé, è solo una caratteristica strutturale
    const s=String(v||'').toLowerCase();
+   if(key==='gestione'){
+    // "Gestione" ora usa Facile/Media/Difficile invece di Alta/Media/Bassa - la scala precedente
+    // era ambigua (cosa significa "Gestione: Alta"? Tanta gestione richiesta, o gestione di alta
+    // qualità?), tanto da richiedere un'inversione di colore poco intuitiva. Con Facile/Difficile
+    // il significato è diretto, senza bisogno di alcuna inversione.
+    if(s.includes('facile'))return 'risk-low';
+    if(s.includes('difficile'))return 'risk-high';
+    return 'risk-mid';
+   }
    const isHigh=s.includes('alta')||s.includes('alto');
    const isLow=s.includes('bass');
-   // Per concorrenza e gestione, "alta" è negativo (rosso) e "bassa" è positivo (verde) - in entrambi
-   // i casi un valore più basso è meglio per chi gestisce l'attività (meno concorrenza da affrontare,
-   // meno sforzo di gestione richiesto). Prima questa inversione mancava per "gestione", mostrando
-   // erroneamente "Gestione: Bassa" in rosso, come se fosse un aspetto negativo invece che un vantaggio.
-   const invert=key==='concorrenza'||key==='gestione';
+   // Per concorrenza, "alta" è negativo (rosso) e "bassa" è positivo (verde) - meno concorrenza
+   // da affrontare è meglio per chi gestisce l'attività.
+   const invert=key==='concorrenza';
    if(isHigh)return invert?'risk-high':'risk-low';
    if(isLow)return invert?'risk-low':'risk-high';
    return 'risk-mid';
