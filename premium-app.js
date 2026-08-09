@@ -1239,7 +1239,6 @@ function analysisOverview(p){
  const B=(k,f)=>esc((bm[k]&&bm[k][f])??DB[k][f]);
  const MK=k=>(bm[k]?'':(DB[k].mk?` <mark>${DB[k].mk}</mark>`:''));
  const LV=(v,key)=>{
-   if(key==='scalabilita')return 'risk-mid'; // la scalabilità non è né positiva né negativa in sé, è solo una caratteristica strutturale
    const s=String(v||'').toLowerCase();
    if(key==='gestione'){
     // Riconosce sia i valori nuovi (Facile/Difficile) sia quelli vecchi (Alta/Bassa, ancora
@@ -1247,6 +1246,13 @@ function analysisOverview(p){
     // meccanismo di traduzione usato dalla funzione I() qui sotto per il testo mostrato.
     if(s.includes('facile')||s.includes('bass'))return 'risk-low';
     if(s.includes('difficile')||s.includes('alta')||s.includes('alto'))return 'risk-high';
+    return 'risk-mid';
+   }
+   if(key==='scalabilita'){
+    // Stessa logica di gestione ma direzione opposta: qui Facile/Alta è positivo (verde),
+    // Difficile/Bassa è negativo (rosso) - facile da scalare è un vantaggio, non uno svantaggio.
+    if(s.includes('facile')||s.includes('alta')||s.includes('alto'))return 'risk-low';
+    if(s.includes('difficile')||s.includes('bass'))return 'risk-high';
     return 'risk-mid';
    }
    const isHigh=s.includes('alta')||s.includes('alto');
