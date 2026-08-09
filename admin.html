@@ -472,9 +472,10 @@ textarea{min-height:92px;resize:vertical}
         <div style="margin-top:14px;font-weight:900">Scenari di profitto (annuo)</div>
         <label class="check"><input type="checkbox" id="freeScenario">Gratuito (visibile senza acquisto)</label>
         <div class="three" style="margin-top:8px"><label>Piccola</label><label>Media</label><label>Grande</label></div>
+        <div class="three"><label>Investimento<input id="scPrudInv" placeholder="63K €"></label><input id="scRealInv" placeholder="98K €"><input id="scOttiInv" placeholder="107K €"></div>
         <div class="three"><label>Fatturato<input id="scPrudFatt" placeholder="280K €"></label><input id="scRealFatt" placeholder="430K €"><input id="scOttiFatt" placeholder="650K €"></div>
         <div class="three"><label>Utile netto<input id="scPrudUtile" placeholder="18K €"></label><input id="scRealUtile" placeholder="45K €"><input id="scOttiUtile" placeholder="80K €"></div>
-        <div class="three"><label>ROI<input id="scPrudRoi" placeholder="8%"></label><input id="scRealRoi" placeholder="20%"><input id="scOttiRoi" placeholder="33%"></div>
+        <div class="three"><label>ROI<input id="scPrudRoi" placeholder="29%"></label><input id="scRealRoi" placeholder="46%"><input id="scOttiRoi" placeholder="75%"></div>
         <div class="three"><label>Recupero<input id="scPrudRec" placeholder="42 mesi"></label><input id="scRealRec" placeholder="26 mesi"><input id="scOttiRec" placeholder="16 mesi"></div>
 
         <div style="margin-top:16px;font-weight:900">Distribuzione costi iniziali</div>
@@ -965,8 +966,8 @@ textarea{min-height:92px;resize:vertical}
     </div>
   </section>
 </main>
- <script src="supabase-data.js?v=20260809174321"></script>
-<script src="app.js?v=20260809174321"></script>
+ <script src="supabase-data.js?v=20260809175516"></script>
+<script src="app.js?v=20260809175516"></script>
 <script>
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
@@ -2443,6 +2444,7 @@ function parseSimpleTextFormat(text){
         const parts=m[2].split(",").map(x=>x.trim())
         const row={}
         for(const p of parts){
+          const im=p.match(/^investimento\s+(.+)$/i);if(im){row.investimento=im[1];continue}
           const pm=p.match(/^fatturato\s+(.+)$/i);if(pm){row.fatturato=pm[1];continue}
           const um=p.match(/^utile\s+(.+)$/i);if(um){row.utile=um[1];continue}
           const rm=p.match(/^roi\s+(.+)$/i);if(rm){row.roi=rm[1];continue}
@@ -2650,8 +2652,8 @@ async function saveCurrentPdfRule(attachmentId){
 function v_(id){const el=document.getElementById(id);const t=el?el.value.trim():'';return t||null}
 function buildDisplayData(){
   const scen={};
-  const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
-  for(const k in cols){const[fatt,utile,roi,rec]=cols[k].map(v_);if(fatt||utile||roi||rec)scen[k]={fatturato:fatt,utile:utile,roi:roi,recupero:rec}}
+  const cols={prudente:['scPrudInv','scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealInv','scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiInv','scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
+  for(const k in cols){const[inv,fatt,utile,roi,rec]=cols[k].map(v_);if(inv||fatt||utile||roi||rec)scen[k]={investimento:inv,fatturato:fatt,utile:utile,roi:roi,recupero:rec}}
   const costi=[];
   for(let i=1;i<=6;i++){
     const label=v_('costLabel'+i),amount=parseFloat(document.getElementById('costAmount'+i)?.value);
@@ -2673,8 +2675,8 @@ function buildDisplayData(){
 function loadDisplayDataForm(d){
   d=d||{};const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{},free=d.free||[],tools=d.tools||{};
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''}
-  const cols={prudente:['scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
-  for(const k in cols){const row=sc[k]||{};const[fatt,utile,roi,rec]=cols[k];set(fatt,row.fatturato);set(utile,row.utile);set(roi,row.roi);set(rec,row.recupero)}
+  const cols={prudente:['scPrudInv','scPrudFatt','scPrudUtile','scPrudRoi','scPrudRec'],realistico:['scRealInv','scRealFatt','scRealUtile','scRealRoi','scRealRec'],ottimistico:['scOttiInv','scOttiFatt','scOttiUtile','scOttiRoi','scOttiRec']};
+  for(const k in cols){const row=sc[k]||{};const[inv,fatt,utile,roi,rec]=cols[k];set(inv,row.investimento);set(fatt,row.fatturato);set(utile,row.utile);set(roi,row.roi);set(rec,row.recupero)}
   const costi=Array.isArray(d.costi_iniziali)?d.costi_iniziali:[];
   for(let i=1;i<=6;i++){const row=costi[i-1]||{};set('costLabel'+i,row.label);set('costAmount'+i,row.importo)}
   const pairs=[['roi','bmRoiA','bmRoiM'],['margine','bmMargA','bmMargM'],['recupero','bmRecA','bmRecM'],['rischio','bmRiskA','bmRiskM']];
@@ -3267,5 +3269,5 @@ renderAll();resetForm();renderEmojiPicker();renderPositionPicker();profitModeCha
     <button type="button" class="assistant-action" onclick="applyTemplate('franchising')"><strong>Modello Franchising</strong><small>Per marchi e reti commerciali</small></button>
   </div>
 </div>
-<script src="shell-ui.js?v=20260809174321"></script></body>
+<script src="shell-ui.js?v=20260809175516"></script></body>
 </html>

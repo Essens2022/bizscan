@@ -846,7 +846,7 @@ function parseMoneyToNumber(str){
 }
 function scenarioChart(sc){
  sc=sc||{};
- const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%'}};
+ const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'29%'},realistico:{fatturato:'430K €',utile:'45K €',roi:'46%'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'75%'}};
  const rows=['fatturato','utile','roi'].map(field=>['prudente','realistico','ottimistico'].map(k=>{
    const raw=(sc[k]&&sc[k][field])||DS[k][field];
    return parseMoneyToNumber(raw);
@@ -1241,7 +1241,7 @@ function analysisOverview(p){
   return `<div id="toolwrap-${esc(key)}">${renderLockedToolCard(titles[key],descriptions[key],key)}</div>`;
  };
  const sc=d.scenario||{},bm=d.benchmark||{},ind=d.indicators||{};
- const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'8%',recupero:'42 mesi'},realistico:{fatturato:'430K €',utile:'45K €',roi:'20%',recupero:'26 mesi'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'33%',recupero:'16 mesi'}};
+ const DS={prudente:{fatturato:'280K €',utile:'18K €',roi:'29%',recupero:'42 mesi',investimento:'63K €'},realistico:{fatturato:'430K €',utile:'45K €',roi:'46%',recupero:'26 mesi',investimento:'98K €'},ottimistico:{fatturato:'650K €',utile:'80K €',roi:'75%',recupero:'16 mesi',investimento:'107K €'}};
  const S=(k,f)=>esc((sc[k]&&sc[k][f])??DS[k][f]);
  const DB={roi:{a:'20%',m:'18%',mk:'+11%'},margine:{a:'15%',m:'12%',mk:'+25%'},recupero:{a:'24 mesi',m:'30 mesi',mk:'+20%'},rischio:{a:'Medio',m:'Medio-Alto',mk:''}};
  const B=(k,f)=>esc((bm[k]&&bm[k][f])??DB[k][f]);
@@ -1295,15 +1295,14 @@ function analysisOverview(p){
  // tabella principale che mostra solo cifre ANNUALI (Fatturato, Utile, ROI, Recupero).
  // L'investimento è una cifra UNA TANTUM (di partenza), concettualmente diversa dalle cifre
  // annuali - per questo va mostrata separatamente, non mescolata nella stessa riga.
- const parseNum=(s)=>{const m=String(s||'').match(/[\d.,]+/);return m?parseFloat(m[0].replace(',','.')):0};
- const impliedInv=(k)=>{
-  const utileNum=parseNum(S(k,'utile'));
-  const recNum=parseNum(S(k,'recupero'));
-  if(!utileNum||!recNum)return '—';
-  const inv=Math.round(recNum*utileNum/12);
-  return `${inv}K €`;
- };
- const investPerScaleHtml=`<div class="invest-per-scale"><h4>Investimento iniziale</h4><div class="scenario-head invest-table"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Investimento</span><b>${impliedInv('prudente')}</b><b>${impliedInv('realistico')}</b><b>${impliedInv('ottimistico')}</b><span>Recupero</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div></div>`;
+ // FIX SISTEMICO: l'investimento ora si legge DIRETTAMENTE dal dato esplicito ('investimento'
+ // nel JSON scenario), non più derivato indirettamente da ROI o Recupero. Prima, calcolarlo
+ // da due formule diverse (ROI=Utile/Investimento, Recupero=Investimento/Utile×12) poteva dare
+ // risultati leggermente diversi se i dati originali non erano perfettamente coerenti tra loro,
+ // causando contraddizioni visibili (es. stesso ROI arrotondato su scale diverse, o numeri che
+ // non tornavano). Ora l'investimento è un'unica fonte di verità esplicita nel TXT/database,
+ // e ROI/Recupero si calcolano SEMPRE a partire da essa in fase di scrittura dei contenuti.
+ const investPerScaleHtml=`<div class="invest-per-scale"><h4>Investimento iniziale</h4><div class="scenario-head invest-table"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Investimento</span><b>${S('prudente','investimento')}</b><b>${S('realistico','investimento')}</b><b>${S('ottimistico','investimento')}</b><span>Recupero</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div></div>`;
  const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b></div>${scenarioChart(sc)}</section>`;
  const benchmarkHtml=`<section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Questa attività</b><b>Media settore</b><span>ROI medio</span><b>${B('roi','a')}</b><b>${B('roi','m')}${MK('roi')}</b><span>Margine netto</span><b>${B('margine','a')}</b><b>${B('margine','m')}${MK('margine')}</b><span>Tempo recupero</span><b>${B('recupero','a')}</b><b>${B('recupero','m')}${MK('recupero')}</b><span>Rischio</span><b>${B('rischio','a')}</b><b>${B('rischio','m')}</b></div></section>`;
  const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="${LV(ind.domanda??'Alta','domanda')}">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta','domanda')}">${I('domanda','Alta')}</b></div><div><i class="${LV(ind.concorrenza??'Media','concorrenza')}">▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media','concorrenza')}">${I('concorrenza','Media')}</b></div><div><i class="${LV(ind.scalabilita??'Media','scalabilita')}">⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media','scalabilita')}">${I('scalabilita','Media')}</b></div><div><i class="${LV(ind.gestione??'Media','gestione')}">⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media','gestione')}">${I('gestione','Media')}</b></div></div>${investPerScaleHtml}</section>`;
