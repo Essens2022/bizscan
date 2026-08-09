@@ -1268,6 +1268,13 @@ function analysisOverview(p){
     if(s.includes('alta')||s.includes('alto'))return 'Difficile';
     if(s.includes('bass'))return 'Facile';
    }
+   if(k==='scalabilita'){
+    // Stessa idea di gestione, ma direzione opposta: "Scalabilità Alta" significa facile da
+    // scalare (positivo), non difficile - qui Alta->Facile, Bassa->Difficile.
+    const s=String(raw).toLowerCase();
+    if(s.includes('alta')||s.includes('alto'))return 'Facile';
+    if(s.includes('bass'))return 'Difficile';
+   }
    return esc(raw);
  };
  const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart(sc)}</section>`;
