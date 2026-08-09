@@ -1283,12 +1283,10 @@ function analysisOverview(p){
    }
    return esc(raw);
  };
- // Calcola l'investimento implicito per ogni scenario, partendo da Utile e Recupero già
- // presenti nei dati (Investimento = Recupero(mesi) × Utile / 12) - senza bisogno di
- // aggiungere un nuovo campo al formato TXT o al database. Mostrarlo nella tabella evita
- // che il Recupero sembri incoerente: senza vedere QUALE investimento è alla base di ogni
- // scenario, "Grande recupera più in fretta di Piccola" sembra un controsenso, mentre in
- // realtà ogni scenario ha una propria base di investimento diversa (scale diverse).
+ // Tabella separata per l'investimento per scala (Piccola/Media/Grande), distinta dalla
+ // tabella principale che mostra solo cifre ANNUALI (Fatturato, Utile, ROI, Recupero).
+ // L'investimento è una cifra UNA TANTUM (di partenza), concettualmente diversa dalle cifre
+ // annuali - per questo va mostrata separatamente, non mescolata nella stessa riga.
  const parseNum=(s)=>{const m=String(s||'').match(/[\d.,]+/);return m?parseFloat(m[0].replace(',','.')):0};
  const impliedInv=(k)=>{
   const utileNum=parseNum(S(k,'utile'));
@@ -1297,7 +1295,9 @@ function analysisOverview(p){
   const inv=Math.round(recNum*utileNum/12);
   return `${inv}K €`;
  };
- const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Investimento</span><b>${impliedInv('prudente')}</b><b>${impliedInv('realistico')}</b><b>${impliedInv('ottimistico')}</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart(sc)}</section>`;
+ const investCol=(label,k)=>`<div><span>${label}</span><b>${impliedInv(k)}</b><small class="ips-rec">Recupero: ${S(k,'recupero')}</small></div>`;
+ const investPerScaleHtml=`<div class="invest-per-scale"><small>Investimento e recupero per ciascuna scala (cifre una tantum, all'avvio)</small><div class="invest-per-scale-row">${investCol('Piccola','prudente')}${investCol('Media','realistico')}${investCol('Grande','ottimistico')}</div></div>`;
+ const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span>Attività</span><b>Piccola</b><b>Media</b><b>Grande</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b></div>${scenarioChart(sc)}${investPerScaleHtml}</section>`;
  const benchmarkHtml=`<section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Questa attività</b><b>Media settore</b><span>ROI medio</span><b>${B('roi','a')}</b><b>${B('roi','m')}${MK('roi')}</b><span>Margine netto</span><b>${B('margine','a')}</b><b>${B('margine','m')}${MK('margine')}</b><span>Tempo recupero</span><b>${B('recupero','a')}</b><b>${B('recupero','m')}${MK('recupero')}</b><span>Rischio</span><b>${B('rischio','a')}</b><b>${B('rischio','m')}</b></div></section>`;
  const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="${LV(ind.domanda??'Alta','domanda')}">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta','domanda')}">${I('domanda','Alta')}</b></div><div><i class="${LV(ind.concorrenza??'Media','concorrenza')}">▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media','concorrenza')}">${I('concorrenza','Media')}</b></div><div><i class="${LV(ind.scalabilita??'Media','scalabilita')}">⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media','scalabilita')}">${I('scalabilita','Media')}</b></div><div><i class="${LV(ind.gestione??'Media','gestione')}">⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media','gestione')}">${I('gestione','Media')}</b></div></div></section>`;
  return `<div class="dash-grid">${gate('indicators',indicatorsHtml)}${gate('scenario',scenarioHtml)}${gate('distribuzione_costi',`<section class="panel chart-card"><h3>Distribuzione costi iniziali</h3>${costLegend(d.costi_iniziali)}</section>`)}${gate('benchmark',benchmarkHtml)}</div>`}
