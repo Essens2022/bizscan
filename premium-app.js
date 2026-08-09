@@ -852,8 +852,16 @@ function scenarioChart(sc){
    return parseMoneyToNumber(raw);
  }));
  const groups=rows;
- const max=Math.max(1,...groups.flat());
- return `<div class="scenario-chart">${groups.map((g,gi)=>`<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/max*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`).join('')}</div>`
+ // BUG REALE trovato e corretto: prima il massimo era calcolato su TUTTI i 9 valori insieme
+ // (Fatturato, Utile, ROI mescolati), ma sono unità di misura completamente diverse (migliaia
+ // di euro vs punti percentuali) - questo faceva sì che le barre ROI (es. 27-45) apparissero
+ // quasi piatte accanto a Fatturato (es. 24-320), indipendentemente dal valore REALE di ROI.
+ // Ora il massimo si calcola PER OGNI riga/metrica separatamente, così ogni gruppo di barre
+ // (Fatturato, Utile netto, ROI) è scalato in modo indipendente e leggibile.
+ return `<div class="scenario-chart">${groups.map((g,gi)=>{
+   const rowMax=Math.max(1,...g);
+   return `<div class="chart-group">${g.map((v,i)=>`<i class="s${i}" style="height:${Math.max(12,v/rowMax*100)}%"></i>`).join('')}<small>${['Fatturato','Utile netto','ROI'][gi]}</small></div>`;
+ }).join('')}</div>`
 }
 function costLegend(items){
  const DEFAULT=[{label:'Attrezzature',importo:76000},{label:'Ristrutturazione',importo:44000},{label:'Arredi',importo:30000},{label:'Licenze e permessi',importo:20000},{label:'Marketing iniziale',importo:16000},{label:'Altro',importo:14000}];
