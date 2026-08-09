@@ -1221,12 +1221,11 @@ function analysisOverview(p){
    if(key==='scalabilita')return 'risk-mid'; // la scalabilità non è né positiva né negativa in sé, è solo una caratteristica strutturale
    const s=String(v||'').toLowerCase();
    if(key==='gestione'){
-    // "Gestione" ora usa Facile/Media/Difficile invece di Alta/Media/Bassa - la scala precedente
-    // era ambigua (cosa significa "Gestione: Alta"? Tanta gestione richiesta, o gestione di alta
-    // qualità?), tanto da richiedere un'inversione di colore poco intuitiva. Con Facile/Difficile
-    // il significato è diretto, senza bisogno di alcuna inversione.
-    if(s.includes('facile'))return 'risk-low';
-    if(s.includes('difficile'))return 'risk-high';
+    // Riconosce sia i valori nuovi (Facile/Difficile) sia quelli vecchi (Alta/Bassa, ancora
+    // presenti nei dati salvati di analisi pubblicate prima di questo cambiamento) - stesso
+    // meccanismo di traduzione usato dalla funzione I() qui sotto per il testo mostrato.
+    if(s.includes('facile')||s.includes('bass'))return 'risk-low';
+    if(s.includes('difficile')||s.includes('alta')||s.includes('alto'))return 'risk-high';
     return 'risk-mid';
    }
    const isHigh=s.includes('alta')||s.includes('alto');
@@ -1238,7 +1237,18 @@ function analysisOverview(p){
    if(isLow)return invert?'risk-low':'risk-high';
    return 'risk-mid';
  };
- const I=(k,def)=>esc(ind[k]??def);
+ const I=(k,def)=>{
+   const raw=ind[k]??def;
+   if(k==='gestione'){
+    // Traduce i valori vecchi (Alta/Bassa, salvati nelle analisi già pubblicate prima di questo
+    // cambiamento) nella nuova scala Facile/Difficile, così TUTTE le attività mostrano lo stesso
+    // linguaggio coerente, senza dover modificare manualmente i dati già salvati di ognuna.
+    const s=String(raw).toLowerCase();
+    if(s.includes('alta')||s.includes('alto'))return 'Difficile';
+    if(s.includes('bass'))return 'Facile';
+   }
+   return esc(raw);
+ };
  const scenarioHtml=`<section class="panel chart-card"><h3>Scenari di profitto (annuo)</h3><div class="scenario-head"><span></span><b>Prudente</b><b>Realistico</b><b>Ottimistico</b><span>Fatturato</span><b>${S('prudente','fatturato')}</b><b>${S('realistico','fatturato')}</b><b>${S('ottimistico','fatturato')}</b><span>Utile netto</span><b>${S('prudente','utile')}</b><b>${S('realistico','utile')}</b><b>${S('ottimistico','utile')}</b><span>ROI</span><b>${S('prudente','roi')}</b><b>${S('realistico','roi')}</b><b>${S('ottimistico','roi')}</b><span>Recupero investimento</span><b>${S('prudente','recupero')}</b><b>${S('realistico','recupero')}</b><b>${S('ottimistico','recupero')}</b></div>${scenarioChart(sc)}</section>`;
  const benchmarkHtml=`<section class="panel benchmark"><h3>Confronto con la media categoria</h3><div class="benchmark-table"><span></span><b>Attività</b><b>Media</b><span>ROI medio</span><b>${B('roi','a')}</b><b>${B('roi','m')}${MK('roi')}</b><span>Margine netto</span><b>${B('margine','a')}</b><b>${B('margine','m')}${MK('margine')}</b><span>Tempo recupero</span><b>${B('recupero','a')}</b><b>${B('recupero','m')}${MK('recupero')}</b><span>Rischio</span><b>${B('rischio','a')}</b><b>${B('rischio','m')}</b></div></section>`;
  const indicatorsHtml=`<section class="panel key-indicators"><h3>Indicatori chiave</h3><div class="indicator-row"><div><i class="${LV(ind.domanda??'Alta','domanda')}">♢</i><small>Domanda</small><b class="${LV(ind.domanda??'Alta','domanda')}">${I('domanda','Alta')}</b></div><div><i class="${LV(ind.concorrenza??'Media','concorrenza')}">▣</i><small>Concorrenza</small><b class="${LV(ind.concorrenza??'Media','concorrenza')}">${I('concorrenza','Media')}</b></div><div><i class="${LV(ind.scalabilita??'Media','scalabilita')}">⌁</i><small>Scalabilità</small><b class="${LV(ind.scalabilita??'Media','scalabilita')}">${I('scalabilita','Media')}</b></div><div><i class="${LV(ind.gestione??'Media','gestione')}">⌂</i><small>Gestione</small><b class="${LV(ind.gestione??'Media','gestione')}">${I('gestione','Media')}</b></div></div></section>`;
