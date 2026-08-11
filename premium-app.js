@@ -2129,19 +2129,24 @@ window.addEventListener('pagehide',saveScrollPosition);
 // barra in alto, che possono essere diventati vecchi nel frattempo (es. un tool sbloccato nel mezzo).
 // event.persisted=true indica esattamente questo scenario: ricarichiamo i crediti reali e aggiorniamo
 // la barra, senza toccare il resto della pagina già renderizzata.
-window.addEventListener('pageshow', async(event) => {
+window.addEventListener('pageshow', (event) => {
  if (!event.persisted) return;
  // La barra di caricamento in alto, se era rimasta a metà animazione nel momento in cui la
  // persona ha lasciato questa pagina (es. aveva appena cliccato un altro link), non riceveva mai
  // il segnale di completamento al ritorno con "indietro" - restava visivamente bloccata/a scatti
  // invece di sparire in modo pulito. Ora si completa sempre, subito, quando la pagina torna dalla bfcache.
  window.__pageLoadingDone?.();
- try{
-  const fresh = await BizScanData.accessSummary();
+ // FIX: prima questo blocco ASPETTAVA la risposta di rete (accessSummary) prima di aggiornare
+ // qualunque cosa - su una connessione mobile lenta al risveglio del telefono, questo poteva
+ // richiedere diversi secondi, durante i quali l'interfaccia sembrava "congelata"/lenta a rispondere,
+ // pur essendo già visivamente presente (ripristinata istantaneamente dalla bfcache). Ora non
+ // aspettiamo più: la pagina resta subito interattiva con i dati già in memoria, e si aggiorna
+ // silenziosamente in background non appena arrivano i dati freschi, senza mai bloccare nulla.
+ initNotifications();
+ BizScanData.accessSummary().then(fresh => {
   Object.assign(access, fresh);
   updateShell();
-  initNotifications();
- }catch(e){}
+ }).catch(()=>{});
 });
 function restoreScrollPosition(){
  try{
