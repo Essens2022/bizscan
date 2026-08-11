@@ -5,7 +5,10 @@
 // Le chiamate a Supabase (dati, autenticazione) NON vengono mai toccate da questo cache -
 // restano sempre dirette e fresche, esattamente come oggi.
 
-const CACHE_NAME = 'bizscan-static-v1';
+// v2: bump per pulire una volta sola tutta la cache accumulata da centinaia di deploy
+// precedenti (prima di questo fix, le versioni vecchie non venivano mai rimosse) - da qui
+// in avanti, la nuova logica nel fetch handler previene che si riaccumuli.
+const CACHE_NAME = 'bizscan-static-v2';
 const SUPABASE_HOST = 'fafedftoyztptdiubjmx.supabase.co';
 
 self.addEventListener('install', (event) => {
@@ -35,6 +38,23 @@ self.addEventListener('fetch', (event) => {
       cache.match(event.request).then(cached => {
         const networkFetch = fetch(event.request).then(response => {
           if (response && response.status === 200) {
+            // FIX: senza questo, ogni nuovo deploy (con ?v=timestamp diverso) si limitava
+            // ad AGGIUNGERE una nuova voce nella cache, senza mai rimuovere le versioni
+            // precedenti dello stesso file - con centinaia di deploy nel tempo, la cache
+            // cresceva senza limite, accumulando decine di versioni vecchie e inutili dello
+            // stesso file, rallentando progressivamente le operazioni sulla cache stessa.
+            // Ora, prima di salvare la nuova versione, rimuoviamo ogni voce esistente con lo
+            // stesso pathname (ignorando la query ?v=), cosi' resta sempre una sola voce per
+            // file, mai piu' di quelle - senza cambiare in alcun modo il comportamento di
+            // aggiornamento/freschezza gia' esistente.
+            cache.keys().then(keys => {
+              keys.forEach(k => {
+                const kUrl = new URL(k.url);
+                if (kUrl.pathname === url.pathname && kUrl.href !== event.request.url) {
+                  cache.delete(k);
+                }
+              });
+            });
             cache.put(event.request, response.clone());
           }
           return response;
