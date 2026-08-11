@@ -57,6 +57,7 @@ function packageValue(p){
 };
 let analyses=[],favorites=[],compare=[],access={authenticated:false,credits:0};
 let heroMedia=[],heroPhrases=[],heroTransition='fade',heroSeconds=5;
+let categoriesData=[];
 let homeFilter='recommended';
 let catalogFilter='all';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -131,7 +132,7 @@ async function fetchFreshPublicDataInBackground(){
  // già in cache per il rendering iniziale - così la PROSSIMA navigazione avrà dati ancora più recenti,
  // senza che l'utente debba MAI aspettare un caricamento lento in prima persona.
  try{
-  const [ra,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  const [ra,rp,rhm,rhp,rhs,rcat]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings(),BizScanData.fetchCategories()]);
   const freshAnalyses=ra.status==='fulfilled'?ra.value:analyses;
   const freshData={
    analyses:freshAnalyses,
@@ -139,7 +140,8 @@ async function fetchFreshPublicDataInBackground(){
    heroPhrases:rhp.status==='fulfilled'&&rhp.value.length?rhp.value:heroPhrases,
    heroTransition:rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):heroTransition,
    heroSeconds:rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):heroSeconds,
-   plansRaw:rp.status==='fulfilled'?rp.value:null
+   plansRaw:rp.status==='fulfilled'?rp.value:null,
+   categoriesData:rcat.status==='fulfilled'?rcat.value:categoriesData
   };
   setSessionCache('publicData',freshData);
  }catch(e){console.warn('Aggiornamento dati in background fallito',e)}
@@ -151,7 +153,7 @@ async function load(){
  if(cachedPublicData){
   // Usa SUBITO i dati in cache, quale che sia la loro età (fino a 24h) - zero attesa di rete per l'utente.
   // Aggiorna comunque tutto in background per la prossima volta.
-  ({analyses,heroMedia,heroPhrases,heroTransition,heroSeconds}=cachedPublicData);
+  ({analyses,heroMedia,heroPhrases,heroTransition,heroSeconds,categoriesData=[]}=cachedPublicData);
   applyDbPlans(cachedPublicData.plansRaw);
   preloadCardImages();
   fetchFreshPublicDataInBackground();
@@ -159,7 +161,7 @@ async function load(){
   rs=rsOnly;
  }else{
   // Prima visita in questa sessione: nessuna cache, dobbiamo aspettare la rete questa unica volta
-  const [ra,rsFresh,rp,rhm,rhp,rhs]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings()]);
+  const [ra,rsFresh,rp,rhm,rhp,rhs,rcat]=await Promise.allSettled([BizScanData.fetchPublishedAnalyses(),BizScanData.accessSummary(),BizScanData.fetchPlans(),BizScanData.fetchHeroMedia(),BizScanData.fetchHeroPhrases(),BizScanData.fetchHeroSettings(),BizScanData.fetchCategories()]);
   rs=rsFresh;
   if(ra.status==='fulfilled'){analyses=ra.value}else{console.warn('Supabase non disponibile',ra.reason);analyses=[]}
   // Non blocca più il rendering della pagina in attesa che TUTTE le immagini delle card siano
@@ -173,7 +175,8 @@ async function load(){
   heroPhrases=rhp.status==='fulfilled'&&rhp.value.length?rhp.value:[{text:"Trova l'attività giusta prima di rischiare capitale",color:'#ffffff'}];
   heroTransition=rhs.status==='fulfilled'?(rhs.value.carousel_transition||'fade'):'fade';
   heroSeconds=rhs.status==='fulfilled'?(rhs.value.carousel_seconds||5):5;
-  setSessionCache('publicData',{analyses,heroMedia,heroPhrases,heroTransition,heroSeconds,plansRaw:rp.status==='fulfilled'?rp.value:null});
+  categoriesData=rcat.status==='fulfilled'?rcat.value:[];
+  setSessionCache('publicData',{analyses,heroMedia,heroPhrases,heroTransition,heroSeconds,plansRaw:rp.status==='fulfilled'?rp.value:null,categoriesData});
  }
  if(rs.status==='fulfilled'){
   access=rs.value;
@@ -728,7 +731,14 @@ function renderHome(){
  const second=featured[1]||lead
  const hasData=Boolean(lead)
  const mb=metricBars(lead||{})
- const cats=categories().slice(0,8)
+ const catsRaw=categories().slice(0,8)
+ // Arricchisce il conteggio per categoria (nome+numero) con colore ed emoji reali dal
+ // database (categoriesData, caricato con fetchCategories()) - prima usava solo un'icona
+ // hardcoded senza colore proprio per categoria.
+ const cats=catsRaw.map(([n,c])=>{
+  const catInfo=categoriesData.find(x=>x.name===n)
+  return {name:n,count:c,color:catInfo&&catInfo.color||'#ffb400',emoji:catInfo&&catInfo.emoji||categoryIcons(n)}
+ })
  const metric=(label,value)=>`<div class="home18-metric"><small>${label}</small><b>${esc(value||'—')}</b></div>`
  host.innerHTML=`<div class="home18">
   <section class="home18-hero">
@@ -743,14 +753,14 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA</small><h2>Opportunità in evidenza</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
-   <div class="home18-filters" role="tablist" aria-label="Filtra opportunità"><button class="${homeFilter==='recommended'?'active':''}" type="button" onclick="setHomeFilter('recommended')">Consigliate</button><button class="${homeFilter==='low-risk'?'active':''}" type="button" onclick="setHomeFilter('low-risk')">Basso rischio</button><button class="${homeFilter==='fast-return'?'active':''}" type="button" onclick="setHomeFilter('fast-return')">Rientro rapido</button><button class="${homeFilter==='high-profit'?'active':''}" type="button" onclick="setHomeFilter('high-profit')">Profitto alto</button><button class="${homeFilter==='online'?'active':''}" type="button" onclick="setHomeFilter('online')">Online</button></div>
-   <div class="home18-carousel" id="homeFeaturedCarousel">${featured.length?featured.map(card).join(''):'<div class="home18-filter-empty">Nessuna analisi disponibile per questo filtro</div>'}</div>
+   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
+   <div class="cat-orbit-row">${cats.map(c=>`<a class="cat-orbit-item" href="search.html?category=${encodeURIComponent(c.name.toLowerCase())}"><span class="cat-orbit-wrap"><span class="cat-orbit-glow" style="background:${esc(c.color)}"></span><span class="cat-orbit-ring" style="background:linear-gradient(135deg,${esc(c.color)},${esc(c.color)}cc)"><span class="cat-orbit-inner">${esc(c.emoji)}</span></span></span><b>${esc(c.name)}</b></a>`).join('')}</div>
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
-   <div class="home18-categories">${cats.map(([n,c])=>`<a href="search.html?category=${encodeURIComponent(n.toLowerCase())}"><i>${categoryIcons(n)}</i><span><b>${esc(n)}</b><small>${c} analisi</small></span><em>→</em></a>`).join('')}</div>
+   <div class="home18-head"><div><small>ESPLORA</small><h2>Opportunità in evidenza</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
+   <div class="home18-filters" role="tablist" aria-label="Filtra opportunità"><button class="${homeFilter==='recommended'?'active':''}" type="button" onclick="setHomeFilter('recommended')">Consigliate</button><button class="${homeFilter==='low-risk'?'active':''}" type="button" onclick="setHomeFilter('low-risk')">Basso rischio</button><button class="${homeFilter==='fast-return'?'active':''}" type="button" onclick="setHomeFilter('fast-return')">Rientro rapido</button><button class="${homeFilter==='high-profit'?'active':''}" type="button" onclick="setHomeFilter('high-profit')">Profitto alto</button><button class="${homeFilter==='online'?'active':''}" type="button" onclick="setHomeFilter('online')">Online</button></div>
+   <div class="home18-carousel" id="homeFeaturedCarousel">${featured.length?featured.map(card).join(''):'<div class="home18-filter-empty">Nessuna analisi disponibile per questo filtro</div>'}</div>
   </section>
 
   <section class="home18-section">
