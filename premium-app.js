@@ -737,7 +737,7 @@ function renderHome(){
  // hardcoded senza colore proprio per categoria.
  const cats=catsRaw.map(([n,c])=>{
   const catInfo=categoriesData.find(x=>x.name===n)
-  return {name:n,count:c,color:catInfo&&catInfo.color||'#ffb400',emoji:catInfo&&catInfo.emoji||categoryIcons(n)}
+  return {name:n,count:c,color:catInfo&&catInfo.color||'#ffb400',iconSvg:categoryIcons(n)}
  })
  const metric=(label,value)=>`<div class="home18-metric"><small>${label}</small><b>${esc(value||'—')}</b></div>`
  host.innerHTML=`<div class="home18">
@@ -753,8 +753,8 @@ function renderHome(){
   </section>
 
   <section class="home18-section">
-   <div class="home18-head"><div><small>ESPLORA PER SETTORE</small><h2>Categorie</h2></div><a href="search.html" class="home18-head-link">Apri tutto <span>→</span></a></div>
-   <div class="cat-orbit-row">${cats.map(c=>`<a class="cat-orbit-item" href="search.html?category=${encodeURIComponent(c.name.toLowerCase())}"><span class="cat-orbit-wrap"><span class="cat-orbit-glow" style="background:${esc(c.color)}"></span><span class="cat-orbit-ring" style="background:linear-gradient(135deg,${esc(c.color)},${esc(c.color)}cc)"><span class="cat-orbit-inner">${esc(c.emoji)}</span></span></span><b>${esc(c.name)}</b></a>`).join('')}</div>
+   <div class="home18-head cat-orbit-head"><h2>Esplora per settore</h2></div>
+   <div class="cat-orbit-row">${cats.map(c=>`<a class="cat-orbit-item" href="search.html?category=${encodeURIComponent(c.name.toLowerCase())}"><span class="cat-orbit-wrap"><span class="cat-orbit-glow" style="background:${esc(c.color)}"></span><span class="cat-orbit-ring" style="background:linear-gradient(135deg,${esc(c.color)},${esc(c.color)}cc)"><span class="cat-orbit-inner">${c.iconSvg}</span></span></span><b>${esc(c.name)}</b></a>`).join('')}</div>
   </section>
 
   <section class="home18-section">
